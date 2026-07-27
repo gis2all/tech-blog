@@ -20,6 +20,10 @@ yarn-error.log*
 pnpm-debug.log*
 .astro-preview.*.log
 .playwright-cli/
+test-results/
+playwright-report/
+output/playwright/
+.superpowers/
 
 # OS and editor
 .DS_Store
