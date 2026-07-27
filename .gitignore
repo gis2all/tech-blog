@@ -5,6 +5,9 @@ node_modules/
 dist/
 .astro/
 
+# Local planning and agent handoff docs
+docs/
+
 # Local environment
 .env
 .env.*
