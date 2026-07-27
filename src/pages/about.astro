@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site } from "../lib/site";
+---
+
+<BaseLayout title="关于" description="关于知行录和作者">
+  <main class="wrap listing-grid">
+    <section class="panel article-page">
+      <span class="kicker">ABOUT</span>
+      <h1>关于知行录</h1>
+      <div class="prose">
+        <p>知行录用于记录编程、AI 与工程实践。这里更关心真实排查、复盘和长期可迁移的内容，而不是漂亮但空泛的技术口号。</p>
+        <h2>写作原则</h2>
+        <ul>
+          <li>优先写真实问题和真实约束。</li>
+          <li>保留排查路径，而不是只写最终答案。</li>
+          <li>内容以 Markdown 存在 GitHub，方便迁移和备份。</li>
+        </ul>
+        <h2>技术栈</h2>
+        <p>Astro 负责生成静态页面，Decap CMS 提供网页写作后台，GitHub 保存内容，Netlify 负责构建和发布。</p>
+      </div>
+    </section>
+    <aside class="stack">
+      <section class="panel profile">
+        <div class="avatar">{site.authorInitials}</div>
+        <h2>{site.author}</h2>
+        <p>{site.description}</p>
+        <a class="button primary" href={site.githubUrl}>GitHub</a>
+      </section>
+    </aside>
+  </main>
+</BaseLayout>

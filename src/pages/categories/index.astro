@@ -1,0 +1,28 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllPosts } from "../../lib/content/queries";
+import { groupPostsByCategory } from "../../lib/content/posts";
+
+const posts = await getAllPosts();
+const categories = groupPostsByCategory(posts);
+---
+
+<BaseLayout title="分类" description="按技术主题浏览知行录文章">
+  <main class="wrap">
+    <div class="page-head">
+      <div>
+        <span class="kicker">CATEGORIES</span>
+        <h1>技术分类</h1>
+        <p>按工程主题整理文章，方便回看同一类问题。</p>
+      </div>
+    </div>
+    <section class="panel taxonomy-list">
+      {categories.map((category) => (
+        <a class="taxonomy-row" href={`/categories/${encodeURIComponent(category.name)}/`}>
+          <span>{category.name}</span>
+          <b>{category.count}</b>
+        </a>
+      ))}
+    </section>
+  </main>
+</BaseLayout>

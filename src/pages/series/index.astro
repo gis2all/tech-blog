@@ -1,0 +1,31 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllPosts, getAllSeries } from "../../lib/content/queries";
+import { getSeriesPosts } from "../../lib/content/posts";
+
+const posts = await getAllPosts();
+const allSeries = await getAllSeries();
+---
+
+<BaseLayout title="专题" description="按系列专题阅读知行录文章">
+  <main class="wrap">
+    <div class="page-head">
+      <div>
+        <span class="kicker">SERIES</span>
+        <h1>专题</h1>
+        <p>围绕一个工程问题连续记录。</p>
+      </div>
+    </div>
+    <section class="panel taxonomy-list">
+      {allSeries.map((series) => {
+        const count = getSeriesPosts(posts, series.data.slug).length;
+        return (
+          <a class="taxonomy-row" href={`/series/${series.data.slug}/`}>
+            <span>{series.data.title}</span>
+            <b>{count}</b>
+          </a>
+        );
+      })}
+    </section>
+  </main>
+</BaseLayout>

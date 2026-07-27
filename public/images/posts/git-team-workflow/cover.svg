@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Git Workflow Cover</title>
+  <desc id="desc">A branch diagram cover for Git workflow notes.</desc>
+  <rect width="1280" height="720" fill="#18324a"/>
+  <g fill="none" stroke="#55bdc8" stroke-width="8" stroke-linecap="round">
+    <path d="M180 360h820"/>
+    <path d="M420 360c80-160 250-160 330 0"/>
+    <path d="M620 360c70 120 180 120 250 0"/>
+  </g>
+  <g fill="#f4b860">
+    <circle cx="180" cy="360" r="18"/>
+    <circle cx="420" cy="360" r="18"/>
+    <circle cx="620" cy="360" r="18"/>
+    <circle cx="750" cy="360" r="18"/>
+    <circle cx="870" cy="360" r="18"/>
+    <circle cx="1000" cy="360" r="18"/>
+  </g>
+  <text x="150" y="560" fill="#ffffff" font-family="Arial, sans-serif" font-size="44" font-weight="700">GIT WORKFLOW</text>
+</svg>

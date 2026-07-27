@@ -42,15 +42,35 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 
 ## 3. 当前实际状态
 
-截至 2026-07-27：
+截至 2026-07-27，当前实现分支为 `codex/zhixinglu-v1`：
 
-- Git 仓库已经初始化，当前分支为 `main`。
-- `main` 尚无提交。
-- 除本文件外，尚无 Astro 工程、依赖、页面、内容集合、CMS 配置或部署配置。
-- OpenDesign 已有完整高保真原型，但原型文件不在仓库中。
-- 因此，本文描述的大部分内容是目标产品与设计规格，不代表已经实现。
+- `main` 已提交项目上下文、架构设计稿和实施计划。
+- `codex/zhixinglu-v1` 已实现 Astro 第一版生产代码。
+- 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
+- 已建立 Astro Content Collections：`posts`、`series`、`projects`。
+- 已有 6 篇样例 Markdown 文章，其中 `git-team-workflow.md` 为 `draft: true` 草稿。
+- 已实现首页、文章详情、分类、标签、归档、专题、项目、关于、搜索、RSS、站点地图和 404。
+- 已实现 Decap CMS 最小后台：`public/admin/index.html` 和 `public/admin/config.yml`。
+- 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
+- OpenDesign 原型目录在本机保留为参考，并通过 `.gitignore` 排除，不作为生产运行时代码。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
+
+最近验证结果：
+
+```text
+npm run test   → 7 tests passed
+npm run check  → 0 errors, 0 warnings, 0 hints
+npm run build  → 33 pages built, Pagefind indexed 5 public article pages
+```
+
+浏览器验证：
+
+- `http://127.0.0.1:4321/` 首页桌面和移动结构可访问。
+- `/posts/agent-tool-debug/` 文章详情无控制台错误。
+- `/search/?q=Agent` 可加载 Pagefind 并返回文章结果。
+- `/admin/` 显示 Decap CMS 的 `Login with GitHub`。
+- `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
 
 ## 4. 产品原则
 
@@ -460,7 +480,7 @@ public/images/posts/
 - GitHub OAuth 的承载方式和 `/admin` 的访问保护方案。
 - GitHub 仓库地址。
 - 正式域名、站点 URL、作者名、头像、GitHub 地址和社交链接。
-- 是否需要评论、浏览量、全文搜索服务或隐私友好的分析工具。
+- 是否需要评论、浏览量或隐私友好的分析工具。
 - 原型中的定时发布和离线同步是否纳入第一版；这两项不能只靠静态 Astro 页面完成。
 - 图片转换是在浏览器、CMS 插件、CI 还是独立图片服务中执行。
 

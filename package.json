@@ -1,0 +1,27 @@
+{
+  "name": "zhixinglu-tech-blog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "postbuild": "pagefind --site dist",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "@lucide/astro": "1.27.0",
+    "astro": "^7.1.4",
+    "pagefind": "^1.5.2",
+    "sharp": "^0.35.3",
+    "typescript": "6.0.3"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Docker 本地开发栈",
+  "description": "整理常用服务的健康检查、卷命名和日志轮转配置。",
+  "repoUrl": "https://github.com/example/docker-dev-stack",
+  "tech": ["Docker", "PostgreSQL", "Redis"],
+  "featured": false,
+  "publishedAt": "2026-07-18",
+  "draft": false
+}

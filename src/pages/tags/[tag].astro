@@ -1,0 +1,31 @@
+---
+import ArticleList from "../../components/article/ArticleList.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllPosts } from "../../lib/content/queries";
+import { groupPostsByTag } from "../../lib/content/posts";
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  return groupPostsByTag(posts).map((tag) => ({
+    params: { tag: tag.name },
+    props: { tag }
+  }));
+}
+
+const { tag } = Astro.props;
+---
+
+<BaseLayout title={tag.name} description={`浏览 ${tag.name} 标签下的文章`}>
+  <main class="wrap">
+    <div class="page-head">
+      <div>
+        <span class="kicker">TAG</span>
+        <h1>{tag.name}</h1>
+        <p>{tag.count} 篇公开文章</p>
+      </div>
+    </div>
+    <section class="panel">
+      <ArticleList posts={tag.posts} />
+    </section>
+  </main>
+</BaseLayout>

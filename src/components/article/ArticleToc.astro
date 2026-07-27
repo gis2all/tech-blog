@@ -1,0 +1,32 @@
+---
+type Heading = {
+  depth: number;
+  slug: string;
+  text: string;
+};
+
+type Props = {
+  headings: Heading[];
+};
+
+const { headings } = Astro.props;
+const visibleHeadings = headings.filter((heading) => heading.depth <= 3);
+---
+
+{visibleHeadings.length > 0 && (
+  <aside class="toc-wrap">
+    <div class="panel toc">
+      <div class="section-title">本文目录</div>
+      <nav aria-label="文章目录">
+        {visibleHeadings.map((heading) => (
+          <a class:list={{ sub: heading.depth === 3 }} href={`#${heading.slug}`}>{heading.text}</a>
+        ))}
+      </nav>
+      <div class="read-progress">
+        <span>阅读进度</span>
+        <b data-read-percent>0%</b>
+        <div class="read-bar"><i data-read-bar></i></div>
+      </div>
+    </div>
+  </aside>
+)}

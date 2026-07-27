@@ -1,0 +1,9 @@
+{
+  "title": "Agent 工具调用排查清单",
+  "description": "把工具 schema、权限边界、错误类型和上下文污染整理成可复用检查表。",
+  "repoUrl": "https://github.com/example/agent-tool-debug",
+  "tech": ["TypeScript", "Agent", "Observability"],
+  "featured": true,
+  "publishedAt": "2026-07-24",
+  "draft": false
+}

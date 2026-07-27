@@ -1,0 +1,43 @@
+---
+import { Code, Menu, Moon, Search, X } from "@lucide/astro";
+import { site } from "../../lib/site";
+
+type Props = {
+  currentPath: string;
+};
+
+const { currentPath } = Astro.props;
+
+function isActive(href: string) {
+  if (href === "/") return currentPath === "/";
+  return currentPath.startsWith(href);
+}
+---
+
+<header class="site-header">
+  <nav class="nav" aria-label="主导航">
+    <a class="brand" href="/" aria-label="知行录首页"><span>知</span>知行<i>录</i></a>
+    <div class="nav-links" data-menu>
+      {site.nav.map((item) => (
+        <a class:list={{ active: isActive(item.href) }} href={item.href}>{item.label}</a>
+      ))}
+    </div>
+    <form class="nav-search" action="/search/" role="search">
+      <Search size={16} aria-hidden="true" />
+      <input name="q" type="search" placeholder="搜索文章、标签或关键词" aria-label="搜索文章" />
+    </form>
+    <div class="nav-actions">
+      <a class="icon-button" href={site.githubUrl} aria-label="GitHub">
+        <Code size={18} aria-hidden="true" />
+      </a>
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式">
+        <Moon size={18} aria-hidden="true" />
+      </button>
+      <a class="admin-link" href="/admin/">进入后台</a>
+    </div>
+    <button class="icon-button menu-button" type="button" data-menu-toggle aria-label="打开菜单" aria-expanded="false">
+      <Menu class="menu-open" size={20} aria-hidden="true" />
+      <X class="menu-close" size={20} aria-hidden="true" />
+    </button>
+  </nav>
+</header>

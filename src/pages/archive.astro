@@ -1,0 +1,38 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getAllPosts } from "../lib/content/queries";
+import { getPostSlug, groupPostsByArchive } from "../lib/content/posts";
+
+const posts = await getAllPosts();
+const archive = groupPostsByArchive(posts);
+---
+
+<BaseLayout title="归档" description="按发布时间回看知行录文章">
+  <main class="wrap">
+    <div class="page-head">
+      <div>
+        <span class="kicker">ARCHIVE</span>
+        <h1>文章归档</h1>
+        <p>按年月回看持续记录的轨迹。</p>
+      </div>
+    </div>
+    <section class="panel pad">
+      {archive.map((year) => (
+        <div>
+          <h2>{year.year}</h2>
+          {year.months.map((month) => (
+            <div>
+              <h3>{month.label}</h3>
+              {month.posts.map((post) => (
+                <a class="archive-row" href={`/posts/${getPostSlug(post)}/`}>
+                  <span>{post.data.title}</span>
+                  <b>{post.data.publishedAt.toISOString().slice(5, 10)}</b>
+                </a>
+              ))}
+            </div>
+          ))}
+        </div>
+      ))}
+    </section>
+  </main>
+</BaseLayout>

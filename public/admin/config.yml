@@ -1,0 +1,165 @@
+backend:
+  name: github
+  repo: your-github-username/tech-blog
+  branch: main
+
+media_folder: public/images/uploads
+public_folder: /images/uploads
+
+publish_mode: simple
+
+collections:
+  - name: posts
+    label: 文章
+    folder: src/content/posts
+    create: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - label: 标题
+        name: title
+        widget: string
+      - label: 摘要
+        name: description
+        widget: text
+      - label: 发布日期
+        name: publishedAt
+        widget: datetime
+        date_format: "YYYY-MM-DD"
+        time_format: false
+      - label: 更新日期
+        name: updatedAt
+        widget: datetime
+        required: false
+        date_format: "YYYY-MM-DD"
+        time_format: false
+      - label: 分类
+        name: category
+        widget: string
+      - label: 标签
+        name: tags
+        widget: list
+        allow_add: true
+      - label: 封面
+        name: cover
+        widget: image
+        required: false
+      - label: 封面替代文本
+        name: coverAlt
+        widget: string
+        required: false
+      - label: 草稿
+        name: draft
+        widget: boolean
+        default: true
+      - label: 精选
+        name: featured
+        widget: boolean
+        default: false
+      - label: 专题 Slug
+        name: series
+        widget: string
+        required: false
+      - label: 专题顺序
+        name: seriesOrder
+        widget: number
+        required: false
+        value_type: int
+      - label: 示例仓库
+        name: repoUrl
+        widget: string
+        required: false
+      - label: 参考资料
+        name: references
+        widget: list
+        required: false
+        fields:
+          - label: 标题
+            name: title
+            widget: string
+          - label: URL
+            name: url
+            widget: string
+      - label: 更新记录
+        name: changelog
+        widget: list
+        required: false
+        fields:
+          - label: 日期
+            name: date
+            widget: datetime
+            date_format: "YYYY-MM-DD"
+            time_format: false
+          - label: 说明
+            name: note
+            widget: string
+      - label: 正文
+        name: body
+        widget: markdown
+
+  - name: series
+    label: 专题
+    folder: src/content/series
+    create: true
+    extension: json
+    format: json
+    slug: "{{slug}}"
+    fields:
+      - label: 标题
+        name: title
+        widget: string
+      - label: 摘要
+        name: description
+        widget: text
+      - label: Slug
+        name: slug
+        widget: string
+      - label: 排序
+        name: order
+        widget: number
+        required: false
+        value_type: int
+      - label: 草稿
+        name: draft
+        widget: boolean
+        default: false
+
+  - name: projects
+    label: 项目
+    folder: src/content/projects
+    create: true
+    extension: json
+    format: json
+    slug: "{{slug}}"
+    fields:
+      - label: 标题
+        name: title
+        widget: string
+      - label: 摘要
+        name: description
+        widget: text
+      - label: 项目地址
+        name: url
+        widget: string
+        required: false
+      - label: 仓库地址
+        name: repoUrl
+        widget: string
+        required: false
+      - label: 技术栈
+        name: tech
+        widget: list
+      - label: 精选
+        name: featured
+        widget: boolean
+        default: false
+      - label: 发布日期
+        name: publishedAt
+        widget: datetime
+        date_format: "YYYY-MM-DD"
+        time_format: false
+      - label: 草稿
+        name: draft
+        widget: boolean
+        default: false

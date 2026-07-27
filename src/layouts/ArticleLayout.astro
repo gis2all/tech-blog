@@ -1,0 +1,80 @@
+---
+import ArticleMeta from "../components/article/ArticleMeta.astro";
+import ArticleToc from "../components/article/ArticleToc.astro";
+import SeriesNav from "../components/article/SeriesNav.astro";
+import BaseLayout from "./BaseLayout.astro";
+import { getPostSlug, type PostLike } from "../lib/content/posts";
+import { site } from "../lib/site";
+
+type Props = {
+  post: PostLike;
+  allPosts: PostLike[];
+  headings: { depth: number; slug: string; text: string }[];
+  series?: {
+    data: {
+      title: string;
+      description: string;
+      slug: string;
+    };
+  };
+};
+
+const { post, allPosts, headings, series } = Astro.props;
+const published = post.data.publishedAt.toISOString().slice(0, 10);
+const updated = "updatedAt" in post.data && post.data.updatedAt instanceof Date
+  ? post.data.updatedAt.toISOString().slice(0, 10)
+  : undefined;
+const currentSlug = getPostSlug(post);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <main class="wrap article-shell">
+    <div class="left-rail">
+      <SeriesNav
+        posts={allPosts}
+        seriesSlug={post.data.series}
+        currentSlug={currentSlug}
+        title={series?.data.title}
+        description={series?.data.description}
+      />
+    </div>
+    <article class="panel article-page">
+      <header class="article-head">
+        <span class="kicker">{post.data.category}</span>
+        <h1>{post.data.title}</h1>
+        <p class="dek">{post.data.description}</p>
+        <div class="byline">
+          <div class="mini-avatar">{site.authorInitials}</div>
+          <div>
+            <b>{site.author}</b>
+            <div>{published} 发布{updated && ` · ${updated} 更新`}</div>
+          </div>
+        </div>
+        <ArticleMeta post={post} />
+      </header>
+      <div class="prose" data-pagefind-body>
+        <slot />
+      </div>
+      {"references" in post.data && Array.isArray(post.data.references) && post.data.references.length > 0 && (
+        <section class="references">
+          <h2>参考资料与源码</h2>
+          <ul>
+            {post.data.references.map((item) => <li><a href={item.url}>{item.title}</a></li>)}
+          </ul>
+        </section>
+      )}
+      {"changelog" in post.data && Array.isArray(post.data.changelog) && post.data.changelog.length > 0 && (
+        <section class="changelog">
+          <h2>更新记录</h2>
+          {post.data.changelog.map((item) => (
+            <div class="change">
+              <time datetime={item.date.toISOString()}>{item.date.toISOString().slice(0, 10)}</time>
+              <span>{item.note}</span>
+            </div>
+          ))}
+        </section>
+      )}
+    </article>
+    <ArticleToc headings={headings} />
+  </main>
+</BaseLayout>

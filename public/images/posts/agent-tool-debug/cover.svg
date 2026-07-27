@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Agent Tool Debug Cover</title>
+  <desc id="desc">A technical flow cover for AI Agent tool debugging.</desc>
+  <rect width="1280" height="720" fill="#17202b"/>
+  <g fill="none" stroke="#55bdc8" stroke-width="4">
+    <rect x="120" y="200" width="220" height="120" rx="8"/>
+    <rect x="530" y="200" width="220" height="120" rx="8"/>
+    <rect x="940" y="200" width="220" height="120" rx="8"/>
+    <path d="M340 260h190M750 260h190"/>
+  </g>
+  <g fill="#ffffff" font-family="Arial, sans-serif" font-weight="700">
+    <text x="158" y="270" font-size="28">SCHEMA</text>
+    <text x="578" y="270" font-size="28">AUTH</text>
+    <text x="984" y="270" font-size="28">CONTEXT</text>
+  </g>
+  <text x="120" y="470" fill="#ffffff" font-family="Arial, sans-serif" font-size="42" font-weight="700">AI AGENT DEBUG</text>
+  <text x="120" y="526" fill="#c7e8ec" font-family="Arial, sans-serif" font-size="24">TOOL CALLING / BOUNDARIES / TRACE</text>
+</svg>

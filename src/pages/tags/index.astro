@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllPosts } from "../../lib/content/queries";
+import { groupPostsByTag } from "../../lib/content/posts";
+
+const posts = await getAllPosts();
+const tags = groupPostsByTag(posts);
+---
+
+<BaseLayout title="标签" description="按标签浏览知行录文章">
+  <main class="wrap">
+    <div class="page-head">
+      <div>
+        <span class="kicker">TAGS</span>
+        <h1>标签</h1>
+        <p>从更细的关键词进入文章。</p>
+      </div>
+    </div>
+    <section class="panel">
+      <div class="tag-cloud">
+        {tags.map((tag) => <a class="tag" href={`/tags/${encodeURIComponent(tag.name)}/`}>{tag.name} · {tag.count}</a>)}
+      </div>
+    </section>
+  </main>
+</BaseLayout>

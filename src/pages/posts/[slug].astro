@@ -1,0 +1,24 @@
+---
+import { render } from "astro:content";
+import ArticleLayout from "../../layouts/ArticleLayout.astro";
+import { getAllPosts, getAllSeries } from "../../lib/content/queries";
+import { getPostSlug } from "../../lib/content/posts";
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  return posts.map((post) => ({
+    params: { slug: getPostSlug(post) },
+    props: { post }
+  }));
+}
+
+const { post } = Astro.props;
+const allPosts = await getAllPosts();
+const allSeries = await getAllSeries();
+const series = allSeries.find((entry) => entry.data.slug === post.data.series);
+const { Content, headings } = await render(post);
+---
+
+<ArticleLayout post={post} allPosts={allPosts} headings={headings} series={series}>
+  <Content />
+</ArticleLayout>

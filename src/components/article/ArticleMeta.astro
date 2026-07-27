@@ -1,0 +1,18 @@
+---
+import { calculateReadingTime, type PostLike } from "../../lib/content/posts";
+
+type Props = {
+  post: PostLike;
+};
+
+const { post } = Astro.props;
+const date = post.data.publishedAt.toISOString().slice(0, 10);
+const readingTime = calculateReadingTime(post.body);
+---
+
+<div class="article-meta">
+  <a class="tag" href={`/categories/${encodeURIComponent(post.data.category)}/`}>{post.data.category}</a>
+  {post.data.tags?.map((tag) => <a class="tag ghost" href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>)}
+  <time datetime={date}>{date}</time>
+  <span>{readingTime} 分钟</span>
+</div>

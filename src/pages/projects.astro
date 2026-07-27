@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getAllProjects } from "../lib/content/queries";
+
+const projects = await getAllProjects();
+---
+
+<BaseLayout title="项目" description="知行录的工程项目和实践工具">
+  <main class="wrap">
+    <div class="page-head">
+      <div>
+        <span class="kicker">PROJECTS</span>
+        <h1>项目</h1>
+        <p>把文章里的方法沉淀成可复用工具。</p>
+      </div>
+    </div>
+    <section class="project-grid">
+      {projects.map((project) => (
+        <article class="panel project-card">
+          <h2>{project.data.title}</h2>
+          <p>{project.data.description}</p>
+          <div class="article-meta">
+            {project.data.tech.map((item) => <span class="tag ghost">{item}</span>)}
+          </div>
+          {project.data.repoUrl && <p><a class="button" href={project.data.repoUrl}>查看仓库</a></p>}
+        </article>
+      ))}
+    </section>
+  </main>
+</BaseLayout>
