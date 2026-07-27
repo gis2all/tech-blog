@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: your-github-username/tech-blog
+  repo: gis2all/tech-blog
   branch: main
 
 media_folder: public/images/uploads

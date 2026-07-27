@@ -4,7 +4,7 @@ export const site = {
   url: "https://example.com",
   author: "林舟",
   authorInitials: "LZ",
-  githubUrl: "https://github.com/example",
+  githubUrl: "https://github.com/gis2all/tech-blog",
   nav: [
     { href: "/", label: "首页" },
     { href: "/categories/", label: "分类" },

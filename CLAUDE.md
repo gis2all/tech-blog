@@ -71,6 +71,7 @@ npm run build  → 33 pages built, Pagefind indexed 5 public article pages
 - `/search/?q=Agent` 可加载 Pagefind 并返回文章结果。
 - `/admin/` 显示 Decap CMS 的 `Login with GitHub`。
 - `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
+- GitHub 远程仓库：`gis2all/tech-blog`。
 
 ## 4. 产品原则
 
@@ -478,7 +479,6 @@ public/images/posts/
 以下事项尚未由代码或正式配置锁定，开始相关工作前应向项目所有者确认，或在最小验证后记录决策：
 
 - GitHub OAuth 的承载方式和 `/admin` 的访问保护方案。
-- GitHub 仓库地址。
 - 正式域名、站点 URL、作者名、头像、GitHub 地址和社交链接。
 - 是否需要评论、浏览量或隐私友好的分析工具。
 - 原型中的定时发布和离线同步是否纳入第一版；这两项不能只靠静态 Astro 页面完成。
