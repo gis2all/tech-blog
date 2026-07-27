@@ -3,16 +3,36 @@ import { calculateReadingTime, type PostLike } from "../../lib/content/posts";
 
 type Props = {
   post: PostLike;
+  showCategory?: boolean;
+  showTags?: boolean;
+  tagLimit?: number;
+  showDate?: boolean;
+  showReadingTime?: boolean;
 };
 
-const { post } = Astro.props;
+const {
+  post,
+  showCategory = true,
+  showTags = true,
+  tagLimit,
+  showDate = true,
+  showReadingTime = true
+} = Astro.props;
 const date = post.data.publishedAt.toISOString().slice(0, 10);
 const readingTime = calculateReadingTime(post.body);
+const tags = tagLimit === undefined
+  ? post.data.tags ?? []
+  : (post.data.tags ?? []).slice(0, tagLimit);
 ---
 
 <div class="article-meta">
-  <a class="tag" href={`/categories/${encodeURIComponent(post.data.category)}/`}>{post.data.category}</a>
-  {post.data.tags?.map((tag) => <a class="tag ghost" href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>)}
-  <time datetime={date}>{date}</time>
-  <span>{readingTime} 分钟</span>
+  {showCategory && <a class="tag" href={`/categories/${encodeURIComponent(post.data.category)}/`}>{post.data.category}</a>}
+  {showTags && tags.map((tag) => <a class="tag ghost" href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>)}
+  {(showDate || showReadingTime) && (
+    <span class="article-meta-time">
+      {showDate && <time datetime={date}>{date}</time>}
+      {showDate && showReadingTime && <span aria-hidden="true"> · </span>}
+      {showReadingTime && <span>{readingTime} 分钟</span>}
+    </span>
+  )}
 </div>

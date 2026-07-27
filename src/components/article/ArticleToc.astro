@@ -1,4 +1,6 @@
 ---
+import { X } from "@lucide/astro";
+
 type Heading = {
   depth: number;
   slug: string;
@@ -14,7 +16,8 @@ const visibleHeadings = headings.filter((heading) => heading.depth <= 3);
 ---
 
 {visibleHeadings.length > 0 && (
-  <aside class="toc-wrap">
+  <>
+  <aside class="toc-wrap" data-desktop-toc aria-label="文章目录与阅读进度">
     <div class="panel toc">
       <div class="section-title">本文目录</div>
       <nav aria-label="文章目录">
@@ -29,4 +32,20 @@ const visibleHeadings = headings.filter((heading) => heading.depth <= 3);
       </div>
     </div>
   </aside>
+  <div class="mobile-toc-overlay" data-toc-panel hidden>
+    <section class="mobile-toc-sheet" id="mobile-article-toc" role="dialog" aria-modal="true" aria-label="文章目录">
+      <div class="mobile-toc-head">
+        <h2>本文目录</h2>
+        <button class="icon-button" type="button" data-toc-close aria-label="关闭文章目录">
+          <X size={18} aria-hidden="true" />
+        </button>
+      </div>
+      <nav aria-label="移动文章目录">
+        {visibleHeadings.map((heading) => (
+          <a class:list={{ sub: heading.depth === 3 }} href={`#${heading.slug}`}>{heading.text}</a>
+        ))}
+      </nav>
+    </section>
+  </div>
+  </>
 )}

@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
   calculateReadingTime,
+  getAdjacentPosts,
+  getFeaturedPosts,
   getPostSlug,
   getPublicPosts,
   groupPostsByArchive,
@@ -101,5 +103,24 @@ describe("post helpers", () => {
         ]
       }
     ]);
+  });
+
+  test("getFeaturedPosts returns flagged public posts first without duplicates", () => {
+    const featuredPosts = posts.map((post, index) => ({
+      ...post,
+      data: { ...post.data, featured: index === 0 }
+    }));
+
+    expect(getFeaturedPosts(featuredPosts, 2).map((post) => post.data.title)).toEqual([
+      "Old Post",
+      "New Post"
+    ]);
+  });
+
+  test("getAdjacentPosts follows public chronological order and skips drafts", () => {
+    const adjacent = getAdjacentPosts(posts, "new-post");
+
+    expect(adjacent.previous?.data.title).toBe("Old Post");
+    expect(adjacent.next).toBeUndefined();
   });
 });

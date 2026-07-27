@@ -62,6 +62,34 @@ export function getPublicPosts<TPost extends PostLike>(posts: TPost[]): TPost[] 
   return sortPostsByDate(posts.filter((post) => !post.data.draft));
 }
 
+export function getFeaturedPosts<TPost extends PostLike>(
+  posts: TPost[],
+  limit = 3
+): TPost[] {
+  const publicPosts = getPublicPosts(posts);
+  const preferred = publicPosts.filter((post) => post.data.featured);
+  const fallback = publicPosts.filter((post) => !post.data.featured);
+
+  return [...preferred, ...fallback].slice(0, limit);
+}
+
+export function getAdjacentPosts<TPost extends PostLike>(
+  posts: TPost[],
+  currentSlug: string
+): { previous?: TPost; next?: TPost } {
+  const publicPosts = getPublicPosts(posts);
+  const currentIndex = publicPosts.findIndex(
+    (post) => getPostSlug(post) === currentSlug
+  );
+
+  if (currentIndex === -1) return {};
+
+  return {
+    previous: publicPosts[currentIndex + 1],
+    next: publicPosts[currentIndex - 1]
+  };
+}
+
 export function calculateReadingTime(body = ""): number {
   const words = body.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(words / 200));

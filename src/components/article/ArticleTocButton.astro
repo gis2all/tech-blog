@@ -1,0 +1,29 @@
+---
+import { List } from "@lucide/astro";
+
+type Heading = {
+  depth: number;
+  slug: string;
+  text: string;
+};
+
+type Props = {
+  headings: Heading[];
+};
+
+const { headings } = Astro.props;
+const hasVisibleHeadings = headings.some((heading) => heading.depth <= 3);
+---
+
+{hasVisibleHeadings && (
+  <button
+    class="mobile-toc-button"
+    type="button"
+    data-toc-toggle
+    aria-label="打开文章目录"
+    aria-expanded="false"
+    aria-controls="mobile-article-toc"
+  >
+    <List size={18} aria-hidden="true" />
+  </button>
+)}

@@ -1,5 +1,6 @@
 ---
-import { Code, Menu, Moon, Search, X } from "@lucide/astro";
+import { LogIn, Menu, Moon, Search, X } from "@lucide/astro";
+import GithubIcon from "../common/GithubIcon.astro";
 import { site } from "../../lib/site";
 
 type Props = {
@@ -17,10 +18,24 @@ function isActive(href: string) {
 <header class="site-header">
   <nav class="nav" aria-label="主导航">
     <a class="brand" href="/" aria-label="知行录首页"><span>知</span>知行<i>录</i></a>
-    <div class="nav-links" data-menu>
+    <div class="nav-links" data-menu id="site-menu">
       {site.nav.map((item) => (
         <a class:list={{ active: isActive(item.href) }} href={item.href}>{item.label}</a>
       ))}
+      <div class="mobile-nav-actions" data-mobile-actions aria-label="移动站点操作">
+        <a class="mobile-nav-action" href={site.githubUrl}>
+          <GithubIcon size={18} />
+          <span>GitHub</span>
+        </a>
+        <button class="mobile-nav-action" type="button" data-theme-toggle>
+          <Moon size={18} aria-hidden="true" />
+          <span data-theme-label>深色模式</span>
+        </button>
+        <a class="mobile-nav-action" href="/admin/">
+          <LogIn size={18} aria-hidden="true" />
+          <span>进入后台</span>
+        </a>
+      </div>
     </div>
     <form class="nav-search" action="/search/" role="search">
       <Search size={16} aria-hidden="true" />
@@ -28,14 +43,15 @@ function isActive(href: string) {
     </form>
     <div class="nav-actions">
       <a class="icon-button" href={site.githubUrl} aria-label="GitHub">
-        <Code size={18} aria-hidden="true" />
+        <GithubIcon size={18} />
       </a>
       <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式">
         <Moon size={18} aria-hidden="true" />
       </button>
       <a class="admin-link" href="/admin/">进入后台</a>
     </div>
-    <button class="icon-button menu-button" type="button" data-menu-toggle aria-label="打开菜单" aria-expanded="false">
+    <slot name="header-actions" />
+    <button class="icon-button menu-button" type="button" data-menu-toggle aria-label="打开菜单" aria-expanded="false" aria-controls="site-menu">
       <Menu class="menu-open" size={20} aria-hidden="true" />
       <X class="menu-close" size={20} aria-hidden="true" />
     </button>

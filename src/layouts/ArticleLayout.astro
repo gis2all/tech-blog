@@ -1,9 +1,15 @@
 ---
 import ArticleMeta from "../components/article/ArticleMeta.astro";
 import ArticleToc from "../components/article/ArticleToc.astro";
+import ArticleTocButton from "../components/article/ArticleTocButton.astro";
 import SeriesNav from "../components/article/SeriesNav.astro";
 import BaseLayout from "./BaseLayout.astro";
-import { getPostSlug, type PostLike } from "../lib/content/posts";
+import {
+  calculateReadingTime,
+  getAdjacentPosts,
+  getPostSlug,
+  type PostLike
+} from "../lib/content/posts";
 import { site } from "../lib/site";
 
 type Props = {
@@ -25,11 +31,14 @@ const updated = "updatedAt" in post.data && post.data.updatedAt instanceof Date
   ? post.data.updatedAt.toISOString().slice(0, 10)
   : undefined;
 const currentSlug = getPostSlug(post);
+const readingTime = calculateReadingTime(post.body);
+const { previous, next } = getAdjacentPosts(allPosts, currentSlug);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
+  <ArticleTocButton slot="header-actions" headings={headings} />
   <main class="wrap article-shell">
-    <div class="left-rail">
+    <div class="left-rail" aria-label="专题导航">
       <SeriesNav
         posts={allPosts}
         seriesSlug={post.data.series}
@@ -47,10 +56,16 @@ const currentSlug = getPostSlug(post);
           <div class="mini-avatar">{site.authorInitials}</div>
           <div>
             <b>{site.author}</b>
-            <div>{published} 发布{updated && ` · ${updated} 更新`}</div>
+            <div>{published} 发布{updated && ` · ${updated} 更新`} · {readingTime} 分钟阅读</div>
           </div>
         </div>
-        <ArticleMeta post={post} />
+        <ArticleMeta
+          post={post}
+          showCategory={false}
+          showDate={false}
+          showReadingTime={false}
+          tagLimit={3}
+        />
       </header>
       <div class="prose" data-pagefind-body>
         <slot />
@@ -74,6 +89,31 @@ const currentSlug = getPostSlug(post);
           ))}
         </section>
       )}
+      <footer class="article-footer">
+        {(previous || next) && (
+          <nav class="post-navigation" aria-label="相邻文章">
+            {previous && (
+              <a class="post-navigation-item" href={`/posts/${getPostSlug(previous)}/`}>
+                <small>上一篇</small>
+                <strong>{previous.data.title}</strong>
+              </a>
+            )}
+            {next && (
+              <a class="post-navigation-item next" href={`/posts/${getPostSlug(next)}/`}>
+                <small>下一篇</small>
+                <strong>{next.data.title}</strong>
+              </a>
+            )}
+          </nav>
+        )}
+        <section class="author-note" aria-label="作者说明">
+          <div class="mini-avatar">{site.authorInitials}</div>
+          <div>
+            <h2>{site.author} · {site.title}</h2>
+            <p>记录编程、AI 与工程实践，保留问题、判断与复盘过程。</p>
+          </div>
+        </section>
+      </footer>
     </article>
     <ArticleToc headings={headings} />
   </main>

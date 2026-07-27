@@ -2,26 +2,33 @@
 import ArticleList from "../components/article/ArticleList.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getAllPosts } from "../lib/content/queries";
-import { groupPostsByCategory, groupPostsByTag } from "../lib/content/posts";
+import {
+  getFeaturedPosts,
+  getPostSlug,
+  groupPostsByCategory,
+  groupPostsByTag
+} from "../lib/content/posts";
 import { site } from "../lib/site";
 
 const posts = await getAllPosts();
-const featured = posts.filter((post) => post.data.featured);
+const featured = getFeaturedPosts(posts, 3);
 const categories = groupPostsByCategory(posts);
-const tags = groupPostsByTag(posts).slice(0, 12);
+const allTags = groupPostsByTag(posts);
+const tags = allTags.slice(0, 12);
 ---
 
 <BaseLayout>
   <main class="wrap home-grid">
-    <aside class="left-rail stack">
+    <aside class="left-rail stack" aria-label="作者与分类">
       <section class="panel profile">
         <div class="avatar">{site.authorInitials}</div>
         <h2>{site.author}</h2>
+        <p class="brand-note">知行合一 · 持续积累</p>
         <p>{site.description}</p>
         <div class="stats">
           <div class="stat"><strong>{posts.length}</strong><span>文章</span></div>
           <div class="stat"><strong>{categories.length}</strong><span>分类</span></div>
-          <div class="stat"><strong>{tags.length}</strong><span>标签</span></div>
+          <div class="stat"><strong>{allTags.length}</strong><span>标签</span></div>
         </div>
       </section>
       <section class="panel">
@@ -36,22 +43,32 @@ const tags = groupPostsByTag(posts).slice(0, 12);
         </div>
       </section>
     </aside>
-    <section class="panel">
-      <div class="section-title">最新文章 <small>共 {posts.length} 篇公开记录</small></div>
-      <ArticleList posts={posts} />
+    <section class="panel home-feed">
+      <div class="section-title home-feed-head"><h1>最新文章</h1><small>共 {posts.length} 篇公开记录</small></div>
+      <ArticleList posts={posts} showCategory={false} tagLimit={2} />
     </section>
-    <aside class="right-rail stack">
+    <aside class="right-rail stack" aria-label="精选与标签">
       <section class="panel">
-        <div class="section-title">精选文章 <small>工程复盘</small></div>
-        <ArticleList posts={featured} compact />
+        <div class="section-title">精选复盘 <small>编辑推荐</small></div>
+        <ol class="featured-list">
+          {featured.map((post, index) => (
+            <li>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <a href={`/posts/${getPostSlug(post)}/`}>{post.data.title}</a>
+                <small>{post.data.category}</small>
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
       <section class="panel">
-        <div class="section-title">标签云 <small>{tags.length} 个标签</small></div>
+        <div class="section-title">标签云 <small>{tags.length} 个可见标签</small></div>
         <div class="tag-cloud">
           {tags.map((tag) => <a class="tag" href={`/tags/${encodeURIComponent(tag.name)}/`}>{tag.name}</a>)}
         </div>
       </section>
-      <section class="panel pad">
+      <section class="panel pad now-card">
         <span class="kicker">NOW</span>
         <h2>正在构建：静态优先博客</h2>
         <p>Astro 生成页面，Decap CMS 写作，GitHub 保存内容，Netlify 发布到 CDN。</p>
