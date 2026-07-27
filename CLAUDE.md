@@ -42,10 +42,9 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 
 ## 3. 当前实际状态
 
-截至 2026-07-27，当前实现分支为 `codex/zhixinglu-v1`：
+截至 2026-07-28，当前生产分支为 `main`：
 
-- `main` 已提交项目上下文、架构设计稿和实施计划。
-- `codex/zhixinglu-v1` 已实现 Astro 第一版生产代码。
+- `main` 已包含项目上下文、架构设计稿、实施计划和 Astro 第一版生产代码。
 - 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
 - 已有 6 篇样例 Markdown 文章，其中 `git-team-workflow.md` 为 `draft: true` 草稿。
@@ -69,7 +68,10 @@ npm run build  → 33 pages built, Pagefind indexed 5 public article pages
 - `http://127.0.0.1:4321/` 首页桌面和移动结构可访问。
 - `/posts/agent-tool-debug/` 文章详情无控制台错误。
 - `/search/?q=Agent` 可加载 Pagefind 并返回文章结果。
-- `/admin/` 显示 Decap CMS 的 `Login with GitHub`。
+- `/admin/` GitHub OAuth 登录已验证，可进入 Decap CMS 后台。
+- Decap CMS 后台发布闭环已验证：新建测试文章会写入 GitHub commit，并触发 Netlify 自动部署到前台。
+- Decap CMS 媒体上传闭环已验证：后台上传图片会写入 `public/images/uploads/`，并可通过 Netlify 静态 URL 访问。
+- 2026-07-28 的测试文章和测试图片仅用于验证链路，验证后应从生产内容中清理。
 - `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
 - GitHub 远程仓库：`gis2all/tech-blog`。
 - Netlify 站点 URL：`https://gis2all-blog.netlify.app`。
