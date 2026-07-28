@@ -32,11 +32,6 @@ function absoluteHttpUrl(value: string): URL {
   return url;
 }
 
-function isSvg(buffer: Buffer, contentType: string): boolean {
-  if (contentType === "image/svg+xml") return true;
-  return /<svg(?:\s|>)/i.test(buffer.subarray(0, 1024).toString("utf8"));
-}
-
 function hasGifMagic(buffer: Buffer): boolean {
   const signature = buffer.subarray(0, 6).toString("ascii");
   return signature === "GIF87a" || signature === "GIF89a";
@@ -55,7 +50,9 @@ function fallbackCoverAlt(articleTitle: string): string {
 
 function orientedDimensions(metadata: Metadata): { width: number; height: number } {
   const width = metadata.autoOrient.width;
-  const height = metadata.autoOrient.height;
+  const height = metadata.format === "gif" && (metadata.pages ?? 1) > 1
+    ? metadata.pageHeight
+    : metadata.autoOrient.height;
   if (!width || !height) throw new Error("Invalid or unsupported image: dimensions are unavailable");
   return { width, height };
 }
@@ -117,15 +114,17 @@ export async function localizeAssets(input: LocalizeAssetsInput): Promise<AssetR
     const buffer = await responseBuffer(response, sourceUrl);
     const contentType = response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() ?? "";
 
-    if (isSvg(buffer, contentType)) throw new Error(`SVG images are not supported: ${sourceUrl}`);
-
     const metadata = await imageMetadata(buffer);
     const gifByType = contentType === "image/gif";
     const gifByMagic = hasGifMagic(buffer);
     const gifByMetadata = metadata.format === "gif";
-    const gif = gifByMagic || gifByMetadata;
+    const gif = gifByMetadata;
 
-    if (gifByType && !gif) throw new Error(`Invalid or unsupported image: ${sourceUrl}`);
+    if (metadata.format === "svg") throw new Error(`SVG images are not supported: ${sourceUrl}`);
+    if (metadata.format === "webp" && (metadata.pages ?? 1) > 1) {
+      throw new Error(`Animated WebP images are not supported: ${sourceUrl}`);
+    }
+    if ((gifByType || gifByMagic) && !gif) throw new Error(`Invalid or unsupported image: ${sourceUrl}`);
     if (!supportedFormat(metadata, gif)) throw new Error(`Invalid or unsupported image format: ${sourceUrl}`);
 
     const dimensions = orientedDimensions(metadata);

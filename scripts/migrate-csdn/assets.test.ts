@@ -44,6 +44,40 @@ async function gifBuffer(width: number, height: number): Promise<Buffer> {
   }).gif().toBuffer();
 }
 
+async function animatedBuffer(
+  width: number,
+  frameHeight: number,
+  format: "gif" | "webp",
+): Promise<Buffer> {
+  const channels = 4;
+  const frameSize = width * frameHeight * channels;
+  const firstFrame = Buffer.alloc(frameSize);
+  const secondFrame = Buffer.alloc(frameSize);
+
+  for (let offset = 0; offset < frameSize; offset += channels) {
+    firstFrame.set([220, 40, 70, 255], offset);
+    secondFrame.set([30, 80, 220, 255], offset);
+  }
+
+  const image = sharp(Buffer.concat([firstFrame, secondFrame]), {
+    raw: { width, height: frameHeight * 2, channels, pageHeight: frameHeight },
+  });
+  return format === "gif"
+    ? image.gif({ delay: [100, 100], loop: 0, keepDuplicateFrames: true }).toBuffer()
+    : image.webp({ delay: [100, 100], loop: 0 }).toBuffer();
+}
+
+async function orientedJpeg(width: number, height: number, orientation: number): Promise<Buffer> {
+  return sharp({
+    create: {
+      width,
+      height,
+      channels: 3,
+      background: { r: 90, g: 150, b: 60 },
+    },
+  }).jpeg().withMetadata({ orientation }).toBuffer();
+}
+
 function responseBody(buffer: Buffer): ArrayBuffer {
   return Uint8Array.from(buffer).buffer;
 }
@@ -128,6 +162,50 @@ describe("localizeAssets", () => {
     expect(result.coverAlt).toBeUndefined();
   });
 
+  it("uses per-frame GIF height when deciding whether to create a cover", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/wide-short.gif";
+    const source = await animatedBuffer(320, 100, "gif");
+    await expect(sharp(source, { animated: true }).metadata()).resolves.toMatchObject({
+      format: "gif",
+      height: 200,
+      pageHeight: 100,
+      pages: 2,
+    });
+
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Wide animation">`,
+      slug: "wide-short-gif",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: source, type: "image/gif" } }),
+      articleTitle: "Wide Short GIF",
+    });
+
+    expect(result.cover).toBeUndefined();
+    expect(result.coverAlt).toBeUndefined();
+    expect(await readFile(result.assets[0].absolutePath)).toEqual(source);
+  });
+
+  it("creates a cover from the first frame of a qualifying animated GIF", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/qualifying.gif";
+    const source = await animatedBuffer(320, 180, "gif");
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Animated architecture">`,
+      slug: "qualifying-gif",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: source, type: "image/gif" } }),
+      articleTitle: "Qualifying GIF",
+    });
+
+    expect(await readFile(result.assets[0].absolutePath)).toEqual(source);
+    expect(result.cover).toBe("/images/posts/qualifying-gif/cover.webp");
+    const cover = await readFile(join(outputDirectory, "cover.webp"));
+    await expect(sharp(cover).metadata()).resolves.toMatchObject({ width: 1280, height: 720, format: "webp" });
+    const firstPixel = await sharp(cover).raw().toBuffer();
+    expect(firstPixel[0]).toBeGreaterThan(firstPixel[2] + 100);
+  });
+
   it("uses the first qualifying image for the cover while keeping body images in order", async () => {
     const outputDirectory = await temporaryDirectory();
     const smallUrl = "https://cdn.example.com/icon.png";
@@ -170,7 +248,7 @@ describe("localizeAssets", () => {
   it.each([
     ["a non-ok response", async () => new Response("denied", { status: 403 }), /Failed to fetch image/i],
     ["invalid image bytes", async () => new Response("not an image", { headers: { "content-type": "image/png" } }), /Invalid or unsupported image/i],
-    ["an SVG image", async () => new Response('<svg xmlns="http://www.w3.org/2000/svg"></svg>', { headers: { "content-type": "image/svg+xml" } }), /SVG images are not supported/i],
+    ["an SVG image", async () => new Response('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>', { headers: { "content-type": "application/octet-stream" } }), /SVG images are not supported/i],
   ])("rejects %s instead of retaining a remote hotlink", async (_name, fetchImpl, expectedError) => {
     const outputDirectory = await temporaryDirectory();
     const sourceUrl = "https://img-blog.csdnimg.cn/unsafe-image";
@@ -194,6 +272,101 @@ describe("localizeAssets", () => {
       fetchImpl: async () => new Response(responseBody(await imageBuffer(640, 360))),
       articleTitle: "Relative Image",
     })).rejects.toThrow(/absolute HTTP/i);
+  });
+
+  it.each(["jpeg", "png"] as const)("accepts a valid %s containing an SVG-like text marker", async (format) => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = `https://cdn.example.com/marker.${format}`;
+    const raster = await imageBuffer(40, 30, format);
+    const source = Buffer.concat([raster, Buffer.from("metadata:<svg>not markup</svg>")]);
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Raster marker">`,
+      slug: `marker-${format}`,
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: source, type: `image/${format}` } }),
+      articleTitle: "Raster Marker",
+    });
+
+    expect(result.assets).toHaveLength(1);
+    await expect(sharp(await readFile(result.assets[0].absolutePath)).metadata())
+      .resolves.toMatchObject({ format: "webp", width: 40, height: 30 });
+  });
+
+  it("rejects animated WebP instead of flattening it", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/animated.webp";
+    const source = await animatedBuffer(320, 180, "webp");
+    await expect(sharp(source, { animated: true }).metadata()).resolves.toMatchObject({
+      format: "webp",
+      pages: 2,
+    });
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Animated WebP">`,
+      slug: "animated-webp",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: source, type: "image/webp" } }),
+      articleTitle: "Animated WebP",
+    })).rejects.toThrow(/Animated WebP images are not supported/i);
+  });
+
+  it("rejects unsupported TIFF raster input", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/unsupported.tiff";
+    const source = await sharp({
+      create: {
+        width: 400,
+        height: 300,
+        channels: 3,
+        background: { r: 30, g: 60, b: 90 },
+      },
+    }).tiff().toBuffer();
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="TIFF">`,
+      slug: "unsupported-tiff",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: source, type: "image/tiff" } }),
+      articleTitle: "Unsupported TIFF",
+    })).rejects.toThrow(/Invalid or unsupported image format/i);
+  });
+
+  it("rejects images over the byte-size limit before decoding", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/oversized.png";
+    const oversized = Buffer.alloc(25 * 1024 * 1024 + 1);
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Oversized">`,
+      slug: "oversized-image",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: oversized, type: "image/png" } }),
+      articleTitle: "Oversized Image",
+    })).rejects.toThrow(/byte limit/i);
+  });
+
+  it("auto-rotates EXIF images and qualifies covers using oriented dimensions", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/oriented.jpg";
+    const source = await orientedJpeg(200, 400, 6);
+    await expect(sharp(source).metadata()).resolves.toMatchObject({
+      width: 200,
+      height: 400,
+      orientation: 6,
+      autoOrient: { width: 400, height: 200 },
+    });
+
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Oriented diagram">`,
+      slug: "oriented-image",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: source, type: "image/jpeg" } }),
+      articleTitle: "Oriented Image",
+    });
+
+    await expect(sharp(await readFile(result.assets[0].absolutePath)).metadata())
+      .resolves.toMatchObject({ width: 400, height: 200, format: "webp" });
+    expect(result.cover).toBe("/images/posts/oriented-image/cover.webp");
   });
 
   it("uses article context for cover alt text when the source alt is empty", async () => {
