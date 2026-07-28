@@ -159,4 +159,17 @@ second
     expect(markdown).toContain("| Name | Value |\n| --- | --- |\n| A | 1 |");
     expect(markdown).not.toContain("<table>");
   });
+
+  it.each([
+    ["multiple paragraphs", "<table><thead><tr><th>Value</th></tr></thead><tbody><tr><td><p>First</p><p>Second</p></td></tr></tbody></table>"],
+    ["a list", "<table><thead><tr><th>Value</th></tr></thead><tbody><tr><td><ul><li>One</li><li>Two</li></ul></td></tr></tbody></table>"],
+    ["spanned cells", "<table><thead><tr><th>Value</th><th>Other</th></tr></thead><tbody><tr><td colspan=\"2\">Merged</td></tr></tbody></table>"],
+    ["a caption", "<table><caption>Summary</caption><thead><tr><th>Value</th></tr></thead><tbody><tr><td>A</td></tr></tbody></table>"],
+    ["a nested table", "<table><thead><tr><th>Value</th></tr></thead><tbody><tr><td><table><tbody><tr><td>Nested</td></tr></tbody></table></td></tr></tbody></table>"],
+  ])("preserves a table with %s as raw HTML", (_name, html) => {
+    const markdown = convertToMarkdown(cleanArticleHtml(html));
+
+    expect(markdown).toContain("<table>");
+    expect(markdown).not.toContain("| --- |");
+  });
 });

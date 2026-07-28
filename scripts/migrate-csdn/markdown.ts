@@ -12,8 +12,32 @@ function codeFence(text: string): string {
   return "`".repeat(Math.max(3, longestRun + 1));
 }
 
-function requiresRawHtmlTable(element: HTMLElement): boolean {
-  return [...element.querySelectorAll("th, td")].some((cell) => cell.innerHTML.includes("|") || Boolean(cell.querySelector("br")));
+const INLINE_TABLE_ELEMENTS = new Set(["A", "IMG", "CODE", "EM", "I", "STRONG", "B", "DEL", "S", "STRIKE"]);
+
+function isLosslessInlineNode(node: Node): boolean {
+  if (node.nodeType === 3) return true;
+  if (node.nodeType !== 1) return false;
+  const element = node as HTMLElement;
+  return INLINE_TABLE_ELEMENTS.has(element.nodeName)
+    && [...element.childNodes].every(isLosslessInlineNode);
+}
+
+function isSimpleGfmTable(element: HTMLElement): boolean {
+  if (element.querySelector("caption, colgroup, col, table")) return false;
+
+  const rows = Array.from(element.querySelectorAll("tr"));
+  if (!rows.length) return false;
+  const cellsByRow = rows.map((row) => Array.from(row.children)
+    .filter((child) => child.nodeName === "TH" || child.nodeName === "TD") as HTMLElement[]);
+  const cellCount = cellsByRow[0].length;
+  if (!cellCount || !cellsByRow[0].every((cell) => cell.nodeName === "TH")) return false;
+
+  return cellsByRow.every((cells) => cells.length === cellCount && cells.every((cell) => (
+    !cell.hasAttribute("rowspan")
+    && !cell.hasAttribute("colspan")
+    && !cell.innerHTML.includes("|")
+    && [...cell.childNodes].every(isLosslessInlineNode)
+  )));
 }
 
 function normalizeBlankLines(markdown: string): string {
@@ -66,7 +90,7 @@ export function convertToMarkdown(html: string): string {
     },
   });
   turndown.addRule("complexTable", {
-    filter: (node) => node.nodeName === "TABLE" && requiresRawHtmlTable(node as HTMLElement),
+    filter: (node) => node.nodeName === "TABLE" && !isSimpleGfmTable(node as HTMLElement),
     replacement: (_content, node) => `\n\n${(node as HTMLElement).outerHTML}\n\n`,
   });
 
