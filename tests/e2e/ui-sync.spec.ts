@@ -6,7 +6,7 @@ test.describe("mobile navigation and article controls", () => {
   test("keeps the article TOC in the header and contains dialog focus", async ({
     page,
   }) => {
-    await page.goto("/posts/agent-tool-debug/");
+    await page.goto("/posts/jenkins-groovy-practices/");
 
     const header = page.locator(".site-header");
     const toggle = page.getByRole("button", { name: "打开文章目录" });
@@ -39,7 +39,7 @@ test.describe("mobile navigation and article controls", () => {
   test("places the article TOC before the menu in keyboard order", async ({
     page,
   }) => {
-    await page.goto("/posts/agent-tool-debug/");
+    await page.goto("/posts/jenkins-groovy-practices/");
 
     const search = page.getByRole("searchbox", { name: "搜索文章" });
     const tocButton = page.getByRole("button", { name: "打开文章目录" });
@@ -55,7 +55,7 @@ test.describe("mobile navigation and article controls", () => {
   test("keeps long code lines within the mobile article viewport", async ({
     page,
   }) => {
-    await page.goto("/posts/agent-tool-debug/");
+    await page.goto("/posts/jenkins-groovy-practices/");
     await page.locator(".prose").evaluate((prose) => {
       const pre = document.createElement("pre");
       const code = document.createElement("code");
@@ -75,7 +75,7 @@ test.describe("mobile navigation and article controls", () => {
   test("moves TOC focus to the visible desktop navigation at the breakpoint", async ({
     page,
   }) => {
-    await page.goto("/posts/agent-tool-debug/");
+    await page.goto("/posts/jenkins-groovy-practices/");
 
     await page.getByRole("button", { name: "打开文章目录" }).click();
     await page.setViewportSize({ width: 1200, height: 900 });
@@ -120,7 +120,7 @@ test.describe("mobile navigation and article controls", () => {
         },
       });
     });
-    await page.goto("/posts/agent-tool-debug/");
+    await page.goto("/posts/jenkins-groovy-practices/");
 
     const copyButton = page.getByRole("button", { name: "复制" });
     await copyButton.click();
@@ -129,15 +129,15 @@ test.describe("mobile navigation and article controls", () => {
 });
 
 test("keeps all article tags outside the homepage", async ({ page }) => {
-  await page.goto("/categories/%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B/");
+  await page.goto("/categories/DevOps/");
 
   await expect(page.locator(".article-row").first().locator(".tag.ghost")).toHaveCount(
-    3,
+    4,
   );
 });
 
 test("shows the gis2all identity and programming font", async ({ page }) => {
-  await page.goto("/posts/agent-tool-debug/");
+  await page.goto("/posts/jenkins-groovy-practices/");
 
   await expect(
     page.locator('img.author-avatar-image[src="/images/avatar-gis2all.png"]').first(),

@@ -54,32 +54,31 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - `main` 已包含项目上下文、架构设计稿、实施计划和 Astro 第一版生产代码。
 - 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
-- 已有 6 篇样例 Markdown 文章，其中 `git-team-workflow.md` 为 `draft: true` 草稿。
+- 已有 2 篇 Markdown 文章：`jenkins-groovy-practices.md` 为公开样例，`git-team-workflow.md` 为 `draft: true` 草稿；早期 5 篇测试文章已删除，后续继续迁移剩余 CSDN 文章。
 - 已实现首页、文章详情、分类、标签、归档、专题、项目、关于、搜索、RSS、站点地图和 404。
 - 已实现 Decap CMS 最小后台：`public/admin/index.html` 和 `public/admin/config.yml`。
 - 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
 - OpenDesign 原型目录在本机保留为参考，并通过 `.gitignore` 排除，不作为生产运行时代码。
 - `docs/` 目录只作为本地规划、草稿和 Agent 交接资料，通过 `.gitignore` 排除，不进入 GitHub 仓库。
 - 2026-07-28 已完成首页和文章页第一轮 UI 同步：统一导航、移动站点操作、真实首页统计、精选复盘、文章元信息、相邻文章、作者说明和移动目录。
-- 首页当前使用 5 篇公开文章、3 个真实分类和 15 个真实标签；右栏显示 12 个可见标签，不展示虚构浏览量、学习进度或归档填充项。
+- 首页当前只保留正式内容，早期 5 篇测试文章已清理；右栏继续只展示真实分类与标签，不展示虚构浏览量、学习进度或归档填充项。
 - OpenDesign 继续保留更丰富的演示正文用于排版覆盖；Astro 只渲染仓库中真实 Markdown，内容长度不同不视为 UI 不一致。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
-最近验证结果：
+最近验证结果（2026-07-28 删除 5 篇测试文章后）：
 
 ```text
-npm run test   → 9 tests passed
-npm run test:e2e → 7 Playwright tests passed
-npm run check  → 0 errors, 0 warnings, 0 hints
-npm run build  → 33 pages built, Pagefind indexed 5 public article pages
+npm run build  → 16 pages built, Pagefind indexed 1 public article page
 ```
+
+本轮未重新运行 `npm run test`、`npm run test:e2e` 或 `npm run check`；继续改 UI、脚本或迁移工具时，应按风险补跑。
 
 浏览器验证：
 
-- 本轮 OpenDesign 临时预览：`http://127.0.0.1:4174/index.html`。
-- 本轮 Astro 生产预览：`http://127.0.0.1:4322/`；端口只代表当前本机进程，后续会话应以实际启动输出为准。
-- 首页和 `/posts/agent-tool-debug/` 已在 1440×1000、390×844、浅色和深色模式下完成浏览器验收。
+- OpenDesign 临时预览地址以本机 OpenDesign 实际输出为准；原型目录仍以第 2 节记录为基准。
+- Astro 本地开发统一使用 `http://127.0.0.1:4321/`；不要同时保留多个开发服务。
+- 之前 UI 回归覆盖过首页和文章页；后续迁移内容或调整 UI 时，应以当前保留文章重新跑桌面/移动、浅色/深色浏览器验收。
 - 首页只有一个 H1，左右侧栏具名，移动菜单包含 GitHub、主题和后台入口，无横向溢出。
 - 文章页标题为桌面 42px、移动 27px；移动标题无孤立单字尾行，分类、发布、更新和阅读时长各出现一次。
 - 文章前后篇、作者说明、代码复制和移动目录均可操作；菜单和目录的 ARIA 展开状态、焦点循环/归还以及 `Esc` 关闭行为已验证。
@@ -394,16 +393,13 @@ seriesOrder: 1
 
 ```text
 src/content/posts/
-├─ astro-blog.md
-├─ agent-tool-debug.md
-└─ typescript-generics.md
+├─ jenkins-groovy-practices.md
+└─ git-team-workflow.md  （draft）
 
 public/images/posts/
-├─ astro-blog/
-│  ├─ cover.webp
-│  └─ content-01.webp
-└─ agent-tool-debug/
-   └─ tool-flow.webp
+└─ jenkins-groovy-practices/
+   ├─ cover.webp
+   └─ ...
 ```
 
 ## 10. 图片规则
@@ -501,7 +497,7 @@ public/images/posts/
 6. 添加 RSS、站点地图、SEO、部署预览和生产域名配置。
 7. 使用浏览器端到端验证桌面与移动端关键路径，然后再扩展评论、统计或高级 CMS 能力。
 
-当前项目已完成第一版最小闭环：Astro 前台、Decap 后台、GitHub 保存、Netlify 构建发布、文章发布测试和图片上传测试均已验证。后续优先进入内容结构、真实文章、图片目录规则、前台细节和正式域名。
+当前项目已完成第一版最小闭环：Astro 前台、Decap 后台、GitHub 保存、Netlify 构建发布、文章发布测试和图片上传测试均已验证。后续优先进入真实文章迁移、图片目录规则、前台细节、正式域名，以及剩余 CSDN 文章的持续导入。
 
 第一阶段验收不是“页面看起来像原型”，而是：
 
@@ -558,3 +554,10 @@ public/images/posts/
 6. 实现后运行与风险相称的测试和构建，并更新本文件中已经过时的状态。
 
 不要仅凭本文件声称实现存在；本文件解释项目全貌，仓库和验证结果证明完成程度。
+
+## 19. CSDN 迁移状态
+
+- 来源账号是 `DynastyRumble`，后续继续逐篇迁移剩余未迁移文章。
+- 每篇迁移文落到 `src/content/posts/<slug>.md` 与 `public/images/posts/<slug>/`，再检查首页、分类、标签、归档和搜索。
+- 迁移时优先保持原文标题、结构、发布时间、更新时间、图片和链接，不擅自改写正文。
+- 早期 5 篇测试文章已删除，不要再把它们当作正式内容恢复。
