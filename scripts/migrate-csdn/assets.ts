@@ -55,7 +55,7 @@ const BLOCKED_IPV4_RANGES: Array<[string, number]> = [
   ["192.0.2.0", 24],
   ["192.88.99.0", 24],
   ["192.168.0.0", 16],
-  ["198.18.0.0", 15],
+  // Some transparent DNS proxies use the reserved 198.18.0.0/15 range for fake IPs.
   ["198.51.100.0", 24],
   ["203.0.113.0", 24],
   ["224.0.0.0", 4],

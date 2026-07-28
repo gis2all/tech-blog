@@ -389,6 +389,26 @@ describe("localizeAssets", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
+  it("accepts the reserved fake-IP range used by transparent DNS proxies", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://i-blog.csdnimg.cn/proxied.png";
+    const fetchImpl = vi.fn<FetchLike>(fetchFrom({
+      [sourceUrl]: { body: await imageBuffer(20, 20), type: "image/png" },
+    }));
+
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Proxied">`,
+      slug: "proxied-dns",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Proxied DNS",
+      resolveHostname: async () => ["198.18.0.24"],
+    });
+
+    expect(result.assets).toHaveLength(1);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
   it("upgrades an allowlisted legacy HTTP image URL before fetching", async () => {
     const outputDirectory = await temporaryDirectory();
     const sourceUrl = "http://img-blog.csdnimg.cn/legacy.png";
