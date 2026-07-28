@@ -1,14 +1,22 @@
-import { access, mkdtemp, readFile, rm } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 
 import sharp from "sharp";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { localizeAssets } from "./assets.js";
+import { localizeAssets as localizeAssetsImpl } from "./assets.js";
 import type { FetchLike } from "./model.js";
 
 const temporaryDirectories: string[] = [];
+const PUBLIC_TEST_ADDRESS = "93.184.216.34";
+
+function localizeAssets(input: Parameters<typeof localizeAssetsImpl>[0]): ReturnType<typeof localizeAssetsImpl> {
+  return localizeAssetsImpl({
+    resolveHostname: async () => [PUBLIC_TEST_ADDRESS],
+    ...input,
+  });
+}
 
 async function temporaryDirectory(): Promise<string> {
   const directory = await mkdtemp(join(tmpdir(), "csdn-assets-"));
@@ -48,23 +56,25 @@ async function animatedBuffer(
   width: number,
   frameHeight: number,
   format: "gif" | "webp",
+  frames = 2,
 ): Promise<Buffer> {
   const channels = 4;
   const frameSize = width * frameHeight * channels;
-  const firstFrame = Buffer.alloc(frameSize);
-  const secondFrame = Buffer.alloc(frameSize);
-
-  for (let offset = 0; offset < frameSize; offset += channels) {
-    firstFrame.set([220, 40, 70, 255], offset);
-    secondFrame.set([30, 80, 220, 255], offset);
+  const frameBuffers: Buffer[] = [];
+  for (let frame = 0; frame < frames; frame += 1) {
+    const frameBuffer = Buffer.alloc(frameSize);
+    const color = frame % 2 === 0 ? [220, 40, 70, 255] : [30, 80, 220, 255];
+    for (let offset = 0; offset < frameSize; offset += channels) frameBuffer.set(color, offset);
+    frameBuffers.push(frameBuffer);
   }
 
-  const image = sharp(Buffer.concat([firstFrame, secondFrame]), {
-    raw: { width, height: frameHeight * 2, channels, pageHeight: frameHeight },
+  const image = sharp(Buffer.concat(frameBuffers), {
+    raw: { width, height: frameHeight * frames, channels, pageHeight: frameHeight },
   });
+  const delay = Array.from({ length: frames }, () => 100);
   return format === "gif"
-    ? image.gif({ delay: [100, 100], loop: 0, keepDuplicateFrames: true }).toBuffer()
-    : image.webp({ delay: [100, 100], loop: 0 }).toBuffer();
+    ? image.gif({ delay, loop: 0, keepDuplicateFrames: true }).toBuffer()
+    : image.webp({ delay, loop: 0 }).toBuffer();
 }
 
 async function orientedJpeg(width: number, height: number, orientation: number): Promise<Buffer> {
@@ -89,6 +99,12 @@ function fetchFrom(responses: Record<string, { body: Buffer; type: string }>): F
     if (!response) return new Response("missing", { status: 404 });
     return new Response(responseBody(response.body), { headers: { "content-type": response.type } });
   };
+}
+
+async function transactionArtifacts(outputDirectory: string): Promise<string[]> {
+  const outputName = basename(outputDirectory);
+  return (await readdir(dirname(outputDirectory)))
+    .filter((name) => name.startsWith(`.${outputName}.staging-`) || name.startsWith(`.${outputName}.backup-`));
 }
 
 afterEach(async () => {
@@ -274,6 +290,168 @@ describe("localizeAssets", () => {
     })).rejects.toThrow(/absolute HTTP/i);
   });
 
+  it("rejects a private IP literal before fetching", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const fetchImpl = vi.fn<FetchLike>(async () => new Response(responseBody(await imageBuffer(20, 20))));
+
+    await expect(localizeAssets({
+      html: '<img src="http://127.0.0.1/private.png" alt="Private">',
+      slug: "private-literal",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Private Literal",
+      resolveHostname: async () => ["93.184.216.34"],
+    })).rejects.toThrow(/private|unsafe|local address/i);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "http://0.0.0.1/image.png",
+    "http://10.1.2.3/image.png",
+    "http://100.64.0.1/image.png",
+    "http://127.0.0.1/image.png",
+    "http://169.254.1.1/image.png",
+    "http://172.16.0.1/image.png",
+    "http://192.0.0.1/image.png",
+    "http://192.0.2.1/image.png",
+    "http://192.168.1.1/image.png",
+    "http://198.18.0.1/image.png",
+    "http://198.51.100.1/image.png",
+    "http://203.0.113.1/image.png",
+    "http://224.0.0.1/image.png",
+    "http://240.0.0.1/image.png",
+    "http://[::]/image.png",
+    "http://[::1]/image.png",
+    "http://[fc00::1]/image.png",
+    "http://[fe80::1]/image.png",
+    "http://[ff02::1]/image.png",
+    "http://[2001:db8::1]/image.png",
+    "http://[::ffff:127.0.0.1]/image.png",
+    "https://user:password@93.184.216.34/image.png",
+    "http://localhost/image.png",
+    "http://service.internal/image.png",
+    "http://printer.local/image.png",
+    "http://intranet/image.png",
+  ])("rejects unsafe image target %s", async (sourceUrl) => {
+    const outputDirectory = await temporaryDirectory();
+    const fetchImpl = vi.fn<FetchLike>();
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Unsafe target">`,
+      slug: "unsafe-target",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Unsafe Target",
+    })).rejects.toThrow(/unsafe|private|local|credentials/i);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("rejects a hostname that resolves to a private address before fetching", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const fetchImpl = vi.fn<FetchLike>(async () => new Response(responseBody(await imageBuffer(20, 20))));
+
+    await expect(localizeAssets({
+      html: '<img src="https://images.example.test/private.png" alt="Private DNS">',
+      slug: "private-dns",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Private DNS",
+      resolveHostname: async () => ["10.20.30.40"],
+    })).rejects.toThrow(/private|unsafe|local address/i);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("rejects a redirect to a private address before following it", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const fetchImpl = vi.fn<FetchLike>(async () => new Response(null, {
+      status: 302,
+      headers: { location: "http://169.254.169.254/latest/meta-data" },
+    }));
+
+    await expect(localizeAssets({
+      html: '<img src="https://public.example/image.png" alt="Redirect">',
+      slug: "private-redirect",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Private Redirect",
+      resolveHostname: async () => ["93.184.216.34"],
+    })).rejects.toThrow(/private|unsafe|local address/i);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).toHaveBeenCalledWith(new URL("https://public.example/image.png"), { redirect: "manual" });
+  });
+
+  it("accepts a public IP literal without DNS resolution", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://93.184.216.34/public.png";
+    const resolveHostname = vi.fn(async () => ["10.0.0.1"]);
+    const fetchImpl = vi.fn<FetchLike>(async () => new Response(
+      responseBody(await imageBuffer(20, 20)),
+      { headers: { "content-type": "image/png" } },
+    ));
+
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Public">`,
+      slug: "public-literal",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Public Literal",
+      resolveHostname,
+    });
+
+    expect(result.assets).toHaveLength(1);
+    expect(resolveHostname).not.toHaveBeenCalled();
+    expect(fetchImpl).toHaveBeenCalledWith(new URL(sourceUrl), { redirect: "manual" });
+  });
+
+  it("accepts a public IPv6 literal without DNS resolution", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://[2606:4700:4700::1111]/public.png";
+    const resolveHostname = vi.fn(async () => ["10.0.0.1"]);
+    const fetchImpl = vi.fn<FetchLike>(async () => new Response(
+      responseBody(await imageBuffer(20, 20)),
+      { headers: { "content-type": "image/png" } },
+    ));
+
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Public IPv6">`,
+      slug: "public-ipv6",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Public IPv6",
+      resolveHostname,
+    });
+
+    expect(result.assets).toHaveLength(1);
+    expect(resolveHostname).not.toHaveBeenCalled();
+    expect(fetchImpl).toHaveBeenCalledWith(new URL(sourceUrl), { redirect: "manual" });
+  });
+
+  it("follows a relative redirect only after validating each public hostname", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://public.example/start.png";
+    const finalUrl = "https://public.example/final.png";
+    const fetchImpl = vi.fn<FetchLike>(async (input) => input.toString() === sourceUrl
+      ? new Response(null, { status: 302, headers: { location: "/final.png" } })
+      : new Response(responseBody(await imageBuffer(20, 20)), { headers: { "content-type": "image/png" } }));
+    const resolveHostname = vi.fn(async () => ["93.184.216.34"]);
+
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Redirected">`,
+      slug: "public-redirect",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Public Redirect",
+      resolveHostname,
+    });
+
+    expect(result.assets).toHaveLength(1);
+    expect(resolveHostname).toHaveBeenCalledTimes(2);
+    expect(fetchImpl.mock.calls).toEqual([
+      [new URL(sourceUrl), { redirect: "manual" }],
+      [new URL(finalUrl), { redirect: "manual" }],
+    ]);
+  });
+
   it.each(["jpeg", "png"] as const)("accepts a valid %s containing an SVG-like text marker", async (format) => {
     const outputDirectory = await temporaryDirectory();
     const sourceUrl = `https://cdn.example.com/marker.${format}`;
@@ -345,6 +523,90 @@ describe("localizeAssets", () => {
     })).rejects.toThrow(/byte limit/i);
   });
 
+  it("cancels a response body rejected by Content-Length before consuming it", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/declared-oversized.png";
+    let cancelled = false;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        controller.enqueue(new Uint8Array([1, 2, 3]));
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Declared oversized">`,
+      slug: "declared-oversized",
+      outputDirectory,
+      fetchImpl: async () => new Response(body, {
+        headers: {
+          "content-length": String(25 * 1024 * 1024 + 1),
+          "content-type": "image/png",
+        },
+      }),
+      articleTitle: "Declared Oversized",
+    })).rejects.toThrow(/byte limit/i);
+    expect(cancelled).toBe(true);
+  });
+
+  it("cancels a streamed response as soon as the running byte limit is exceeded", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/streamed-oversized.png";
+    let chunks = 0;
+    let cancelled = false;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (chunks === 26) return;
+        chunks += 1;
+        controller.enqueue(new Uint8Array(1024 * 1024));
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Streamed oversized">`,
+      slug: "streamed-oversized",
+      outputDirectory,
+      fetchImpl: async () => new Response(body, { headers: { "content-type": "image/png" } }),
+      articleTitle: "Streamed Oversized",
+    })).rejects.toThrow(/byte limit/i);
+    expect(cancelled).toBe(true);
+  });
+
+  it("rejects a highly compressed raster above the input pixel limit", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/high-pixel-count.png";
+    const source = await imageBuffer(7000, 6000);
+    expect(source.length).toBeLessThan(1024 * 1024);
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="High pixel count">`,
+      slug: "high-pixel-count",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: source, type: "image/png" } }),
+      articleTitle: "High Pixel Count",
+    })).rejects.toThrow(/pixel limit/i);
+  });
+
+  it("rejects animations over the frame-count limit", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://cdn.example.com/too-many-frames.gif";
+    const source = await animatedBuffer(3, 3, "gif", 201);
+    await expect(sharp(source, { animated: true }).metadata()).resolves.toMatchObject({ pages: 201 });
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Too many frames">`,
+      slug: "too-many-frames",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: source, type: "image/gif" } }),
+      articleTitle: "Too Many Frames",
+    })).rejects.toThrow(/frame limit/i);
+  });
+
   it("auto-rotates EXIF images and qualifies covers using oriented dimensions", async () => {
     const outputDirectory = await temporaryDirectory();
     const sourceUrl = "https://cdn.example.com/oriented.jpg";
@@ -407,5 +669,147 @@ describe("localizeAssets", () => {
     expect(result.assets).toHaveLength(1);
     expect(result.html).toContain("image-01.webp");
     expect(result.html).not.toContain(headUrl);
+  });
+
+  it("leaves no final directory when a later image fails", async () => {
+    const root = await temporaryDirectory();
+    const outputDirectory = join(root, "assets");
+    const firstUrl = "https://cdn.example.com/first.png";
+    const secondUrl = "https://cdn.example.com/missing.png";
+
+    await expect(localizeAssets({
+      html: `<img src="${firstUrl}" alt="First"><img src="${secondUrl}" alt="Second">`,
+      slug: "atomic-new",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [firstUrl]: { body: await imageBuffer(20, 20), type: "image/png" } }),
+      articleTitle: "Atomic New",
+    })).rejects.toThrow(/Failed to fetch image/i);
+
+    await expect(access(outputDirectory)).rejects.toThrow();
+    expect(await transactionArtifacts(outputDirectory)).toEqual([]);
+  });
+
+  it("preserves an existing final directory byte-for-byte when a later image fails", async () => {
+    const root = await temporaryDirectory();
+    const outputDirectory = join(root, "assets");
+    const sentinelPath = join(outputDirectory, "sentinel.txt");
+    const existingImagePath = join(outputDirectory, "image-01.webp");
+    const sentinel = Buffer.from("keep sentinel");
+    const existingImage = Buffer.from("keep existing image");
+    await mkdir(outputDirectory);
+    await writeFile(sentinelPath, sentinel);
+    await writeFile(existingImagePath, existingImage);
+
+    const firstUrl = "https://cdn.example.com/replacement.png";
+    const secondUrl = "https://cdn.example.com/invalid.png";
+    await expect(localizeAssets({
+      html: `<img src="${firstUrl}" alt="Replacement"><img src="${secondUrl}" alt="Invalid">`,
+      slug: "atomic-existing",
+      outputDirectory,
+      fetchImpl: fetchFrom({
+        [firstUrl]: { body: await imageBuffer(20, 20), type: "image/png" },
+        [secondUrl]: { body: Buffer.from("invalid"), type: "image/png" },
+      }),
+      articleTitle: "Atomic Existing",
+    })).rejects.toThrow(/Invalid or unsupported image/i);
+
+    expect(await readFile(sentinelPath)).toEqual(sentinel);
+    expect(await readFile(existingImagePath)).toEqual(existingImage);
+    expect(await readdir(outputDirectory)).toEqual(["image-01.webp", "sentinel.txt"]);
+    expect(await transactionArtifacts(outputDirectory)).toEqual([]);
+  });
+
+  it("atomically replaces a previous run and removes stale numbered assets", async () => {
+    const root = await temporaryDirectory();
+    const outputDirectory = join(root, "assets");
+    const firstUrl = "https://cdn.example.com/first.png";
+    const secondUrl = "https://cdn.example.com/second.png";
+    const smallImage = await imageBuffer(20, 20);
+
+    await localizeAssets({
+      html: `<img src="${firstUrl}" alt="First"><img src="${secondUrl}" alt="Second">`,
+      slug: "atomic-rerun",
+      outputDirectory,
+      fetchImpl: fetchFrom({
+        [firstUrl]: { body: smallImage, type: "image/png" },
+        [secondUrl]: { body: smallImage, type: "image/png" },
+      }),
+      articleTitle: "Atomic Rerun",
+    });
+    expect(await readdir(outputDirectory)).toEqual(["image-01.webp", "image-02.webp"]);
+
+    const rerun = await localizeAssets({
+      html: `<img src="${firstUrl}" alt="First">`,
+      slug: "atomic-rerun",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [firstUrl]: { body: smallImage, type: "image/png" } }),
+      articleTitle: "Atomic Rerun",
+    });
+
+    expect(await readdir(outputDirectory)).toEqual(["image-01.webp"]);
+    expect(rerun.assets[0].absolutePath).toBe(join(outputDirectory, "image-01.webp"));
+    expect(await transactionArtifacts(outputDirectory)).toEqual([]);
+  });
+
+  it("removes known CSDN platform images before fetching, numbering, or cover selection", async () => {
+    const outputDirectory = join(await temporaryDirectory(), "assets");
+    const platformUrls = [
+      "https://csdnimg.cn/release/blogv2/dist/pc/img/original.png",
+      "https://profile-avatar.csdnimg.cn/default-avatar.png",
+      "https://img-blog.csdnimg.cn/tracker/pixel.gif",
+    ];
+    const screenshotUrl = "https://img-blog.csdnimg.cn/20260728/screenshot.png";
+    const fetchImpl = vi.fn<FetchLike>(fetchFrom({
+      [screenshotUrl]: { body: await imageBuffer(800, 450), type: "image/png" },
+    }));
+    const html = [
+      ...platformUrls.map((url) => `<img src="${url}" alt="Platform">`),
+      `<img src="${screenshotUrl}" alt="Real screenshot">`,
+    ].join("");
+
+    const result = await localizeAssets({
+      html,
+      slug: "platform-filter",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Platform Filter",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).toHaveBeenCalledWith(new URL(screenshotUrl), { redirect: "manual" });
+    expect(result.assets.map((asset) => asset.publicPath)).toEqual([
+      "/images/posts/platform-filter/image-01.webp",
+    ]);
+    expect(result.cover).toBe("/images/posts/platform-filter/cover.webp");
+    expect(result.coverAlt).toBe("Real screenshot");
+    for (const url of platformUrls) expect(result.html).not.toContain(url);
+  });
+
+  it("removes decoded tracking pixels without discarding a legitimate tiny GIF", async () => {
+    const outputDirectory = join(await temporaryDirectory(), "assets");
+    const pixelUrl = "https://cdn.example.com/transparent.png";
+    const gifUrl = "https://cdn.example.com/tiny-animation.gif";
+    const gif = await gifBuffer(3, 3);
+
+    const result = await localizeAssets({
+      html: `<img src="${pixelUrl}" alt="Pixel"><img src="${gifUrl}" alt="Tiny animation">`,
+      slug: "tracking-pixel",
+      outputDirectory,
+      fetchImpl: fetchFrom({
+        [pixelUrl]: { body: await imageBuffer(2, 2), type: "image/png" },
+        [gifUrl]: { body: gif, type: "image/gif" },
+      }),
+      articleTitle: "Tracking Pixel",
+    });
+
+    expect(result.html).not.toContain(pixelUrl);
+    expect(result.html).toContain("/images/posts/tracking-pixel/image-01.gif");
+    expect(result.assets).toEqual([{
+      sourceUrl: gifUrl,
+      publicPath: "/images/posts/tracking-pixel/image-01.gif",
+      absolutePath: join(outputDirectory, "image-01.gif"),
+      animated: true,
+    }]);
+    expect(await readFile(join(outputDirectory, "image-01.gif"))).toEqual(gif);
   });
 });
