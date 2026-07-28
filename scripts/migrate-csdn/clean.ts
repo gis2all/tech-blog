@@ -1,6 +1,23 @@
 import { load } from "cheerio";
 
-const PLATFORM_SELECTORS = ".toc, .blog-extension-box, .recommend-box, .hide-article-box, script, style, button";
+const PLATFORM_SELECTORS = ".toc, .blog-extension-box, .recommend-box, .hide-article-box, script, style, button, iframe, object, embed, form, input, textarea, select, option, fieldset, svg, math";
+
+function normalizedUrl(value: string): string {
+  return value.trim().replace(/[\u0000-\u001f\u007f\s]/g, "");
+}
+
+function safeAnchorHref(value: string | undefined): boolean {
+  if (!value) return false;
+  const href = normalizedUrl(value).toLowerCase();
+  if (!href) return false;
+  if (href.startsWith("//") || href.startsWith("/") || href.startsWith("#")) return true;
+  const scheme = href.match(/^([a-z][a-z0-9+.-]*):/)?.[1];
+  return !scheme || ["http", "https", "mailto", "tel"].includes(scheme);
+}
+
+function safeImageSource(value: string): boolean {
+  return /^https?:\/\//i.test(value);
+}
 
 function normalizedImageSource(...candidates: Array<string | undefined>): string | undefined {
   const source = candidates.find((candidate) => candidate?.trim())?.trim();
@@ -17,7 +34,16 @@ export function cleanArticleHtml(html: string): string {
     const source = normalizedImageSource(
       element.attr("data-original-src"), element.attr("data-src"), element.attr("src"),
     );
-    if (source) element.attr("src", source);
+    if (!source || !safeImageSource(source)) {
+      element.remove();
+      return;
+    }
+    element.attr("src", source);
+  });
+
+  $("a[href]").each((_, link) => {
+    const element = $(link);
+    if (!safeAnchorHref(element.attr("href"))) element.removeAttr("href");
   });
 
   $("*").each((_, element) => {
@@ -28,6 +54,7 @@ export function cleanArticleHtml(html: string): string {
         name === "style"
         || name.startsWith("on")
         || name.startsWith("data-")
+        || name === "srcset"
         || name === "loading"
         || name.includes("lazy")
         || name.includes("report")

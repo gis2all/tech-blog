@@ -12,6 +12,37 @@ function codeFence(text: string): string {
   return "`".repeat(Math.max(3, longestRun + 1));
 }
 
+function normalizeBlankLines(markdown: string): string {
+  const lines = markdown.split("\n");
+  const normalized: string[] = [];
+  let fence: string | undefined;
+  let previousBlank = false;
+
+  for (const line of lines) {
+    if (fence) {
+      normalized.push(line);
+      if (line === fence) fence = undefined;
+      continue;
+    }
+
+    const openingFence = line.match(/^(`{3,})/);
+    if (openingFence) {
+      fence = openingFence[1];
+      normalized.push(line);
+      previousBlank = false;
+      continue;
+    }
+
+    const blank = line.trim() === "";
+    if (!blank || !previousBlank) normalized.push(line);
+    previousBlank = blank;
+  }
+
+  while (normalized[0]?.trim() === "") normalized.shift();
+  while (normalized.at(-1)?.trim() === "") normalized.pop();
+  return normalized.join("\n");
+}
+
 export function convertToMarkdown(html: string): string {
   const turndown = new TurndownService({
     bulletListMarker: "-",
@@ -27,9 +58,9 @@ export function convertToMarkdown(html: string): string {
       const code = element.querySelector("code");
       const text = (code ?? element).textContent ?? "";
       const fence = codeFence(text);
-      return `\n\n${fence}${codeLanguage(element)}\n${text.replace(/\n+$/, "")}\n${fence}\n\n`;
+      return `\n\n${fence}${codeLanguage(element)}\n${text}${text.endsWith("\n") ? "" : "\n"}${fence}\n\n`;
     },
   });
 
-  return `${turndown.turndown(html).trim().replace(/\n{3,}/g, "\n\n")}\n`;
+  return `${normalizeBlankLines(turndown.turndown(html))}\n`;
 }

@@ -47,6 +47,18 @@ console.log('nested');
     expect(markdown).toContain("````text\nExample:\n```js\nconsole.log('nested');\n```\n````");
   });
 
+  it("preserves internal and trailing code whitespace exactly", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(`<pre><code>first
+
+
+second
+
+
+</code></pre>`));
+
+    expect(markdown).toBe("```text\nfirst\n\n\nsecond\n\n\n```\n");
+  });
+
   it("removes CSDN wrappers and executable markup without removing ordinary text", () => {
     const cleaned = cleanArticleHtml(`
       <div class="blog-extension-box">Extension</div><div class="recommend-box">Recommended</div>
@@ -79,5 +91,24 @@ console.log('nested');
     expect(markdown).toContain("![diagram](https://cdn.example.net/diagram.png)");
     expect(markdown).toMatch(/\n$/);
     expect(markdown).not.toMatch(/\n\n\n/);
+  });
+
+  it("keeps unsafe-link text but removes its executable href", () => {
+    const cleaned = cleanArticleHtml('<p><a href="javascript:alert(1)">click</a></p>');
+    const markdown = convertToMarkdown(cleaned);
+
+    expect(cleaned).toContain(">click</a>");
+    expect(cleaned).not.toContain("javascript:");
+    expect(markdown).toBe("click\n");
+  });
+
+  it("removes active embeds and unsafe URLs without dropping surrounding table text", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(`
+      <table><tbody><tr><td>Safe cell <iframe src="javascript:alert(1)">ignored</iframe><object data="https://bad.example"></object></td></tr></tbody></table>
+      <form action="https://bad.example"><input value="ignored"><button>Submit</button></form><embed src="https://bad.example">
+    `));
+
+    expect(markdown).toContain("Safe cell");
+    expect(markdown).not.toMatch(/iframe|object|form|embed|javascript:|bad\.example|Submit/);
   });
 });
