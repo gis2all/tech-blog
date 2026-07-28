@@ -24,6 +24,7 @@ test-results/
 playwright-report/
 output/playwright/
 .superpowers/
+.worktrees/
 
 # OS and editor
 .DS_Store
