@@ -67,6 +67,25 @@ second
     expect(markdown).toBe("```text\n<script>globalThis.__xss=1</script>\n```\n");
   });
 
+  it("escapes encoded active HTML from prose while retaining visible text", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(
+      "<p>&lt;script&gt;globalThis.P=1&lt;/script&gt;</p><blockquote>&lt;img src=x onerror=alert(1)&gt;</blockquote><table><thead><tr><th>Value</th></tr></thead><tbody><tr><td>&lt;iframe srcdoc=alert(1)&gt;</td></tr></tbody></table>",
+    ));
+
+    expect(markdown).toContain("&lt;script&gt;globalThis.P=1&lt;/script&gt;");
+    expect(markdown).toContain("&lt;img src=x onerror=alert(1)&gt;");
+    expect(markdown).toContain("&lt;iframe srcdoc=alert(1)&gt;");
+    expect(markdown).not.toMatch(/\n<script|\n<img|\n<iframe/);
+  });
+
+  it("converts highlighted wrappers with the same safe fence behavior", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(
+      '<div class="highlight-source-js"><pre><code>before\n```\n&lt;script&gt;globalThis.H=1&lt;/script&gt;</code></pre></div>',
+    ));
+
+    expect(markdown).toBe("````text\nbefore\n```\n<script>globalThis.H=1</script>\n````\n");
+  });
+
   it("handles many backtick runs without expanding them as function arguments", () => {
     const code = Array.from({ length: 20_000 }, () => "`").join(" ");
     const markdown = convertToMarkdown(cleanArticleHtml(`<pre><code>${code}</code></pre>`));

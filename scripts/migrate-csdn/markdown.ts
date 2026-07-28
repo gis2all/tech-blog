@@ -1,5 +1,6 @@
 import TurndownService from "turndown";
 import { gfm } from "turndown-plugin-gfm";
+import { load } from "cheerio";
 
 function codeLanguage(element: HTMLElement): string {
   const code = element.querySelector("code");
@@ -103,7 +104,29 @@ function normalizeBlankLines(markdown: string): string {
   return normalized.join("\n");
 }
 
+function protectedHtml(html: string): { html: string; rawTables: string[] } {
+  const $ = load(html, undefined, false);
+  const rawTables: string[] = [];
+  $("table").each((_, table) => {
+    const tableHtml = $(table).prop("outerHTML") ?? "";
+    const complex = /<(?:p|ul|ol|li|blockquote|pre|div|h[1-6]|caption|colgroup|col|tfoot|br)\b|rowspan|colspan|\||<thead[\s\S]*?<\/tr>\s*<tr|<tbody[\s\S]*?<th\b/i.test(tableHtml)
+      || (tableHtml.match(/<table\b/gi) ?? []).length > 1;
+    if (complex) {
+      const index = rawTables.push(tableHtml) - 1;
+      $(table).replaceWith(`CSDNRAWTABLE${index}TOKEN`);
+    }
+  });
+  $("*").each((_, element) => {
+    if ($(element).is("pre, code")) return;
+    $(element).contents().each((_, child) => {
+      if (child.type === "text") child.data = child.data.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    });
+  });
+  return { html: $.root().html() ?? "", rawTables };
+}
+
 export function convertToMarkdown(html: string): string {
+  const protectedContent = protectedHtml(html);
   const turndown = new TurndownService({
     bulletListMarker: "-",
     codeBlockStyle: "fenced",
@@ -125,6 +148,21 @@ export function convertToMarkdown(html: string): string {
     filter: (node) => node.nodeName === "TABLE" && !isSimpleGfmTable(node as HTMLElement),
     replacement: (_content, node) => `\n\n${(node as HTMLElement).outerHTML}\n\n`,
   });
+  turndown.addRule("highlightedPre", {
+    filter: (node) => node.nodeName === "DIV" && /(?:^|\s)highlight-source-[^\s]+/.test((node as HTMLElement).getAttribute("class") ?? "")
+      && Array.from((node as HTMLElement).children).some((child) => child.nodeName === "PRE"),
+    replacement: (_content, node) => {
+      const pre = Array.from((node as HTMLElement).children).find((child) => child.nodeName === "PRE") as HTMLElement;
+      const code = pre.querySelector("code");
+      const text = (code ?? pre).textContent ?? "";
+      const fence = codeFence(text);
+      return `\n\n${fence}${codeLanguage(pre)}\n${text}${text.endsWith("\n") ? "" : "\n"}${fence}\n\n`;
+    },
+  });
 
-  return `${normalizeBlankLines(turndown.turndown(html))}\n`;
+  let markdown = turndown.turndown(protectedContent.html);
+  for (const [index, table] of protectedContent.rawTables.entries()) {
+    markdown = markdown.replace(`CSDNRAWTABLE${index}TOKEN`, table);
+  }
+  return `${normalizeBlankLines(markdown)}\n`;
 }
