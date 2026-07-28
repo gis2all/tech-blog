@@ -356,16 +356,25 @@ img {
   padding: 22px 18px 16px;
 }
 
-.author-avatar {
+.author-avatar-frame {
+  display: block;
   flex: none;
   border-radius: 50%;
+  overflow: hidden;
+}
+
+.author-avatar-image {
+  width: 100%;
+  height: 100%;
+  max-width: none;
   object-fit: cover;
 }
 
-.author-avatar.profile {
+.author-avatar-frame.author-avatar-profile {
   width: 66px;
   height: 66px;
   margin: 0 auto 10px;
+  box-shadow: 0 0 0 4px var(--brand-soft);
 }
 
 .profile h2 {
@@ -618,7 +627,7 @@ img {
   margin-top: 14px;
 }
 
-.author-avatar.mini {
+.author-avatar-frame.author-avatar-mini {
   width: 38px;
   height: 38px;
 }

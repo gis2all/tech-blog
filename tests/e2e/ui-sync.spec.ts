@@ -140,7 +140,7 @@ test("shows the gis2all identity and programming font", async ({ page }) => {
   await page.goto("/posts/agent-tool-debug/");
 
   await expect(
-    page.locator('img.author-avatar[src="/images/avatar-gis2all.png"]').first(),
+    page.locator('img.author-avatar-image[src="/images/avatar-gis2all.png"]').first(),
   ).toBeVisible();
   await expect(
     page.getByText("gis2all", { exact: true }).first(),
