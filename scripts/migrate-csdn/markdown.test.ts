@@ -86,6 +86,19 @@ second
     expect(markdown).toBe("````text\nbefore\n```\n<script>globalThis.H=1</script>\n````\n");
   });
 
+  it("does not replace user text that resembles protected table markers", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(`
+      <p>CSDNRAWTABLE0TOKEN</p><pre><code>CSDNRAWTABLE1TOKEN</code></pre>
+      <table><caption>First</caption><tr><td>A</td></tr></table><p>Between</p>
+      <table><caption>Second</caption><tr><td>B</td></tr></table>
+    `));
+
+    expect(markdown).toContain("CSDNRAWTABLE0TOKEN");
+    expect(markdown).toContain("```text\nCSDNRAWTABLE1TOKEN\n```");
+    expect(markdown.indexOf("First")).toBeLessThan(markdown.indexOf("Between"));
+    expect(markdown.indexOf("Between")).toBeLessThan(markdown.indexOf("Second"));
+  });
+
   it("handles many backtick runs without expanding them as function arguments", () => {
     const code = Array.from({ length: 20_000 }, () => "`").join(" ");
     const markdown = convertToMarkdown(cleanArticleHtml(`<pre><code>${code}</code></pre>`));

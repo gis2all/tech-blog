@@ -104,16 +104,22 @@ function normalizeBlankLines(markdown: string): string {
   return normalized.join("\n");
 }
 
-function protectedHtml(html: string): { html: string; rawTables: string[] } {
+function protectedHtml(html: string): { html: string; rawTables: Array<{ token: string; html: string }> } {
   const $ = load(html, undefined, false);
-  const rawTables: string[] = [];
+  const rawTables: Array<{ token: string; html: string }> = [];
   $("table").each((_, table) => {
     const tableHtml = $(table).prop("outerHTML") ?? "";
     const complex = /<(?:p|ul|ol|li|blockquote|pre|div|h[1-6]|caption|colgroup|col|tfoot|br)\b|rowspan|colspan|\||<thead[\s\S]*?<\/tr>\s*<tr|<tbody[\s\S]*?<th\b/i.test(tableHtml)
       || (tableHtml.match(/<table\b/gi) ?? []).length > 1;
     if (complex) {
-      const index = rawTables.push(tableHtml) - 1;
-      $(table).replaceWith(`CSDNRAWTABLE${index}TOKEN`);
+      let nonce = rawTables.length;
+      let token: string;
+      do {
+        token = `\uE000csdn-table-${nonce}\uE001`;
+        nonce++;
+      } while (html.includes(token));
+      rawTables.push({ token, html: tableHtml });
+      $(table).replaceWith(token);
     }
   });
   $("*").each((_, element) => {
@@ -161,8 +167,8 @@ export function convertToMarkdown(html: string): string {
   });
 
   let markdown = turndown.turndown(protectedContent.html);
-  for (const [index, table] of protectedContent.rawTables.entries()) {
-    markdown = markdown.replace(`CSDNRAWTABLE${index}TOKEN`, table);
+  for (const table of protectedContent.rawTables) {
+    markdown = markdown.replace(table.token, table.html);
   }
   return `${normalizeBlankLines(markdown)}\n`;
 }
