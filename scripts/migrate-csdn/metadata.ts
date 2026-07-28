@@ -61,13 +61,13 @@ function tagsFor(columns: string[], keywords: string): string[] {
 }
 
 function semanticParagraphs(markdown: string): string[] {
-  const noCode = markdown.replace(/^```[\s\S]*?^```\s*$/gm, "");
+  const noCode = markdown.replace(/^ {0,3}(?:`{3,}[^\r\n]*\r?\n[\s\S]*?^ {0,3}`{3,}[ \t]*$|~{3,}[^\r\n]*\r?\n[\s\S]*?^ {0,3}~{3,}[ \t]*$)\r?\n?/gm, "");
   return noCode
     .split(/\r?\n\s*\r?\n/)
     .map((paragraph) => paragraph
       .replace(/^\s{0,3}#{1,6}\s+.*$/gm, "")
       .replace(/^\s*(?:[-*+] |\d+[.)] )/gm, "")
-      .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
       .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
       .replace(/[*_`>#]/g, "")
       .replace(/\s+/g, " ")

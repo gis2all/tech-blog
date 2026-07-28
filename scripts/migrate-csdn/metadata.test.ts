@@ -62,6 +62,14 @@ describe("buildMetadata", () => {
     expect(() => buildMetadata(article({ markdown: "Short but genuine prose." }))).toThrow(/60/i);
   });
 
+  it.each([
+    ["a tilde-fenced code block", `~~~typescript\n${"const hidden = 'code'; ".repeat(4)}\n~~~`],
+    ["an indented backtick-fenced code block", `   \`\`\`typescript\n${"const hidden = 'code'; ".repeat(4)}\n   \`\`\``],
+    ["an image with long alt text", `![${"Diagram label that is not prose ".repeat(3)}](https://example.com/diagram.png)`],
+  ])("rejects %s as a description", (_label, markdown) => {
+    expect(() => buildMetadata(article({ markdown }))).toThrow(/60/i);
+  });
+
   it("uses pilot metadata defaults without source fields", () => {
     const result = buildMetadata(article({ updatedAt: "2021-08-02", cover: "/cover.webp", coverAlt: "Cover" }));
 
