@@ -8,6 +8,9 @@ dist/
 # Local planning and agent handoff docs
 docs/
 
+# Local CSDN migration cache, raw HTML, manifest, and reports
+.migration/
+
 # Local environment
 .env
 .env.*
