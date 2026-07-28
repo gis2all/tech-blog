@@ -60,20 +60,14 @@ function publishedAt(articleId: string, dataTime: string | undefined, pageText: 
   return required(articleId, "published date", fallback ? normalizeDate(fallback[1]) : undefined);
 }
 
-function publicationFallbackText($: ReturnType<typeof load>): string {
-  const header = $(".article-info-box, .article-bar-top, .blog-info-box, .article-header-box");
-  if (header.length) return header.text();
-  const kind = $(".article-type-text").first();
-  const parent = kind.parent();
-  return parent.is("body, html") ? "" : parent.text();
-}
-
 export function extractArticle(html: string, sourceUrl: string): CsdnArticle {
   const articleId = articleIdFrom(sourceUrl);
   const $ = load(html);
+  const titleElement = $("h1.title-article").first();
+  const header = titleElement.closest(".article-header-box, .article-header");
   const content = $("#content_views");
   const contentHtml = required(articleId, "content", content.html() ?? undefined);
-  const kind = articleKind(articleId, $(".article-type-text").first().text().trim());
+  const kind = articleKind(articleId, (header.length ? header : $(".article-type-text").first().parent()).find(".article-type-text").first().text().trim());
   const columns = [...new Set($(".bt-columnlist-show[data-id]").map((_, element) => {
     const id = $(element).attr("data-id");
     return id ? COLUMN_NAMES[id] : undefined;
@@ -86,8 +80,8 @@ export function extractArticle(html: string, sourceUrl: string): CsdnArticle {
   return {
     articleId,
     sourceUrl,
-    title: required(articleId, "title", $("h1.title-article").first().text()),
-    publishedAt: publishedAt(articleId, $(".blog-postTime[data-time]").first().attr("data-time"), publicationFallbackText($)),
+    title: required(articleId, "title", titleElement.text()),
+    publishedAt: publishedAt(articleId, header.find(".blog-postTime[data-time]").first().attr("data-time"), header.text()),
     kind,
     columns,
     keywords,
@@ -97,11 +91,13 @@ export function extractArticle(html: string, sourceUrl: string): CsdnArticle {
 
 export function extractUpdatedAt(html: string, articleId: string): string | undefined {
   const $ = load(html);
-  const detailsPath = new RegExp(`/article/details/${articleId}(?:[/?#]|$)`);
-  const link = $("a[href]").filter((_, element) => detailsPath.test($(element).attr("href") ?? "")).first();
-  if (!link.length) return undefined;
-  const card = link.closest(".article-item-box, article, li");
-  const text = (card.length ? card : link.parent()).text();
+  const escapedArticleId = articleId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const detailsPath = new RegExp(`/article/details/${escapedArticleId}(?:[/?#]|$)`);
+  const card = $(".blog-list-box, article").filter((_, element) => $(element).find("a[href]")
+    .toArray()
+    .some((link) => detailsPath.test($(link).attr("href") ?? ""))).first();
+  if (!card.length) return undefined;
+  const text = card.text();
   const match = text.match(/博文更新于\s*(\d{4}[.-]\d{1,2}[.-]\d{1,2})/);
   return match ? normalizeDate(match[1]) : undefined;
 }

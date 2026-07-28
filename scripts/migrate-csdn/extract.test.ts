@@ -17,7 +17,7 @@ describe("extractArticle", () => {
     expect(article).toEqual({
       articleId: "119208326",
       sourceUrl: "https://blog.csdn.net/example/article/details/119208326",
-      title: "Jenkins Pipeline Groovy Script",
+      title: "Jenkins + Groovy脚本 = 高效✔✔ （纯干货）",
       publishedAt: "2021-07-29",
       kind: "original",
       columns: ["Jenkins"],
@@ -28,9 +28,11 @@ describe("extractArticle", () => {
 
   it("recognizes translated articles and only uses genuine publication fallback text", () => {
     const article = extractArticle(`
-      <h1 class="title-article">Translated</h1>
-      <div class="article-info-box"><span class="article-type-text">翻译</span>
-      <div>翻译于 2022-03-04</div></div>
+      <header class="article-header-box"><div class="article-header">
+        <h1 class="title-article">Translated</h1>
+        <div class="article-info-box"><span class="article-type-text">翻译</span>
+        <div>翻译于 2022-03-04</div></div>
+      </div></header>
       <div>最新推荐文章于 2025-01-01</div>
       <div id="content_views"><p>Body</p></div>
     `, "https://blog.csdn.net/example/article/details/42");
@@ -46,6 +48,17 @@ describe("extractArticle", () => {
       <div id="content_views"><p>Body</p></div>
       <aside>原创于 2025-01-01</aside>
     `, "https://blog.csdn.net/example/article/details/43")).toThrow(/43/);
+  });
+
+  it("does not borrow a date from a separate article header", () => {
+    expect(() => extractArticle(`
+      <header class="article-header-box"><div class="article-header">
+        <h1 class="title-article">Target</h1>
+        <div class="article-info-box"><span class="article-type-text">原创</span></div>
+      </div></header>
+      <div id="content_views"><p>Body</p></div>
+      <header class="article-header-box"><div class="article-info-box">翻译于 2025-01-01</div></header>
+    `, "https://blog.csdn.net/example/article/details/44")).toThrow(/44/);
   });
 
   it("rejects an invalid source URL and incomplete required article payload", () => {
