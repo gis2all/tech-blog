@@ -61,6 +61,22 @@ describe("extractArticle", () => {
     `, "https://blog.csdn.net/example/article/details/44")).toThrow(/44/);
   });
 
+  it("rejects impossible publication dates and accepts a valid leap day", () => {
+    const html = (date: string) => `
+      <header class="article-header-box">
+        <h1 class="title-article">Calendar validation</h1>
+        <span class="article-type-text">原创</span>
+        <span class="blog-postTime" data-time="${date} 12:00:00"></span>
+      </header>
+      <div id="content_views"><p>Body</p></div>
+    `;
+
+    expect(() => extractArticle(html("2021-02-29"), "https://blog.csdn.net/example/article/details/45"))
+      .toThrow(/article 45.*published date/i);
+    expect(extractArticle(html("2020-02-29"), "https://blog.csdn.net/example/article/details/45").publishedAt)
+      .toBe("2020-02-29");
+  });
+
   it("rejects an invalid source URL and incomplete required article payload", () => {
     expect(() => extractArticle("", "https://blog.csdn.net/example/post/119208326")).toThrow(/source URL/i);
     expect(() => extractArticle("<h1 class=\"title-article\">Missing</h1>", "https://blog.csdn.net/example/article/details/7")).toThrow(/7/);
@@ -74,5 +90,19 @@ describe("extractUpdatedAt", () => {
 
   it("returns undefined when the profile omits the article", async () => {
     expect(extractUpdatedAt(await readFile(profileFixture, "utf8"), "999")).toBeUndefined();
+  });
+
+  it("distinguishes invalid profile dates from absent update markers", () => {
+    const card = (marker: string) => `
+      <article class="blog-list-box">
+        <a href="/article/details/46">Article</a>
+        ${marker}
+      </article>
+    `;
+
+    expect(() => extractUpdatedAt(card("博文更新于 2021.02.29"), "46"))
+      .toThrow(/article 46.*update date/i);
+    expect(extractUpdatedAt(card("博文更新于 2020.02.29"), "46")).toBe("2020-02-29");
+    expect(extractUpdatedAt(card("No update marker"), "46")).toBeUndefined();
   });
 });

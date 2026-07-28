@@ -99,5 +99,8 @@ export function extractUpdatedAt(html: string, articleId: string): string | unde
   if (!card.length) return undefined;
   const text = card.text();
   const match = text.match(/博文更新于\s*(\d{4}[.-]\d{1,2}[.-]\d{1,2})/);
-  return match ? normalizeDate(match[1]) : undefined;
+  if (!match) return undefined;
+  const updatedAt = normalizeDate(match[1]);
+  if (!updatedAt) throw new Error(`Article ${articleId} has an invalid update date`);
+  return updatedAt;
 }
