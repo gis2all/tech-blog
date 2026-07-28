@@ -7,6 +7,11 @@ function codeLanguage(element: HTMLElement): string {
   return classes.match(/(?:^|\s)language-([^\s]+)/)?.[1] ?? "text";
 }
 
+function codeFence(text: string): string {
+  const longestRun = Math.max(0, ...[...text.matchAll(/`+/g)].map((match) => match[0].length));
+  return "`".repeat(Math.max(3, longestRun + 1));
+}
+
 export function convertToMarkdown(html: string): string {
   const turndown = new TurndownService({
     bulletListMarker: "-",
@@ -21,7 +26,8 @@ export function convertToMarkdown(html: string): string {
       const element = node as HTMLElement;
       const code = element.querySelector("code");
       const text = (code ?? element).textContent ?? "";
-      return `\n\n\`\`\`${codeLanguage(element)}\n${text.replace(/\n+$/, "")}\n\`\`\`\n\n`;
+      const fence = codeFence(text);
+      return `\n\n${fence}${codeLanguage(element)}\n${text.replace(/\n+$/, "")}\n${fence}\n\n`;
     },
   });
 

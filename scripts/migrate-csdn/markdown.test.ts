@@ -32,6 +32,10 @@ describe("CSDN article cleanup and Markdown conversion", () => {
       <table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody><tr><td>A</td><td>1</td></tr></tbody></table>
       <p><a href="https://example.com/docs?topic=ci&amp;lang=en">External docs</a></p>
       <pre><code>plain text</code></pre>
+      <pre><code>Example:
+&#96;&#96;&#96;js
+console.log('nested');
+&#96;&#96;&#96;</code></pre>
     `));
 
     expect(markdown).toContain("1.  First\n2.  Second");
@@ -40,6 +44,7 @@ describe("CSDN article cleanup and Markdown conversion", () => {
     expect(markdown).toContain("| Name | Value |\n| --- | --- |\n| A | 1 |");
     expect(markdown).toContain("[External docs](https://example.com/docs?topic=ci&lang=en)");
     expect(markdown).toContain("```text\nplain text\n```");
+    expect(markdown).toContain("````text\nExample:\n```js\nconsole.log('nested');\n```\n````");
   });
 
   it("removes CSDN wrappers and executable markup without removing ordinary text", () => {
@@ -51,6 +56,17 @@ describe("CSDN article cleanup and Markdown conversion", () => {
 
     expect(cleaned).not.toMatch(/Extension|Recommended|Hidden prompt|Follow|alert|color:red/);
     expect(cleaned).toContain("Keep this text.");
+  });
+
+  it("uses the first non-empty lazy image source and removes lazy attributes", () => {
+    const cleaned = cleanArticleHtml(
+      '<img alt="diagram" title="Architecture" data-original-src="" data-src="//cdn.example/x.png" src="placeholder.png" loading="lazy" data-lazy-src="ignored.png">',
+    );
+
+    expect(cleaned).toContain('src="https://cdn.example/x.png"');
+    expect(cleaned).toContain('alt="diagram"');
+    expect(cleaned).toContain('title="Architecture"');
+    expect(cleaned).not.toMatch(/data-original-src|data-src|data-lazy-src|loading="lazy"/);
   });
 
   it("normalizes protocol-relative image sources while retaining attribution links", () => {
