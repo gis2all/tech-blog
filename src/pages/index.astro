@@ -1,5 +1,6 @@
 ---
 import ArticleList from "../components/article/ArticleList.astro";
+import AuthorAvatar from "../components/common/AuthorAvatar.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getAllPosts } from "../lib/content/queries";
 import {
@@ -21,7 +22,7 @@ const tags = allTags.slice(0, 12);
   <main class="wrap home-grid">
     <aside class="left-rail stack" aria-label="作者与分类">
       <section class="panel profile">
-        <div class="avatar">{site.authorInitials}</div>
+        <AuthorAvatar />
         <h2>{site.author}</h2>
         <p class="brand-note">知行合一 · 持续积累</p>
         <p>{site.description}</p>

@@ -108,7 +108,7 @@ test.describe("mobile navigation and article controls", () => {
     await page.setViewportSize({ width: 1200, height: 900 });
 
     await expect(page.locator("#site-menu")).toBeVisible();
-    await expect(page.getByRole("link", { name: "知行录首页" })).toBeFocused();
+    await expect(page.getByRole("link", { name: "知行首页" })).toBeFocused();
   });
 
   test("reports clipboard failures", async ({ page }) => {
@@ -134,4 +134,21 @@ test("keeps all article tags outside the homepage", async ({ page }) => {
   await expect(page.locator(".article-row").first().locator(".tag.ghost")).toHaveCount(
     3,
   );
+});
+
+test("shows the gis2all identity and programming font", async ({ page }) => {
+  await page.goto("/posts/agent-tool-debug/");
+
+  await expect(
+    page.locator('img.author-avatar[src="/images/avatar-gis2all.png"]').first(),
+  ).toBeVisible();
+  await expect(
+    page.getByText("gis2all", { exact: true }).first(),
+  ).toBeVisible();
+  await expect(page.locator(".brand")).toHaveText("知行");
+
+  const codeFont = await page.locator(".prose pre code").first().evaluate(
+    (node) => getComputedStyle(node).fontFamily,
+  );
+  expect(codeFont).toContain("Cascadia Code");
 });

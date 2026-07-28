@@ -1,0 +1,22 @@
+---
+import { site } from "../../lib/site";
+
+type Props = {
+  size?: "profile" | "mini";
+  decorative?: boolean;
+};
+
+const { size = "profile", decorative = false } = Astro.props;
+const dimension = size === "profile" ? 66 : 38;
+---
+
+<img
+  class:list={["author-avatar", size]}
+  src={site.authorAvatar}
+  alt={decorative ? "" : `${site.author} 的头像`}
+  width={dimension}
+  height={dimension}
+  loading={size === "profile" ? "eager" : "lazy"}
+  decoding="async"
+  aria-hidden={decorative ? "true" : undefined}
+/>

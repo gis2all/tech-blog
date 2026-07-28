@@ -17,7 +17,7 @@ function isActive(href: string) {
 
 <header class="site-header">
   <nav class="nav" aria-label="主导航">
-    <a class="brand" href="/" aria-label="知行录首页"><span>知</span>知行<i>录</i></a>
+    <a class="brand" href="/" aria-label={`${site.title}首页`}><span>{site.title.slice(0, 1)}</span>{site.title.slice(1)}</a>
     <div class="nav-links" data-menu id="site-menu">
       {site.nav.map((item) => (
         <a class:list={{ active: isActive(item.href) }} href={item.href}>{item.label}</a>

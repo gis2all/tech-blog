@@ -2,6 +2,7 @@
 import ArticleMeta from "../components/article/ArticleMeta.astro";
 import ArticleToc from "../components/article/ArticleToc.astro";
 import ArticleTocButton from "../components/article/ArticleTocButton.astro";
+import AuthorAvatar from "../components/common/AuthorAvatar.astro";
 import SeriesNav from "../components/article/SeriesNav.astro";
 import BaseLayout from "./BaseLayout.astro";
 import {
@@ -53,7 +54,7 @@ const { previous, next } = getAdjacentPosts(allPosts, currentSlug);
         <h1>{post.data.title}</h1>
         <p class="dek">{post.data.description}</p>
         <div class="byline">
-          <div class="mini-avatar">{site.authorInitials}</div>
+          <AuthorAvatar size="mini" decorative />
           <div>
             <b>{site.author}</b>
             <div>{published} 发布{updated && ` · ${updated} 更新`} · {readingTime} 分钟阅读</div>
@@ -107,7 +108,7 @@ const { previous, next } = getAdjacentPosts(allPosts, currentSlug);
           </nav>
         )}
         <section class="author-note" aria-label="作者说明">
-          <div class="mini-avatar">{site.authorInitials}</div>
+          <AuthorAvatar size="mini" decorative />
           <div>
             <h2>{site.author} · {site.title}</h2>
             <p>记录编程、AI 与工程实践，保留问题、判断与复盘过程。</p>
