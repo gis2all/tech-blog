@@ -172,4 +172,15 @@ second
     expect(markdown).toContain("<table>");
     expect(markdown).not.toContain("| --- |");
   });
+
+  it.each([
+    ["multiple header rows", "<table><thead><tr><th>A</th></tr><tr><th>B</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"],
+    ["a body row header", "<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><th>Row</th><td>1</td></tr></tbody></table>"],
+    ["a footer", "<table><thead><tr><th>A</th></tr></thead><tbody><tr><td>1</td></tr></tbody><tfoot><tr><td>Total</td></tr></tfoot></table>"],
+  ])("preserves a table with %s as raw HTML", (_name, html) => {
+    const markdown = convertToMarkdown(cleanArticleHtml(html));
+
+    expect(markdown).toContain("<table>");
+    expect(markdown).not.toContain("| --- |");
+  });
 });

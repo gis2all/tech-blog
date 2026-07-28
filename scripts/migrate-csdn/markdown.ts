@@ -22,22 +22,47 @@ function isLosslessInlineNode(node: Node): boolean {
     && [...element.childNodes].every(isLosslessInlineNode);
 }
 
+function directRows(element: HTMLElement): HTMLElement[] {
+  return Array.from(element.children).filter((child) => child.nodeName === "TR") as HTMLElement[];
+}
+
+function directCells(row: HTMLElement): HTMLElement[] {
+  return Array.from(row.children)
+    .filter((child) => child.nodeName === "TH" || child.nodeName === "TD") as HTMLElement[];
+}
+
 function isSimpleGfmTable(element: HTMLElement): boolean {
   if (element.querySelector("caption, colgroup, col, table")) return false;
 
-  const rows = Array.from(element.querySelectorAll("tr"));
+  const children = Array.from(element.children) as HTMLElement[];
+  const directTableRows = directRows(element);
+  const sections = children.filter((child) => ["THEAD", "TBODY", "TFOOT"].includes(child.nodeName));
+  if (directTableRows.length && sections.length) return false;
+  if (sections.filter((section) => section.nodeName === "TFOOT").length) return false;
+  if (sections.filter((section) => section.nodeName === "THEAD").length > 1) return false;
+  if (sections.filter((section) => section.nodeName === "TBODY").length > 1) return false;
+
+  const headerSection = sections.find((section) => section.nodeName === "THEAD");
+  const bodySection = sections.find((section) => section.nodeName === "TBODY");
+  if (headerSection && bodySection && children.indexOf(headerSection) > children.indexOf(bodySection)) return false;
+  const headerRows = headerSection ? directRows(headerSection) : directTableRows.slice(0, 1);
+  const dataRows = headerSection ? directRows(bodySection ?? element) : directTableRows.slice(1);
+  if (headerRows.length !== 1 || (headerSection && directTableRows.length)) return false;
+
+  const rows = [...headerRows, ...dataRows];
   if (!rows.length) return false;
-  const cellsByRow = rows.map((row) => Array.from(row.children)
-    .filter((child) => child.nodeName === "TH" || child.nodeName === "TD") as HTMLElement[]);
+  const cellsByRow = rows.map(directCells);
   const cellCount = cellsByRow[0].length;
   if (!cellCount || !cellsByRow[0].every((cell) => cell.nodeName === "TH")) return false;
 
-  return cellsByRow.every((cells) => cells.length === cellCount && cells.every((cell) => (
+  return cellsByRow.every((cells, index) => cells.length === cellCount
+    && (index === 0 ? cells.every((cell) => cell.nodeName === "TH") : cells.every((cell) => cell.nodeName === "TD"))
+    && cells.every((cell) => (
     !cell.hasAttribute("rowspan")
     && !cell.hasAttribute("colspan")
     && !cell.innerHTML.includes("|")
     && [...cell.childNodes].every(isLosslessInlineNode)
-  )));
+    )));
 }
 
 function normalizeBlankLines(markdown: string): string {
