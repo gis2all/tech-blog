@@ -52,6 +52,26 @@ test.describe("mobile navigation and article controls", () => {
     await expect(menuButton).toBeFocused();
   });
 
+  test("keeps long code lines within the mobile article viewport", async ({
+    page,
+  }) => {
+    await page.goto("/posts/agent-tool-debug/");
+    await page.locator(".prose").evaluate((prose) => {
+      const pre = document.createElement("pre");
+      const code = document.createElement("code");
+      code.textContent = "PipelineSharedLibraryCompatibilityIdentifierWithoutAnyBreakOpportunity";
+      pre.append(code);
+      prose.prepend(pre);
+    });
+
+    const widths = await page.evaluate(() => ({
+      client: document.documentElement.clientWidth,
+      scroll: document.documentElement.scrollWidth,
+    }));
+
+    expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+  });
+
   test("moves TOC focus to the visible desktop navigation at the breakpoint", async ({
     page,
   }) => {
