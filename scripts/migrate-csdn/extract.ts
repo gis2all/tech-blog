@@ -46,6 +46,30 @@ function articleIdFrom(sourceUrl: string): string {
   return match[1];
 }
 
+function normalizedHeadingText(value: string): string {
+  return value.replace(/\s+/g, "").trim();
+}
+
+function assertCapturedContentAppearsComplete(articleId: string, contentHtml: string): void {
+  const $ = load(contentHtml);
+  const tocItems = $(".toc a")
+    .map((_, element) => normalizedHeadingText($(element).text()))
+    .get()
+    .filter(Boolean);
+  if (tocItems.length === 0) return;
+
+  const content = $.root().clone();
+  content.find(".toc").remove();
+  const headings = new Set(content.find("h1,h2,h3,h4,h5,h6")
+    .map((_, element) => normalizedHeadingText($(element).text()))
+    .get()
+    .filter(Boolean));
+  const missingHeading = tocItems.find((item) => !headings.has(item));
+  if (missingHeading) {
+    throw new Error(`Article ${articleId} appears truncated; captured body is missing TOC section: ${missingHeading}`);
+  }
+}
+
 function articleKind(articleId: string, text: string): ArticleKind {
   if (text.includes("原创")) return "original";
   if (text.includes("翻译")) return "translated";
@@ -76,6 +100,7 @@ export function extractArticle(html: string, sourceUrl: string): CsdnArticle {
   const header = titleElement.closest(".article-header-box, .article-header");
   const content = $("#content_views");
   const contentHtml = required(articleId, "content", content.html() ?? undefined);
+  assertCapturedContentAppearsComplete(articleId, contentHtml);
   const kind = articleKind(articleId, (header.length ? header : $(".article-type-text").first().parent()).find(".article-type-text").first().text().trim());
   const columns = [...new Set($(".bt-columnlist-show[data-id]").map((_, element) => {
     const id = $(element).attr("data-id");

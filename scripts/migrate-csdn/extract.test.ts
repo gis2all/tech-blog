@@ -95,6 +95,32 @@ describe("extractArticle", () => {
     expect(() => extractArticle("", "https://blog.csdn.net/example/post/119208326")).toThrow(/source URL/i);
     expect(() => extractArticle("<h1 class=\"title-article\">Missing</h1>", "https://blog.csdn.net/example/article/details/7")).toThrow(/7/);
   });
+
+  it("rejects article HTML when the CSDN table of contents points past the captured body", () => {
+    expect(() => extractArticle(`
+      <script type="application/ld+json">{"pubDate":"2021-08-16T00:00:00"}</script>
+      <header class="article-header-box">
+        <h1 class="title-article">CJE notes</h1>
+        <span class="article-type-text">原创</span>
+      </header>
+      <div id="content_views">
+        <div class="toc">
+          <ul>
+            <li><a href="#one">一、报名</a></li>
+            <li><a href="#two">二、复习</a></li>
+            <li><a href="#three">三、结果</a></li>
+          </ul>
+        </div>
+        <h2><a id="one"></a>一、报名</h2>
+        <p>报名说明</p>
+        <h2><a id="two"></a>二、复习</h2>
+        <p>考试内容分为四个方面</p>
+        <ul>
+          <li><strong>Jenkins安</strong></li>
+        </ul>
+      </div>
+    `, "https://blog.csdn.net/example/article/details/119723458")).toThrow(/119723458.*truncated/i);
+  });
 });
 
 describe("extractUpdatedAt", () => {

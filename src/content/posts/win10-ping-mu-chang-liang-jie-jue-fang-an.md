@@ -41,5 +41,41 @@ coverAlt: 在这里插入图片描述
 ```csharp
 using System;
 using System.Drawing;
-using System.Thread
+using System.Threading;
+using Win32.Shared;
+using System.Windows;
+
+namespace Mouse.Move
+{
+    public class Program
+    {
+        /// <summary>
+        /// 这个脚本是用来保持测试机器屏幕常亮的
+        /// </summary>
+        static void Main(string[] args)
+        {
+            // 隐藏cmd窗口
+            var cmdWindow = Win32Utils.GetConsoleWindow();
+            Win32Utils.ShowWindow(cmdWindow, Win32Constants.SW_HIDE);
+            int i = 0;
+            // 死循环保持屏幕常亮
+            while (true)
+            {
+                if (i % 2 == 0)
+                {
+                    Win32Utils.MouseEvent(Win32Constants.MOUSEEVENTF_MOVE, 2, 0, 0, 0);
+                }
+                else
+                {
+                    Win32Utils.MouseEvent(Win32Constants.MOUSEEVENTF_MOVE, -2, 0, 0, 0);
+                }
+                // 每隔1分钟移动鼠标
+                Thread.Sleep(TimeSpan.FromMinutes(1));
+                i++;
+            }
+        }
+    }
+}
 ```
+
+全部脚本代码移步 [Mouse.Move](https://github.com/gis2all/csharp-scripts/tree/master/Scripts/Mouse.Move)，编译运行`exe`文件即可，若想退出需要重启电脑

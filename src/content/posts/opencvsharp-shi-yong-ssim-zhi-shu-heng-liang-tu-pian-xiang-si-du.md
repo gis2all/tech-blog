@@ -13,6 +13,8 @@ tags:
 draft: false
 featured: false
 updatedAt: 2020-04-03
+cover: /images/posts/opencvsharp-shi-yong-ssim-zhi-shu-heng-liang-tu-pian-xiang-si-du/cover.webp
+coverAlt: 在这里插入图片描述
 ---
 
 在自动化测试时，经常需要截图和标准图片对比，以此判断测试是否成功，那么用什么来判断测试图片与标准图片是相似的呢？这里需要使用`SSIM` (Structual Similarity, 结构相似性) 用来判断图片相似度  
@@ -30,4 +32,25 @@ updatedAt: 2020-04-03
 
 ## 二、代码实现
 
-我的所有测试脚本都是基于`C#`编写的，这里需要用到开源图像处理库[OpenCvSharp4.Windows](https://github.com/shimat/opencvsharp)，它是在Window系统中对OpenCv库的C#封装。这个库有依赖于其他的库，所以在调用该库前，请确保自己电脑正确安装以下依赖：
+我的所有测试脚本都是基于`C#`编写的，这里需要用到开源 图像处理 库[OpenCvSharp4.Windows](https://github.com/shimat/opencvsharp)，它是在Window系统中对OpenCv库的C#封装。这个库有依赖于其他的库，所以在调用该库前，请确保自己电脑正确安装以下依赖：  
+![在这里插入图片描述](/images/posts/opencvsharp-shi-yong-ssim-zhi-shu-heng-liang-tu-pian-xiang-si-du/image-01.webp)  
+在项目`Nuget`中安装[OpenCvSharp4.Windows](https://www.nuget.org/packages/OpenCvSharp4.Windows/)  
+![在这里插入图片描述](/images/posts/opencvsharp-shi-yong-ssim-zhi-shu-heng-liang-tu-pian-xiang-si-du/image-02.webp)  
+全部代码位于这里，请自取 [Image.Similarity](https://github.com/gis2all/csharp-scripts/tree/master/Scripts/Image.Similarity)
+
+## 三、测试效果
+
+![在这里插入图片描述](/images/posts/opencvsharp-shi-yong-ssim-zhi-shu-heng-liang-tu-pian-xiang-si-du/image-03.webp)  
+测试的五张图片说明（图片的长宽都相同）  
+![在这里插入图片描述](/images/posts/opencvsharp-shi-yong-ssim-zhi-shu-heng-liang-tu-pian-xiang-si-du/image-04.webp)  
+![在这里插入图片描述](/images/posts/opencvsharp-shi-yong-ssim-zhi-shu-heng-liang-tu-pian-xiang-si-du/image-05.webp)  
+测试结果  
+![在这里插入图片描述](/images/posts/opencvsharp-shi-yong-ssim-zhi-shu-heng-liang-tu-pian-xiang-si-du/image-06.webp)  
+所以经过测试我们可以得出以下结论
+
+-   **SSIM ≥ 0.999999**  
+    可以认为两张图片"完全一致"。事实上在测试的时候，由于网络波动或者CPU性能原因，图片有时内容完全一致但Size有细微差别，比如标准图片为1478KB，而测试结果图片为1462KB，这个时候我们应该认为这两张图片是一样的，而经过测试显然SSIM指标完全符合这个要求
+-   **SSIM &lt; 0.999999**  
+    可以认为两张图片不一致。显然，无论是几个像素的修改还是大范围修改，甚至是不同的图片，SSIM指标都能检测出来，也符合我们的要求
+
+当然阈值的标准要看实际应用，这里只是举个例子说明下
