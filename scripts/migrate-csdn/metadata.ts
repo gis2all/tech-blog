@@ -34,7 +34,7 @@ const WINDOWS_RESERVED = new Set([
 ]);
 
 function normalized(value: string): string {
-  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 function categoryFor(columns: string[]): string {
@@ -60,9 +60,36 @@ function tagsFor(columns: string[], keywords: string[]): string[] {
   return tags;
 }
 
+function stripFencedCode(markdown: string): string {
+  const prose: string[] = [];
+  let fence: { character: "`" | "~"; width: number } | undefined;
+
+  for (const line of markdown.split(/\r?\n/)) {
+    if (fence) {
+      const indentation = line.match(/^ {0,3}/)?.[0].length ?? 0;
+      const content = line.slice(indentation);
+      let width = 0;
+      while (content[width] === fence.character) width += 1;
+      if (width >= fence.width && content.slice(width).trim() === "") fence = undefined;
+      continue;
+    }
+
+    const openingFence = line.match(/^ {0,3}(`{3,}|~{3,})/);
+    if (openingFence) {
+      fence = {
+        character: openingFence[1][0] as "`" | "~",
+        width: openingFence[1].length,
+      };
+      continue;
+    }
+    prose.push(line);
+  }
+
+  return prose.join("\n");
+}
+
 function semanticParagraphs(markdown: string): string[] {
-  const noCode = markdown.replace(/^ {0,3}(?:`{3,}[^\r\n]*\r?\n[\s\S]*?^ {0,3}`{3,}[ \t]*$|~{3,}[^\r\n]*\r?\n[\s\S]*?^ {0,3}~{3,}[ \t]*$)\r?\n?/gm, "");
-  return noCode
+  return stripFencedCode(markdown)
     .split(/\r?\n\s*\r?\n/)
     .map((paragraph) => paragraph
       .replace(/^\s{0,3}#{1,6}\s+.*$/gm, "")
@@ -85,9 +112,10 @@ function describe(markdown: string): string {
     text = `${text} ${paragraph}`.trim();
     if (text.length >= 60) break;
   }
-  if (text.length <= 120) return text;
+  const codePoints = Array.from(text);
+  if (codePoints.length <= 120) return text;
 
-  const candidate = text.slice(0, 120);
+  const candidate = codePoints.slice(0, 120).join("");
   const sentenceEnd = Math.max(candidate.lastIndexOf("。"), candidate.lastIndexOf("！"), candidate.lastIndexOf("？"), candidate.lastIndexOf("."), candidate.lastIndexOf("!"), candidate.lastIndexOf("?"));
   return sentenceEnd >= 60 ? candidate.slice(0, sentenceEnd + 1).trim() : candidate.trim();
 }

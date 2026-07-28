@@ -70,6 +70,21 @@ describe("buildMetadata", () => {
     expect(() => buildMetadata(article({ markdown }))).toThrow(/60/i);
   });
 
+  it.each([
+    ["a four-backtick fence with an embedded three-backtick line", `\`\`\`\`typescript\n${"const hidden = 'code'; ".repeat(3)}\n\`\`\`\n${"const trailing = 'code'; ".repeat(3)}\n\`\`\`\``],
+    ["a four-tilde fence with an embedded three-tilde line", `~~~~typescript\n${"const hidden = 'code'; ".repeat(3)}\n~~~\n${"const trailing = 'code'; ".repeat(3)}\n~~~~`],
+    ["an unterminated fence", `\`\`\`typescript\n${"const hidden = 'code'; ".repeat(6)}`],
+  ])("does not extract %s", (_label, markdown) => {
+    expect(() => buildMetadata(article({ markdown }))).toThrow(/60/i);
+  });
+
+  it("truncates descriptions by Unicode code points", () => {
+    const description = buildMetadata(article({ markdown: `${"a".repeat(119)}😀more prose that exceeds the extraction limit` })).frontmatter.description;
+
+    expect(description.isWellFormed()).toBe(true);
+    expect(Array.from(description).length).toBeLessThanOrEqual(120);
+  });
+
   it("uses pilot metadata defaults without source fields", () => {
     const result = buildMetadata(article({ updatedAt: "2021-08-02", cover: "/cover.webp", coverAlt: "Cover" }));
 
