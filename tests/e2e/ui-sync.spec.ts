@@ -136,6 +136,73 @@ test("keeps all article tags outside the homepage", async ({ page }) => {
   );
 });
 
+test("keeps homepage side rails pinned while the desktop feed scrolls", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  await page.locator(".home-feed .article-list").evaluate((list) => {
+    list.innerHTML = Array.from(
+      { length: 40 },
+      (_, index) => `
+        <article class="article-row">
+          <div class="article-row-body">
+            <h2><a href="/">Injected article ${index + 1}</a></h2>
+            <p>Injected article excerpt for layout scrolling verification.</p>
+          </div>
+        </article>
+      `,
+    ).join("");
+  });
+
+  const before = await page.evaluate(() => {
+    const left = document.querySelector<HTMLElement>(".home-grid > .left-rail");
+    const right = document.querySelector<HTMLElement>(".home-grid > .right-rail");
+    const firstArticle = document.querySelector<HTMLElement>(
+      ".home-feed .article-row",
+    );
+
+    return {
+      leftTop: left?.getBoundingClientRect().top ?? 0,
+      rightTop: right?.getBoundingClientRect().top ?? 0,
+      firstArticleTop: firstArticle?.getBoundingClientRect().top ?? 0,
+    };
+  });
+
+  await page.evaluate(() => window.scrollTo(0, 700));
+
+  await expect
+    .poll(async () =>
+      page.evaluate((firstArticleTop) => {
+        const feed = document.querySelector<HTMLElement>(".home-feed");
+        const firstArticle = document.querySelector<HTMLElement>(
+          ".home-feed .article-row",
+        );
+        if (!feed || !firstArticle) return 0;
+
+        return Math.max(
+          feed.scrollTop,
+          firstArticleTop - firstArticle.getBoundingClientRect().top,
+        );
+      }, before.firstArticleTop),
+    )
+    .toBeGreaterThan(100);
+
+  const after = await page.evaluate(() => {
+    const left = document.querySelector<HTMLElement>(".home-grid > .left-rail");
+    const right = document.querySelector<HTMLElement>(".home-grid > .right-rail");
+
+    return {
+      leftTop: left?.getBoundingClientRect().top ?? 0,
+      rightTop: right?.getBoundingClientRect().top ?? 0,
+    };
+  });
+
+  expect(Math.abs(after.leftTop - before.leftTop)).toBeLessThanOrEqual(2);
+  expect(Math.abs(after.rightTop - before.rightTop)).toBeLessThanOrEqual(2);
+});
+
 test("shows the gis2all identity and programming font", async ({ page }) => {
   await page.goto("/posts/jenkins-groovy-practices/");
 

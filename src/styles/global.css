@@ -989,6 +989,17 @@ img {
   font: 900 100px/1 ui-monospace, Consolas, monospace;
 }
 
+@media (min-width: 901px) {
+  .home-grid > .left-rail,
+  .home-grid > .right-rail {
+    position: sticky;
+    top: calc(var(--nav) + 18px);
+    max-height: calc(100vh - var(--nav) - 36px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 @media (max-width: 1100px) {
   .home-grid,
   .article-shell {
