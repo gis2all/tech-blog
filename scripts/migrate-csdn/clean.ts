@@ -1,6 +1,6 @@
 import { load } from "cheerio";
 
-const PLATFORM_SELECTORS = ".toc, .blog-extension-box, .recommend-box, .hide-article-box, script, style, button, iframe, object, embed, form, input, textarea, select, option, fieldset, svg, math, base, meta, link, map, area, template, noscript";
+const PLATFORM_SELECTORS = ".toc, .blog-extension-box, .recommend-box, .hide-article-box, script, style, button, iframe, object, embed, form, input, textarea, select, option, fieldset, svg, math, base, meta, link, map, area, template, noscript, plaintext, xmp, listing, noembed, frame, frameset";
 const URL_ATTRIBUTES = new Set([
   "href", "src", "xlink:href", "usemap", "ping", "srcdoc", "action", "formaction", "poster",
   "background", "data", "codebase", "archive", "manifest", "profile", "cite", "longdesc", "srcset",
@@ -30,7 +30,7 @@ function normalizedImageSource(...candidates: Array<string | undefined>): string
 }
 
 export function cleanArticleHtml(html: string): string {
-  const $ = load(html, undefined, false);
+  const $ = load(html.replace(/<plaintext\b[^>]*>[\s\S]*$/i, ""), undefined, false);
   $(PLATFORM_SELECTORS).remove();
 
   $("img").each((_, image) => {

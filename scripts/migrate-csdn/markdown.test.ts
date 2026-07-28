@@ -59,6 +59,22 @@ second
     expect(markdown).toBe("```text\nfirst\n\n\nsecond\n\n\n```\n");
   });
 
+  it("uses a safe fallback language for malformed code classes", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(
+      '<pre><code class="language-x`">&lt;script&gt;globalThis.__xss=1&lt;/script&gt;</code></pre>',
+    ));
+
+    expect(markdown).toBe("```text\n<script>globalThis.__xss=1</script>\n```\n");
+  });
+
+  it("handles many backtick runs without expanding them as function arguments", () => {
+    const code = Array.from({ length: 20_000 }, () => "`").join(" ");
+    const markdown = convertToMarkdown(cleanArticleHtml(`<pre><code>${code}</code></pre>`));
+
+    expect(markdown).toMatch(/^```text\n/);
+    expect(markdown).toMatch(/\n```\n$/);
+  });
+
   it("removes CSDN wrappers and executable markup without removing ordinary text", () => {
     const cleaned = cleanArticleHtml(`
       <div class="blog-extension-box">Extension</div><div class="recommend-box">Recommended</div>
@@ -110,6 +126,15 @@ second
 
     expect(markdown).toContain("Safe cell");
     expect(markdown).not.toMatch(/iframe|object|form|embed|javascript:|bad\.example|Submit/);
+  });
+
+  it("removes legacy raw-text elements from complex table paths", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(
+      "<table><thead><tr><th>Value</th></tr></thead><tbody><tr><td>Safe cell</td></tr><tr><td><plaintext>unsafe payload</td></tr></tbody></table>",
+    ));
+
+    expect(markdown).toContain("Safe cell");
+    expect(markdown).not.toContain("unsafe payload");
   });
 
   it("removes raw HTML navigation paths embedded in a headingless table", () => {

@@ -3,12 +3,19 @@ import { gfm } from "turndown-plugin-gfm";
 
 function codeLanguage(element: HTMLElement): string {
   const code = element.querySelector("code");
-  const classes = `${element.getAttribute("class") ?? ""} ${code?.getAttribute("class") ?? ""}`;
-  return classes.match(/(?:^|\s)language-([^\s]+)/)?.[1] ?? "text";
+  const languageTokens = `${element.getAttribute("class") ?? ""} ${code?.getAttribute("class") ?? ""}`
+    .split(/\s+/)
+    .filter((token) => token.startsWith("language-"));
+  if (languageTokens.length !== 1) return "text";
+  const language = languageTokens[0].slice("language-".length);
+  return /^[A-Za-z0-9_+.#-]+$/.test(language) ? language : "text";
 }
 
 function codeFence(text: string): string {
-  const longestRun = Math.max(0, ...[...text.matchAll(/`+/g)].map((match) => match[0].length));
+  let longestRun = 0;
+  for (const match of text.matchAll(/`+/g)) {
+    longestRun = Math.max(longestRun, match[0].length);
+  }
   return "`".repeat(Math.max(3, longestRun + 1));
 }
 
