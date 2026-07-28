@@ -1,6 +1,10 @@
 import { load } from "cheerio";
 
-const PLATFORM_SELECTORS = ".toc, .blog-extension-box, .recommend-box, .hide-article-box, script, style, button, iframe, object, embed, form, input, textarea, select, option, fieldset, svg, math";
+const PLATFORM_SELECTORS = ".toc, .blog-extension-box, .recommend-box, .hide-article-box, script, style, button, iframe, object, embed, form, input, textarea, select, option, fieldset, svg, math, base, meta, link, map, area, template, noscript";
+const URL_ATTRIBUTES = new Set([
+  "href", "src", "xlink:href", "usemap", "ping", "srcdoc", "action", "formaction", "poster",
+  "background", "data", "codebase", "archive", "manifest", "profile", "cite", "longdesc", "srcset",
+]);
 
 function normalizedUrl(value: string): string {
   return value.trim().replace(/[\u0000-\u001f\u007f\s]/g, "");
@@ -50,14 +54,17 @@ export function cleanArticleHtml(html: string): string {
     const attributes = Object.keys($(element).attr() ?? {});
     for (const attribute of attributes) {
       const name = attribute.toLowerCase();
+      const value = $(element).attr(attribute);
       if (
         name === "style"
         || name.startsWith("on")
         || name.startsWith("data-")
-        || name === "srcset"
         || name === "loading"
         || name.includes("lazy")
         || name.includes("report")
+        || (name === "href" && (!$(element).is("a") || !safeAnchorHref(value)))
+        || (name === "src" && (!$(element).is("img") || !value || !safeImageSource(value)))
+        || (URL_ATTRIBUTES.has(name) && name !== "href" && name !== "src")
       ) {
         $(element).removeAttr(attribute);
       }

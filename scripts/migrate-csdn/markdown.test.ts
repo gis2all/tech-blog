@@ -111,4 +111,25 @@ second
     expect(markdown).toContain("Safe cell");
     expect(markdown).not.toMatch(/iframe|object|form|embed|javascript:|bad\.example|Submit/);
   });
+
+  it("removes raw HTML navigation paths embedded in a headingless table", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(`
+      <table><tbody><tr><td>Safe cell
+        <map name="evil"><area href="javascript:alert(1)"></map><img usemap="#evil" src="https://cdn.example/safe.png" alt="safe">
+        <base href="https://evil.example/"><meta http-equiv="refresh" content="0;url=https://evil.example/"><link rel="stylesheet" href="https://evil.example/style.css">
+      </td></tr></tbody></table>
+    `));
+
+    expect(markdown).toContain("Safe cell");
+    expect(markdown).not.toMatch(/javascript:|area|map|usemap|base|meta|refresh|stylesheet|evil\.example/);
+  });
+
+  it("preserves safe table links and images after sanitization", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(`
+      <table><thead><tr><th>Resource</th></tr></thead><tbody><tr><td><a href="https://example.com/docs?topic=ci&amp;lang=en">Docs</a> <img src="https://cdn.example/logo.png" alt="Logo" title="Brand"></td></tr></tbody></table>
+    `));
+
+    expect(markdown).toContain("[Docs](https://example.com/docs?topic=ci&lang=en)");
+    expect(markdown).toContain("![Logo](https://cdn.example/logo.png \"Brand\")");
+  });
 });
