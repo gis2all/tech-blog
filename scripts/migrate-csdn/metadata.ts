@@ -45,10 +45,10 @@ function categoryFor(columns: string[]): string {
   throw new Error("Unmapped CSDN column requires manual review");
 }
 
-function tagsFor(columns: string[], keywords: string): string[] {
+function tagsFor(columns: string[], keywords: string[]): string[] {
   const tags: string[] = [];
   const seen = new Set<string>();
-  for (const rawTag of [...columns, ...keywords.split(",")]) {
+  for (const rawTag of [...columns, ...keywords.flatMap((keyword) => keyword.split(","))]) {
     const key = normalized(rawTag);
     const tag = TAG_ALIASES[key] ?? rawTag.trim().replace(/\s+/g, " ");
     const canonicalKey = normalized(tag);

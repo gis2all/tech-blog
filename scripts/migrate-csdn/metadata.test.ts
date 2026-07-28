@@ -20,7 +20,7 @@ function article(overrides: Partial<MetadataInput> = {}): MetadataInput {
     title: "Jenkins Groovy Practices",
     publishedAt: "2021-08-01",
     columns: ["Jenkins", "DevOps"],
-    keywords: "Jenkins, DevOps, Groovy, CI/CD, Pipeline, Script, Docker",
+    keywords: ["Jenkins, DevOps", "Groovy", "CI/CD, Pipeline", "Script, Docker"],
     markdown: semanticMarkdown,
     ...overrides,
   };
@@ -46,7 +46,7 @@ describe("buildMetadata", () => {
   it("deduplicates equivalent aliases after normalization", () => {
     const result = buildMetadata(article({
       columns: ["Jenkins"],
-      keywords: "JENKINS, Dev Ops, devops, CICD, CI/CD, VSCode, vs code, Python",
+      keywords: ["JENKINS, Dev Ops", "devops", "CICD, CI/CD", "VSCode, vs code", "Python"],
     }));
 
     expect(result.frontmatter.tags).toEqual(["Jenkins", "DevOps", "CI/CD", "VS Code", "Python"]);

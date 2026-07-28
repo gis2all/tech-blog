@@ -8,7 +8,7 @@ export interface CsdnArticle {
   updatedAt?: string;
   kind: ArticleKind;
   columns: string[];
-  keywords: string;
+  keywords: string[];
   contentHtml: string;
 }
 
@@ -30,28 +30,24 @@ export interface MigratedMetadata {
   frontmatter: Frontmatter;
 }
 
-export interface MetadataInput {
-  articleId: string;
-  title: string;
-  publishedAt: string;
-  updatedAt?: string;
-  columns: string[];
-  keywords: string;
+export type MetadataInput = Omit<CsdnArticle, "sourceUrl" | "kind" | "contentHtml"> & {
   markdown: string;
   cover?: string;
   coverAlt?: string;
-}
+};
 
-export type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+export type FetchLike = (input: string | URL, init?: RequestInit) => Promise<Response>;
 
 export interface LocalizedAsset {
   sourceUrl: string;
-  localPath: string;
   publicPath: string;
-  alt?: string;
+  absolutePath: string;
+  animated: boolean;
 }
 
 export interface AssetResult {
-  markdown: string;
+  html: string;
   assets: LocalizedAsset[];
+  cover?: string;
+  coverAlt?: string;
 }
