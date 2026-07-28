@@ -132,4 +132,31 @@ second
     expect(markdown).toContain("[Docs](https://example.com/docs?topic=ci&lang=en)");
     expect(markdown).toContain("![Logo](https://cdn.example/logo.png \"Brand\")");
   });
+
+  it("preserves pipe and line-break table cells as sanitized raw HTML", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(`
+      <table><thead><tr><th>Value</th></tr></thead><tbody>
+        <tr><td>x | y</td></tr>
+        <tr><td><code>x | y</code></td></tr>
+        <tr><td><a href="https://example.com/docs?filter=x|y" onclick="track()">label | link</a></td></tr>
+        <tr><td>line 1<br>line 2</td></tr>
+      </tbody></table>
+    `));
+
+    expect((markdown.match(/<table>/g) ?? [])).toHaveLength(1);
+    expect(markdown).toContain("<td>x | y</td>");
+    expect(markdown).toContain("<code>x | y</code>");
+    expect(markdown).toContain('<a href="https://example.com/docs?filter=x|y">label | link</a>');
+    expect(markdown).toContain("line 1<br>line 2");
+    expect(markdown).not.toMatch(/onclick|javascript:|\| --- \|/);
+  });
+
+  it("continues converting simple tables to GFM", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(
+      "<table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody><tr><td>A</td><td>1</td></tr></tbody></table>",
+    ));
+
+    expect(markdown).toContain("| Name | Value |\n| --- | --- |\n| A | 1 |");
+    expect(markdown).not.toContain("<table>");
+  });
 });

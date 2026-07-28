@@ -12,6 +12,10 @@ function codeFence(text: string): string {
   return "`".repeat(Math.max(3, longestRun + 1));
 }
 
+function requiresRawHtmlTable(element: HTMLElement): boolean {
+  return [...element.querySelectorAll("th, td")].some((cell) => cell.innerHTML.includes("|") || Boolean(cell.querySelector("br")));
+}
+
 function normalizeBlankLines(markdown: string): string {
   const lines = markdown.split("\n");
   const normalized: string[] = [];
@@ -60,6 +64,10 @@ export function convertToMarkdown(html: string): string {
       const fence = codeFence(text);
       return `\n\n${fence}${codeLanguage(element)}\n${text}${text.endsWith("\n") ? "" : "\n"}${fence}\n\n`;
     },
+  });
+  turndown.addRule("complexTable", {
+    filter: (node) => node.nodeName === "TABLE" && requiresRawHtmlTable(node as HTMLElement),
+    replacement: (_content, node) => `\n\n${(node as HTMLElement).outerHTML}\n\n`,
   });
 
   return `${normalizeBlankLines(turndown.turndown(html))}\n`;
