@@ -78,12 +78,24 @@ second
     expect(markdown).not.toMatch(/\n<script|\n<img|\n<iframe/);
   });
 
+  it("escapes encoded active HTML at the fragment root", () => {
+    expect(convertToMarkdown(cleanArticleHtml("&lt;script&gt;globalThis.ROOT=1&lt;/script&gt;")))
+      .toBe("&lt;script&gt;globalThis.ROOT=1&lt;/script&gt;\n");
+  });
+
   it("converts highlighted wrappers with the same safe fence behavior", () => {
     const markdown = convertToMarkdown(cleanArticleHtml(
       '<div class="highlight-source-js"><pre><code>before\n```\n&lt;script&gt;globalThis.H=1&lt;/script&gt;</code></pre></div>',
     ));
 
     expect(markdown).toBe("````text\nbefore\n```\n<script>globalThis.H=1</script>\n````\n");
+  });
+
+  it.each(["highlight-text-js", "xhighlight-source-js"])("does not trust %s wrappers", (className) => {
+    const markdown = convertToMarkdown(cleanArticleHtml(
+      `<div class="${className}"><pre><code>before\n\`\`\`\n&lt;script&gt;globalThis.H=1&lt;/script&gt;</code></pre></div>`,
+    ));
+    expect(markdown).toContain("````text\nbefore\n```\n<script>globalThis.H=1</script>\n````");
   });
 
   it("does not replace user text that resembles protected table markers", () => {

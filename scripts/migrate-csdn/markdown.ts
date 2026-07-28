@@ -1,5 +1,5 @@
 import TurndownService from "turndown";
-import { gfm } from "turndown-plugin-gfm";
+import { tables, strikethrough, taskListItems } from "turndown-plugin-gfm";
 import { load } from "cheerio";
 
 function codeLanguage(element: HTMLElement): string {
@@ -122,7 +122,7 @@ function protectedHtml(html: string): { html: string; rawTables: Array<{ token: 
       $(table).replaceWith(token);
     }
   });
-  $("*").each((_, element) => {
+  $.root().find("*").addBack().each((_, element) => {
     if ($(element).is("pre, code")) return;
     $(element).contents().each((_, child) => {
       if (child.type === "text") child.data = child.data.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -139,7 +139,7 @@ export function convertToMarkdown(html: string): string {
     fence: "```",
     headingStyle: "atx",
   });
-  turndown.use(gfm);
+  turndown.use([tables, strikethrough, taskListItems]);
   turndown.addRule("fencedPre", {
     filter: "pre",
     replacement: (_content, node) => {
@@ -153,17 +153,6 @@ export function convertToMarkdown(html: string): string {
   turndown.addRule("complexTable", {
     filter: (node) => node.nodeName === "TABLE" && !isSimpleGfmTable(node as HTMLElement),
     replacement: (_content, node) => `\n\n${(node as HTMLElement).outerHTML}\n\n`,
-  });
-  turndown.addRule("highlightedPre", {
-    filter: (node) => node.nodeName === "DIV" && /(?:^|\s)highlight-source-[^\s]+/.test((node as HTMLElement).getAttribute("class") ?? "")
-      && Array.from((node as HTMLElement).children).some((child) => child.nodeName === "PRE"),
-    replacement: (_content, node) => {
-      const pre = Array.from((node as HTMLElement).children).find((child) => child.nodeName === "PRE") as HTMLElement;
-      const code = pre.querySelector("code");
-      const text = (code ?? pre).textContent ?? "";
-      const fence = codeFence(text);
-      return `\n\n${fence}${codeLanguage(pre)}\n${text}${text.endsWith("\n") ? "" : "\n"}${fence}\n\n`;
-    },
   });
 
   let markdown = turndown.turndown(protectedContent.html);

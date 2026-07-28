@@ -62,6 +62,7 @@ export function cleanArticleHtml(html: string): string {
         || name === "loading"
         || name.includes("lazy")
         || name.includes("report")
+        || (name === "class" && !$(element).is("pre, code"))
         || (name === "href" && (!$(element).is("a") || !safeAnchorHref(value)))
         || (name === "src" && (!$(element).is("img") || !value || !safeImageSource(value)))
         || (URL_ATTRIBUTES.has(name) && name !== "href" && name !== "src")
