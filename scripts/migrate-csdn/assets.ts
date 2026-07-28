@@ -29,7 +29,7 @@ type AssetFileOperations = {
 };
 
 const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
-const MAX_INPUT_PIXELS = 40_000_000;
+const MAX_INPUT_PIXELS = 120_000_000;
 const MAX_IMAGE_DIMENSION = 20_000;
 const MAX_ANIMATION_FRAMES = 200;
 const COVER_WIDTH = 1280;

@@ -644,8 +644,8 @@ describe("localizeAssets", () => {
   it("rejects a highly compressed raster above the input pixel limit", async () => {
     const outputDirectory = await temporaryDirectory();
     const sourceUrl = "https://i-blog.csdnimg.cn/high-pixel-count.png";
-    const source = await imageBuffer(7000, 6000);
-    expect(source.length).toBeLessThan(1024 * 1024);
+    const source = await imageBuffer(12000, 10100);
+    expect(source.length).toBeLessThan(2 * 1024 * 1024);
 
     await expect(localizeAssets({
       html: `<img src="${sourceUrl}" alt="High pixel count">`,

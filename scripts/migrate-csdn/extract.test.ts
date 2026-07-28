@@ -41,6 +41,20 @@ describe("extractArticle", () => {
     expect(article.publishedAt).toBe("2022-03-04");
   });
 
+  it("extracts publication date from legacy JSON-LD and postTime fields", () => {
+    const article = extractArticle(`
+      <script type="application/ld+json">{"pubDate":"2020-03-13T04:05:35"}</script>
+      <script>var postTime = "2020-03-12 04:05:35"</script>
+      <header class="article-header-box"><div class="article-header">
+        <h1 class="title-article">Legacy</h1>
+        <div class="article-info-box"><span class="article-type-text">原创</span></div>
+      </div></header>
+      <div id="content_views"><p>Body</p></div>
+    `, "https://blog.csdn.net/example/article/details/47");
+
+    expect(article.publishedAt).toBe("2020-03-13");
+  });
+
   it("does not treat a recommended article's date as the target publication date", () => {
     expect(() => extractArticle(`
       <h1 class="title-article">No publication date</h1>

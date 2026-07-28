@@ -54,25 +54,27 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - `main` 已包含项目上下文、架构设计稿、实施计划和 Astro 第一版生产代码。
 - 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
-- 已有 2 篇 Markdown 文章：`jenkins-groovy-practices.md` 为公开样例，`git-team-workflow.md` 为 `draft: true` 草稿；早期 5 篇测试文章已删除，后续继续迁移剩余 CSDN 文章。
+- 已有 21 篇 Markdown 文章：20 篇为从 CSDN `DynastyRumble` 账号迁移来的公开文章，`git-team-workflow.md` 为 `draft: true` 草稿；早期 5 篇测试文章已删除。
 - 已实现首页、文章详情、分类、标签、归档、专题、项目、关于、搜索、RSS、站点地图和 404。
 - 已实现 Decap CMS 最小后台：`public/admin/index.html` 和 `public/admin/config.yml`。
 - 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
 - OpenDesign 原型目录在本机保留为参考，并通过 `.gitignore` 排除，不作为生产运行时代码。
 - `docs/` 目录只作为本地规划、草稿和 Agent 交接资料，通过 `.gitignore` 排除，不进入 GitHub 仓库。
 - 2026-07-28 已完成首页和文章页第一轮 UI 同步：统一导航、移动站点操作、真实首页统计、精选复盘、文章元信息、相邻文章、作者说明和移动目录。
-- 首页当前只保留正式内容，早期 5 篇测试文章已清理；右栏继续只展示真实分类与标签，不展示虚构浏览量、学习进度或归档填充项。
+- 首页当前展示 20 篇公开文章、3 个真实分类和 78 个真实标签；右栏继续只展示真实分类与标签，不展示虚构浏览量、学习进度或归档填充项。
 - OpenDesign 继续保留更丰富的演示正文用于排版覆盖；Astro 只渲染仓库中真实 Markdown，内容长度不同不视为 UI 不一致。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
-最近验证结果（2026-07-28 删除 5 篇测试文章后）：
+最近验证结果（2026-07-29 完成 CSDN 全量迁移后）：
 
 ```text
-npm run build  → 16 pages built, Pagefind indexed 1 public article page
+npm run build  → 111 pages built, Pagefind indexed 20 public article pages
+npx vitest run scripts/migrate-csdn/extract.test.ts -t "legacy JSON-LD" → 1 passed
+npx vitest run scripts/migrate-csdn/assets.test.ts -t "highly compressed" → 1 passed
 ```
 
-本轮未重新运行 `npm run test`、`npm run test:e2e` 或 `npm run check`；继续改 UI、脚本或迁移工具时，应按风险补跑。
+本轮尚未重新运行完整 `npm run test`、`npm run test:e2e` 或 `npm run check`；继续改 UI、脚本或迁移工具时，应按风险补跑。
 
 浏览器验证：
 
@@ -394,12 +396,14 @@ seriesOrder: 1
 ```text
 src/content/posts/
 ├─ jenkins-groovy-practices.md
+├─ pc-dian-nao-ruan-jian-bian-cheng-huan-jing-cha-jian-tui-jian.md
+├─ ...
 └─ git-team-workflow.md  （draft）
 
 public/images/posts/
-└─ jenkins-groovy-practices/
-   ├─ cover.webp
-   └─ ...
+├─ jenkins-groovy-practices/
+├─ pc-dian-nao-ruan-jian-bian-cheng-huan-jing-cha-jian-tui-jian/
+└─ ...
 ```
 
 ## 10. 图片规则
@@ -557,7 +561,8 @@ public/images/posts/
 
 ## 19. CSDN 迁移状态
 
-- 来源账号是 `DynastyRumble`，后续继续逐篇迁移剩余未迁移文章。
+- 来源账号是 `DynastyRumble`；2026-07-29 已完成账号页公开 20 篇文章迁移，当前剩余未迁移文章为 0。
 - 每篇迁移文落到 `src/content/posts/<slug>.md` 与 `public/images/posts/<slug>/`，再检查首页、分类、标签、归档和搜索。
 - 迁移时优先保持原文标题、结构、发布时间、更新时间、图片和链接，不擅自改写正文。
+- 迁移脚本仍默认输出草稿；本轮全量迁移后，19 篇新增迁移文已统一改为 `draft: false` 公开，`git-team-workflow.md` 仍是测试草稿。
 - 早期 5 篇测试文章已删除，不要再把它们当作正式内容恢复。

@@ -52,10 +52,19 @@ function articleKind(articleId: string, text: string): ArticleKind {
   throw new Error(`Article ${articleId} has an unknown kind`);
 }
 
-function publishedAt(articleId: string, dataTime: string | undefined, pageText: string): string {
+function publishedAt(
+  articleId: string,
+  dataTime: string | undefined,
+  pageText: string,
+  pageHtml: string,
+): string {
   if (dataTime !== undefined) {
     return required(articleId, "published date", normalizeDate(dataTime));
   }
+  const jsonLd = pageHtml.match(/"pubDate"\s*:\s*"([^"]+)"/);
+  if (jsonLd) return required(articleId, "published date", normalizeDate(jsonLd[1]));
+  const postTime = pageHtml.match(/\bpostTime\s*=\s*"([^"]+)"/);
+  if (postTime) return required(articleId, "published date", normalizeDate(postTime[1]));
   const fallback = pageText.match(/(?:原创|翻译)\s*于\s*(\d{4}[.-]\d{1,2}[.-]\d{1,2})/);
   return required(articleId, "published date", fallback ? normalizeDate(fallback[1]) : undefined);
 }
@@ -81,7 +90,7 @@ export function extractArticle(html: string, sourceUrl: string): CsdnArticle {
     articleId,
     sourceUrl,
     title: required(articleId, "title", titleElement.text()),
-    publishedAt: publishedAt(articleId, header.find(".blog-postTime[data-time]").first().attr("data-time"), header.text()),
+    publishedAt: publishedAt(articleId, header.find(".blog-postTime[data-time]").first().attr("data-time"), header.text(), html),
     kind,
     columns,
     keywords,
