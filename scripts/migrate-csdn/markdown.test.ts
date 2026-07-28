@@ -1,9 +1,15 @@
 import { readFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { cleanArticleHtml } from "./clean.js";
 import { convertToMarkdown } from "./markdown.js";
+
+vi.mock("node:crypto", async (importOriginal) => {
+  const crypto = await importOriginal<typeof import("node:crypto")>();
+  return { ...crypto, randomUUID: vi.fn(crypto.randomUUID) };
+});
 
 const articleFixture = new URL("./fixtures/article.html", import.meta.url);
 
@@ -111,12 +117,62 @@ second
     expect(markdown.indexOf("Between")).toBeLessThan(markdown.indexOf("Second"));
   });
 
+  it("preserves token-shaped user text split across inline nodes while restoring raw tables in order", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(`
+      <p>Before CSDN<span>RAW</span><!-- split --><a href=""></a>TABLE<span></span>0TOKEN</p>
+      <table><caption>First raw table</caption><tr><td>A</td></tr></table>
+      <p>Between CSDN<span>RAW</span><!-- split --><a href=""></a>TABLE<span></span>1TOKEN</p>
+      <table><caption>Second raw table</caption><tr><td>B</td></tr></table>
+      <p>After</p>
+    `));
+
+    expect((markdown.match(/<table>/g) ?? [])).toHaveLength(2);
+    expect(markdown).toContain("CSDNRAWTABLE0TOKEN");
+    expect(markdown).toContain("CSDNRAWTABLE1TOKEN");
+    expect(markdown.indexOf("CSDNRAWTABLE0TOKEN")).toBeLessThan(markdown.indexOf("First raw table"));
+    expect(markdown.indexOf("First raw table")).toBeLessThan(markdown.indexOf("CSDNRAWTABLE1TOKEN"));
+    expect(markdown.indexOf("CSDNRAWTABLE1TOKEN")).toBeLessThan(markdown.indexOf("Second raw table"));
+    expect(markdown.indexOf("Second raw table")).toBeLessThan(markdown.indexOf("After"));
+  });
+
+  it("retries when an actual UUID table token is split across inline nodes", () => {
+    const firstUuid = "11111111-1111-4111-8111-111111111111";
+    const secondUuid = "22222222-2222-4222-8222-222222222222";
+    const thirdUuid = "33333333-3333-4333-8333-333333333333";
+    const uuid = vi.mocked(randomUUID);
+    const callsBefore = uuid.mock.calls.length;
+    uuid.mockReturnValueOnce(firstUuid).mockReturnValueOnce(secondUuid).mockReturnValueOnce(thirdUuid);
+    const collidingToken = `\uE000${firstUuid}-0\uE001`;
+
+    const markdown = convertToMarkdown(cleanArticleHtml(`
+      <p>Before \uE000${firstUuid.slice(0, 10)}<span>${firstUuid.slice(10)}-0</span><!-- split --><a href=""></a>\uE001</p>
+      <table><caption>First raw table</caption><tr><td>A</td></tr></table>
+      <p>Between</p>
+      <table><caption>Second raw table</caption><tr><td>B</td></tr></table>
+    `));
+
+    expect(uuid.mock.calls).toHaveLength(callsBefore + 3);
+    expect(markdown.split(collidingToken)).toHaveLength(2);
+    expect(markdown.indexOf(collidingToken)).toBeLessThan(markdown.indexOf("First raw table"));
+    expect(markdown.indexOf("First raw table")).toBeLessThan(markdown.indexOf("Between"));
+    expect(markdown.indexOf("Between")).toBeLessThan(markdown.indexOf("Second raw table"));
+  });
+
   it("handles many backtick runs without expanding them as function arguments", () => {
     const code = Array.from({ length: 20_000 }, () => "`").join(" ");
     const markdown = convertToMarkdown(cleanArticleHtml(`<pre><code>${code}</code></pre>`));
 
     expect(markdown).toMatch(/^```text\n/);
     expect(markdown).toMatch(/\n```\n$/);
+  });
+
+  it("decodes nested highlighted code text before creating a safe fence", () => {
+    const markdown = convertToMarkdown(cleanArticleHtml(
+      "<pre><code><span>&lt;script&gt;A&amp;B&lt;/script&gt;</span></code></pre>",
+    ));
+
+    expect(markdown).toBe("```text\n<script>A&B</script>\n```\n");
+    expect(markdown).not.toMatch(/&lt;script&gt;|&amp;B/);
   });
 
   it("removes CSDN wrappers and executable markup without removing ordinary text", () => {
@@ -227,6 +283,21 @@ second
 
     expect(markdown).toContain("| Name | Value |\n| --- | --- |\n| A | 1 |");
     expect(markdown).not.toContain("<table>");
+  });
+
+  it.each([
+    ["a headingless table", "<table><tbody><tr><td>R&amp;D &lt;tag&gt;</td></tr></tbody></table>"],
+    ["mismatched row cell counts", "<table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody><tr><td>R&amp;D &lt;tag&gt;</td></tr></tbody></table>"],
+    ["multiple body sections", "<table><thead><tr><th>Value</th></tr></thead><tbody><tr><td>R&amp;D &lt;tag&gt;</td></tr></tbody><tbody><tr><td>Second</td></tr></tbody></table>"],
+    ["unsupported inline content", "<table><thead><tr><th>Value</th></tr></thead><tbody><tr><td><mark>R&amp;D</mark> &lt;tag&gt;</td></tr></tbody></table>"],
+  ])("preserves %s without double escaping visible content", (_name, html) => {
+    const markdown = convertToMarkdown(cleanArticleHtml(html));
+
+    expect((markdown.match(/<table>/g) ?? [])).toHaveLength(1);
+    expect(markdown).toContain("R&amp;D");
+    expect(markdown).toContain("&lt;tag&gt;");
+    expect(markdown).not.toMatch(/R&amp;amp;D|&amp;lt;tag&amp;gt;/);
+    expect(markdown).not.toContain("| --- |");
   });
 
   it.each([

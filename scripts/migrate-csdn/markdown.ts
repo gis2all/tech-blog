@@ -1,6 +1,8 @@
 import TurndownService from "turndown";
 import { tables, strikethrough, taskListItems } from "turndown-plugin-gfm";
-import { load } from "cheerio";
+import { contains, load, type CheerioAPI } from "cheerio";
+import type { AnyNode, Element } from "domhandler";
+import { randomUUID } from "node:crypto";
 
 function codeLanguage(element: HTMLElement): string {
   const code = element.querySelector("code");
@@ -20,57 +22,80 @@ function codeFence(text: string): string {
   return "`".repeat(Math.max(3, longestRun + 1));
 }
 
-const INLINE_TABLE_ELEMENTS = new Set(["A", "IMG", "CODE", "EM", "I", "STRONG", "B", "DEL", "S", "STRIKE"]);
+const INLINE_TABLE_ELEMENTS = new Set(["a", "img", "code", "em", "i", "strong", "b", "del", "s", "strike"]);
 
-function isLosslessInlineNode(node: Node): boolean {
-  if (node.nodeType === 3) return true;
-  if (node.nodeType !== 1) return false;
-  const element = node as HTMLElement;
-  return INLINE_TABLE_ELEMENTS.has(element.nodeName)
-    && [...element.childNodes].every(isLosslessInlineNode);
+function isLosslessInlineNode($: CheerioAPI, node: AnyNode): boolean {
+  if (node.type === "text") return true;
+  if (node.type !== "tag") return false;
+  return INLINE_TABLE_ELEMENTS.has(node.name)
+    && $(node).contents().toArray().every((child) => isLosslessInlineNode($, child));
 }
 
-function directRows(element: HTMLElement): HTMLElement[] {
-  return Array.from(element.children).filter((child) => child.nodeName === "TR") as HTMLElement[];
+function directRows($: CheerioAPI, element: Element): Element[] {
+  return $(element).children("tr").toArray();
 }
 
-function directCells(row: HTMLElement): HTMLElement[] {
-  return Array.from(row.children)
-    .filter((child) => child.nodeName === "TH" || child.nodeName === "TD") as HTMLElement[];
+function directCells($: CheerioAPI, row: Element): Element[] {
+  return $(row).children("th, td").toArray();
 }
 
-function isSimpleGfmTable(element: HTMLElement): boolean {
-  if (element.querySelector("caption, colgroup, col, table")) return false;
+function isSimpleGfmTableHtml(tableHtml: string): boolean {
+  const $ = load(tableHtml, undefined, false);
+  const tables = $("table");
+  if (tables.length !== 1) return false;
 
-  const children = Array.from(element.children) as HTMLElement[];
-  const directTableRows = directRows(element);
-  const sections = children.filter((child) => ["THEAD", "TBODY", "TFOOT"].includes(child.nodeName));
+  const table = tables[0];
+  if ($(table).find("caption, colgroup, col, tfoot, br").length) return false;
+
+  const children = $(table).children().toArray();
+  const directTableRows = directRows($, table);
+  const sections = children.filter((child) => ["thead", "tbody", "tfoot"].includes(child.name));
+  if (directTableRows.length && directTableRows.length !== children.length) return false;
   if (directTableRows.length && sections.length) return false;
-  if (sections.filter((section) => section.nodeName === "TFOOT").length) return false;
-  if (sections.filter((section) => section.nodeName === "THEAD").length > 1) return false;
-  if (sections.filter((section) => section.nodeName === "TBODY").length > 1) return false;
+  if (sections.length && sections.length !== children.length) return false;
+  if (sections.some((section) => directRows($, section).length !== $(section).children().length)) return false;
+  if (sections.filter((section) => section.name === "tfoot").length) return false;
+  if (sections.filter((section) => section.name === "thead").length > 1) return false;
+  if (sections.filter((section) => section.name === "tbody").length > 1) return false;
 
-  const headerSection = sections.find((section) => section.nodeName === "THEAD");
-  const bodySection = sections.find((section) => section.nodeName === "TBODY");
+  const headerSection = sections.find((section) => section.name === "thead");
+  const bodySection = sections.find((section) => section.name === "tbody");
   if (headerSection && bodySection && children.indexOf(headerSection) > children.indexOf(bodySection)) return false;
-  const headerRows = headerSection ? directRows(headerSection) : directTableRows.slice(0, 1);
-  const dataRows = headerSection ? directRows(bodySection ?? element) : directTableRows.slice(1);
-  if (headerRows.length !== 1 || (headerSection && directTableRows.length)) return false;
 
-  const rows = [...headerRows, ...dataRows];
-  if (!rows.length) return false;
-  const cellsByRow = rows.map(directCells);
+  const sectionRows = headerSection
+    ? [...directRows($, headerSection), ...(bodySection ? directRows($, bodySection) : [])]
+    : bodySection
+      ? directRows($, bodySection)
+      : directTableRows;
+  if (headerSection && directRows($, headerSection).length !== 1) return false;
+
+  if (!sectionRows.length) return false;
+  const cellsByRow = sectionRows.map((row) => directCells($, row));
+  if (sectionRows.some((row, index) => cellsByRow[index].length !== $(row).children().length)) return false;
   const cellCount = cellsByRow[0].length;
-  if (!cellCount || !cellsByRow[0].every((cell) => cell.nodeName === "TH")) return false;
+  if (!cellCount || !cellsByRow[0].every((cell) => cell.name === "th")) return false;
 
   return cellsByRow.every((cells, index) => cells.length === cellCount
-    && (index === 0 ? cells.every((cell) => cell.nodeName === "TH") : cells.every((cell) => cell.nodeName === "TD"))
+    && (index === 0 ? cells.every((cell) => cell.name === "th") : cells.every((cell) => cell.name === "td"))
     && cells.every((cell) => (
-    !cell.hasAttribute("rowspan")
-    && !cell.hasAttribute("colspan")
-    && !cell.innerHTML.includes("|")
-    && [...cell.childNodes].every(isLosslessInlineNode)
+    $(cell).attr("rowspan") === undefined
+    && $(cell).attr("colspan") === undefined
+    && !($(cell).html() ?? "").includes("|")
+    && $(cell).contents().toArray().every((node) => isLosslessInlineNode($, node))
     )));
+}
+
+function tableToken(
+  canonicalHtml: string,
+  canonicalText: string,
+  index: number,
+  existingTokens: ReadonlySet<string>,
+): string {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const token = `\uE000${randomUUID()}-${index}\uE001`;
+    if (!canonicalHtml.includes(token) && !canonicalText.includes(token) && !existingTokens.has(token)) return token;
+  }
+  throw new Error("CSDN table placeholder collision");
 }
 
 function normalizeBlankLines(markdown: string): string {
@@ -106,24 +131,21 @@ function normalizeBlankLines(markdown: string): string {
 
 function protectedHtml(html: string): { html: string; rawTables: Array<{ token: string; html: string }> } {
   const $ = load(html, undefined, false);
+  const canonicalText = $.root().text();
   const rawTables: Array<{ token: string; html: string }> = [];
+  const tokens = new Set<string>();
   $("table").each((_, table) => {
+    if (!contains($.root()[0], table)) return;
     const tableHtml = $(table).prop("outerHTML") ?? "";
-    const complex = /<(?:p|ul|ol|li|blockquote|pre|div|h[1-6]|caption|colgroup|col|tfoot|br)\b|rowspan|colspan|\||<thead[\s\S]*?<\/tr>\s*<tr|<tbody[\s\S]*?<th\b/i.test(tableHtml)
-      || (tableHtml.match(/<table\b/gi) ?? []).length > 1;
-    if (complex) {
-      let nonce = rawTables.length;
-      let token: string;
-      do {
-        token = `\uE000csdn-table-${nonce}\uE001`;
-        nonce++;
-      } while (html.includes(token));
+    if (!isSimpleGfmTableHtml(tableHtml)) {
+      const token = tableToken(html, canonicalText, rawTables.length, tokens);
+      tokens.add(token);
       rawTables.push({ token, html: tableHtml });
       $(table).replaceWith(token);
     }
   });
   $.root().find("*").addBack().each((_, element) => {
-    if ($(element).is("pre, code")) return;
+    if ($(element).closest("pre, code").length) return;
     $(element).contents().each((_, child) => {
       if (child.type === "text") child.data = child.data.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     });
@@ -151,12 +173,14 @@ export function convertToMarkdown(html: string): string {
     },
   });
   turndown.addRule("complexTable", {
-    filter: (node) => node.nodeName === "TABLE" && !isSimpleGfmTable(node as HTMLElement),
+    filter: (node) => node.nodeName === "TABLE" && !isSimpleGfmTableHtml((node as HTMLElement).outerHTML),
     replacement: (_content, node) => `\n\n${(node as HTMLElement).outerHTML}\n\n`,
   });
 
   let markdown = turndown.turndown(protectedContent.html);
   for (const table of protectedContent.rawTables) {
+    const occurrences = markdown.split(table.token).length - 1;
+    if (occurrences !== 1) throw new Error("CSDN table placeholder restoration failed");
     markdown = markdown.replace(table.token, table.html);
   }
   return `${normalizeBlankLines(markdown)}\n`;
