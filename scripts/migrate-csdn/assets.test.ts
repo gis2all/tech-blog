@@ -1,4 +1,4 @@
-import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 
@@ -39,6 +39,17 @@ async function imageBuffer(
   });
 
   return image.toFormat(format).toBuffer();
+}
+
+async function transparentPng(width: number, height: number): Promise<Buffer> {
+  return sharp({
+    create: {
+      width,
+      height,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  }).png().toBuffer();
 }
 
 async function gifBuffer(width: number, height: number): Promise<Buffer> {
@@ -144,7 +155,7 @@ describe("localizeAssets", () => {
 
   it("bounds a large static image to a 1600-pixel longest edge without enlargement", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/large.jpg";
+    const sourceUrl = "https://i-blog.csdnimg.cn/large.jpg";
     const result = await localizeAssets({
       html: `<img src="${sourceUrl}" alt="Large diagram">`,
       slug: "large-diagram",
@@ -180,7 +191,7 @@ describe("localizeAssets", () => {
 
   it("uses per-frame GIF height when deciding whether to create a cover", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/wide-short.gif";
+    const sourceUrl = "https://i-blog.csdnimg.cn/wide-short.gif";
     const source = await animatedBuffer(320, 100, "gif");
     await expect(sharp(source, { animated: true }).metadata()).resolves.toMatchObject({
       format: "gif",
@@ -204,7 +215,7 @@ describe("localizeAssets", () => {
 
   it("creates a cover from the first frame of a qualifying animated GIF", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/qualifying.gif";
+    const sourceUrl = "https://i-blog.csdnimg.cn/qualifying.gif";
     const source = await animatedBuffer(320, 180, "gif");
     const result = await localizeAssets({
       html: `<img src="${sourceUrl}" alt="Animated architecture">`,
@@ -224,8 +235,8 @@ describe("localizeAssets", () => {
 
   it("uses the first qualifying image for the cover while keeping body images in order", async () => {
     const outputDirectory = await temporaryDirectory();
-    const smallUrl = "https://cdn.example.com/icon.png";
-    const largeUrl = "https://cdn.example.com/screenshot.png";
+    const smallUrl = "https://i-blog.csdnimg.cn/icon.png";
+    const largeUrl = "https://i-blog.csdnimg.cn/screenshot.png";
     const result = await localizeAssets({
       html: `<img src="${smallUrl}" alt="Icon"><p>Then</p><img src="${largeUrl}" alt="Dashboard screenshot">`,
       slug: "ordered-images",
@@ -248,7 +259,7 @@ describe("localizeAssets", () => {
 
   it("omits a cover when no image qualifies", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/narrow.webp";
+    const sourceUrl = "https://i-blog.csdnimg.cn/narrow.webp";
     const result = await localizeAssets({
       html: `<img src="${sourceUrl}" alt="Narrow graphic">`,
       slug: "narrow-image",
@@ -301,7 +312,7 @@ describe("localizeAssets", () => {
       fetchImpl,
       articleTitle: "Private Literal",
       resolveHostname: async () => ["93.184.216.34"],
-    })).rejects.toThrow(/private|unsafe|local address/i);
+    })).rejects.toThrow(/private|unsafe|local address|IP literals|manual review/i);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
@@ -342,7 +353,7 @@ describe("localizeAssets", () => {
       outputDirectory,
       fetchImpl,
       articleTitle: "Unsafe Target",
-    })).rejects.toThrow(/unsafe|private|local|credentials/i);
+    })).rejects.toThrow(/unsafe|private|local|credentials|IP literals|manual review/i);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
@@ -351,14 +362,51 @@ describe("localizeAssets", () => {
     const fetchImpl = vi.fn<FetchLike>(async () => new Response(responseBody(await imageBuffer(20, 20))));
 
     await expect(localizeAssets({
-      html: '<img src="https://images.example.test/private.png" alt="Private DNS">',
+      html: '<img src="https://i-blog.csdnimg.cn/private.png" alt="Private DNS">',
       slug: "private-dns",
       outputDirectory,
       fetchImpl,
       articleTitle: "Private DNS",
       resolveHostname: async () => ["10.20.30.40"],
-    })).rejects.toThrow(/private|unsafe|local address/i);
+    })).rejects.toThrow(/private|unsafe|local address|IP literals|manual review/i);
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("rejects an arbitrary external hostname even when it resolves publicly", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const fetchImpl = vi.fn<FetchLike>(async () => new Response(
+      responseBody(await imageBuffer(20, 20)),
+      { headers: { "content-type": "image/png" } },
+    ));
+
+    await expect(localizeAssets({
+      html: '<img src="https://cdn.example.com/public.png" alt="External">',
+      slug: "external-host",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "External Host",
+    })).rejects.toThrow(/unapproved external image host|manual review/i);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("upgrades an allowlisted legacy HTTP image URL before fetching", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "http://img-blog.csdnimg.cn/legacy.png";
+    const secureUrl = "https://img-blog.csdnimg.cn/legacy.png";
+    const fetchImpl = vi.fn<FetchLike>(fetchFrom({
+      [secureUrl]: { body: await imageBuffer(20, 20), type: "image/png" },
+    }));
+
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Legacy image">`,
+      slug: "legacy-http",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "Legacy HTTP",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(new URL(secureUrl), { redirect: "manual" });
+    expect(result.assets[0].sourceUrl).toBe(sourceUrl);
   });
 
   it("rejects a redirect to a private address before following it", async () => {
@@ -369,67 +417,45 @@ describe("localizeAssets", () => {
     }));
 
     await expect(localizeAssets({
-      html: '<img src="https://public.example/image.png" alt="Redirect">',
+      html: '<img src="https://img-blog.csdnimg.cn/image.png" alt="Redirect">',
       slug: "private-redirect",
       outputDirectory,
       fetchImpl,
       articleTitle: "Private Redirect",
       resolveHostname: async () => ["93.184.216.34"],
-    })).rejects.toThrow(/private|unsafe|local address/i);
+    })).rejects.toThrow(/private|unsafe|local address|IP literals|manual review/i);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect(fetchImpl).toHaveBeenCalledWith(new URL("https://public.example/image.png"), { redirect: "manual" });
+    expect(fetchImpl).toHaveBeenCalledWith(new URL("https://img-blog.csdnimg.cn/image.png"), { redirect: "manual" });
   });
 
-  it("accepts a public IP literal without DNS resolution", async () => {
+  it.each([
+    "https://93.184.216.34/public.png",
+    "https://[2606:4700:4700::1111]/public.png",
+  ])("rejects public IP literal %s before fetching", async (sourceUrl) => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://93.184.216.34/public.png";
     const resolveHostname = vi.fn(async () => ["10.0.0.1"]);
     const fetchImpl = vi.fn<FetchLike>(async () => new Response(
       responseBody(await imageBuffer(20, 20)),
       { headers: { "content-type": "image/png" } },
     ));
 
-    const result = await localizeAssets({
+    await expect(localizeAssets({
       html: `<img src="${sourceUrl}" alt="Public">`,
       slug: "public-literal",
       outputDirectory,
       fetchImpl,
       articleTitle: "Public Literal",
       resolveHostname,
-    });
+    })).rejects.toThrow(/IP literals|manual review/i);
 
-    expect(result.assets).toHaveLength(1);
     expect(resolveHostname).not.toHaveBeenCalled();
-    expect(fetchImpl).toHaveBeenCalledWith(new URL(sourceUrl), { redirect: "manual" });
-  });
-
-  it("accepts a public IPv6 literal without DNS resolution", async () => {
-    const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://[2606:4700:4700::1111]/public.png";
-    const resolveHostname = vi.fn(async () => ["10.0.0.1"]);
-    const fetchImpl = vi.fn<FetchLike>(async () => new Response(
-      responseBody(await imageBuffer(20, 20)),
-      { headers: { "content-type": "image/png" } },
-    ));
-
-    const result = await localizeAssets({
-      html: `<img src="${sourceUrl}" alt="Public IPv6">`,
-      slug: "public-ipv6",
-      outputDirectory,
-      fetchImpl,
-      articleTitle: "Public IPv6",
-      resolveHostname,
-    });
-
-    expect(result.assets).toHaveLength(1);
-    expect(resolveHostname).not.toHaveBeenCalled();
-    expect(fetchImpl).toHaveBeenCalledWith(new URL(sourceUrl), { redirect: "manual" });
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it("follows a relative redirect only after validating each public hostname", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://public.example/start.png";
-    const finalUrl = "https://public.example/final.png";
+    const sourceUrl = "https://img-blog.csdnimg.cn/start.png";
+    const finalUrl = "https://img-blog.csdnimg.cn/final.png";
     const fetchImpl = vi.fn<FetchLike>(async (input) => input.toString() === sourceUrl
       ? new Response(null, { status: 302, headers: { location: "/final.png" } })
       : new Response(responseBody(await imageBuffer(20, 20)), { headers: { "content-type": "image/png" } }));
@@ -452,9 +478,27 @@ describe("localizeAssets", () => {
     ]);
   });
 
+  it("rejects an allowed-host redirect to an external public hostname", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://img-blog.csdnimg.cn/start-external.png";
+    const externalUrl = "https://cdn.example.com/final.png";
+    const fetchImpl = vi.fn<FetchLike>(async (input) => input.toString() === sourceUrl
+      ? new Response(null, { status: 302, headers: { location: externalUrl } })
+      : new Response(responseBody(await imageBuffer(20, 20)), { headers: { "content-type": "image/png" } }));
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="External redirect">`,
+      slug: "external-redirect",
+      outputDirectory,
+      fetchImpl,
+      articleTitle: "External Redirect",
+    })).rejects.toThrow(/unapproved external image host|manual review/i);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
   it.each(["jpeg", "png"] as const)("accepts a valid %s containing an SVG-like text marker", async (format) => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = `https://cdn.example.com/marker.${format}`;
+    const sourceUrl = `https://i-blog.csdnimg.cn/marker.${format}`;
     const raster = await imageBuffer(40, 30, format);
     const source = Buffer.concat([raster, Buffer.from("metadata:<svg>not markup</svg>")]);
     const result = await localizeAssets({
@@ -472,7 +516,7 @@ describe("localizeAssets", () => {
 
   it("rejects animated WebP instead of flattening it", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/animated.webp";
+    const sourceUrl = "https://i-blog.csdnimg.cn/animated.webp";
     const source = await animatedBuffer(320, 180, "webp");
     await expect(sharp(source, { animated: true }).metadata()).resolves.toMatchObject({
       format: "webp",
@@ -490,7 +534,7 @@ describe("localizeAssets", () => {
 
   it("rejects unsupported TIFF raster input", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/unsupported.tiff";
+    const sourceUrl = "https://i-blog.csdnimg.cn/unsupported.tiff";
     const source = await sharp({
       create: {
         width: 400,
@@ -511,7 +555,7 @@ describe("localizeAssets", () => {
 
   it("rejects images over the byte-size limit before decoding", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/oversized.png";
+    const sourceUrl = "https://i-blog.csdnimg.cn/oversized.png";
     const oversized = Buffer.alloc(25 * 1024 * 1024 + 1);
 
     await expect(localizeAssets({
@@ -525,7 +569,7 @@ describe("localizeAssets", () => {
 
   it("cancels a response body rejected by Content-Length before consuming it", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/declared-oversized.png";
+    const sourceUrl = "https://i-blog.csdnimg.cn/declared-oversized.png";
     let cancelled = false;
     const body = new ReadableStream<Uint8Array>({
       pull(controller) {
@@ -553,7 +597,7 @@ describe("localizeAssets", () => {
 
   it("cancels a streamed response as soon as the running byte limit is exceeded", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/streamed-oversized.png";
+    const sourceUrl = "https://i-blog.csdnimg.cn/streamed-oversized.png";
     let chunks = 0;
     let cancelled = false;
     const body = new ReadableStream<Uint8Array>({
@@ -579,7 +623,7 @@ describe("localizeAssets", () => {
 
   it("rejects a highly compressed raster above the input pixel limit", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/high-pixel-count.png";
+    const sourceUrl = "https://i-blog.csdnimg.cn/high-pixel-count.png";
     const source = await imageBuffer(7000, 6000);
     expect(source.length).toBeLessThan(1024 * 1024);
 
@@ -594,7 +638,7 @@ describe("localizeAssets", () => {
 
   it("rejects animations over the frame-count limit", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/too-many-frames.gif";
+    const sourceUrl = "https://i-blog.csdnimg.cn/too-many-frames.gif";
     const source = await animatedBuffer(3, 3, "gif", 201);
     await expect(sharp(source, { animated: true }).metadata()).resolves.toMatchObject({ pages: 201 });
 
@@ -609,7 +653,7 @@ describe("localizeAssets", () => {
 
   it("auto-rotates EXIF images and qualifies covers using oriented dimensions", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/oriented.jpg";
+    const sourceUrl = "https://i-blog.csdnimg.cn/oriented.jpg";
     const source = await orientedJpeg(200, 400, 6);
     await expect(sharp(source).metadata()).resolves.toMatchObject({
       width: 200,
@@ -633,7 +677,7 @@ describe("localizeAssets", () => {
 
   it("uses article context for cover alt text when the source alt is empty", async () => {
     const outputDirectory = await temporaryDirectory();
-    const sourceUrl = "https://cdn.example.com/context.png";
+    const sourceUrl = "https://i-blog.csdnimg.cn/context.png";
     const result = await localizeAssets({
       html: `<img src="${sourceUrl}" alt="" title="Context image">`,
       slug: "context-post",
@@ -650,8 +694,8 @@ describe("localizeAssets", () => {
 
   it("processes only body images from a complete HTML document", async () => {
     const outputDirectory = await temporaryDirectory();
-    const headUrl = "https://cdn.example.com/head.png";
-    const bodyUrl = "https://cdn.example.com/body.png";
+    const headUrl = "https://i-blog.csdnimg.cn/head.png";
+    const bodyUrl = "https://i-blog.csdnimg.cn/body.png";
     const requested: string[] = [];
     const body = await imageBuffer(100, 100);
     const result = await localizeAssets({
@@ -674,8 +718,8 @@ describe("localizeAssets", () => {
   it("leaves no final directory when a later image fails", async () => {
     const root = await temporaryDirectory();
     const outputDirectory = join(root, "assets");
-    const firstUrl = "https://cdn.example.com/first.png";
-    const secondUrl = "https://cdn.example.com/missing.png";
+    const firstUrl = "https://i-blog.csdnimg.cn/first.png";
+    const secondUrl = "https://i-blog.csdnimg.cn/missing.png";
 
     await expect(localizeAssets({
       html: `<img src="${firstUrl}" alt="First"><img src="${secondUrl}" alt="Second">`,
@@ -700,8 +744,8 @@ describe("localizeAssets", () => {
     await writeFile(sentinelPath, sentinel);
     await writeFile(existingImagePath, existingImage);
 
-    const firstUrl = "https://cdn.example.com/replacement.png";
-    const secondUrl = "https://cdn.example.com/invalid.png";
+    const firstUrl = "https://i-blog.csdnimg.cn/replacement.png";
+    const secondUrl = "https://i-blog.csdnimg.cn/invalid.png";
     await expect(localizeAssets({
       html: `<img src="${firstUrl}" alt="Replacement"><img src="${secondUrl}" alt="Invalid">`,
       slug: "atomic-existing",
@@ -722,8 +766,8 @@ describe("localizeAssets", () => {
   it("atomically replaces a previous run and removes stale numbered assets", async () => {
     const root = await temporaryDirectory();
     const outputDirectory = join(root, "assets");
-    const firstUrl = "https://cdn.example.com/first.png";
-    const secondUrl = "https://cdn.example.com/second.png";
+    const firstUrl = "https://i-blog.csdnimg.cn/first.png";
+    const secondUrl = "https://i-blog.csdnimg.cn/second.png";
     const smallImage = await imageBuffer(20, 20);
 
     await localizeAssets({
@@ -748,6 +792,143 @@ describe("localizeAssets", () => {
 
     expect(await readdir(outputDirectory)).toEqual(["image-01.webp"]);
     expect(rerun.assets[0].absolutePath).toBe(join(outputDirectory, "image-01.webp"));
+    expect(await transactionArtifacts(outputDirectory)).toEqual([]);
+  });
+
+  it("retries transient Windows rename failures before installing the new directory", async () => {
+    const root = await temporaryDirectory();
+    const outputDirectory = join(root, "assets");
+    const sourceUrl = "https://i-blog.csdnimg.cn/retry.png";
+    await mkdir(outputDirectory);
+    await writeFile(join(outputDirectory, "sentinel.txt"), "old");
+    let remainingFailures = 2;
+    const renameWithTransientLocks = vi.fn(async (from: string, to: string) => {
+      if (from === outputDirectory && remainingFailures > 0) {
+        remainingFailures -= 1;
+        throw Object.assign(new Error("file is temporarily locked"), { code: "EPERM" });
+      }
+      await rename(from, to);
+    });
+
+    await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Retry">`,
+      slug: "windows-retry",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: await imageBuffer(20, 20), type: "image/png" } }),
+      articleTitle: "Windows Retry",
+      fileOperations: {
+        rename: renameWithTransientLocks,
+        wait: async () => undefined,
+      },
+    });
+
+    expect(renameWithTransientLocks).toHaveBeenCalledTimes(4);
+    expect(await readdir(outputDirectory)).toEqual(["image-01.webp"]);
+    expect(await transactionArtifacts(outputDirectory)).toEqual([]);
+  });
+
+  it("keeps a successful install when deleting the previous backup stays busy", async () => {
+    const root = await temporaryDirectory();
+    const outputDirectory = join(root, "assets");
+    const sourceUrl = "https://i-blog.csdnimg.cn/cleanup-busy.png";
+    await mkdir(outputDirectory);
+    await writeFile(join(outputDirectory, "sentinel.txt"), "old");
+    const removeWithLockedBackup = vi.fn(async (path: string) => {
+      if (basename(path).startsWith(".assets.backup-")) {
+        throw Object.assign(new Error("backup is temporarily locked"), { code: "EBUSY" });
+      }
+      await rm(path, { recursive: true, force: true });
+    });
+
+    await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Cleanup busy">`,
+      slug: "cleanup-busy",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: await imageBuffer(20, 20), type: "image/png" } }),
+      articleTitle: "Cleanup Busy",
+      fileOperations: {
+        remove: removeWithLockedBackup,
+        wait: async () => undefined,
+      },
+    });
+
+    expect(await readdir(outputDirectory)).toEqual(["image-01.webp"]);
+    expect(removeWithLockedBackup).toHaveBeenCalledTimes(5);
+    expect(await transactionArtifacts(outputDirectory)).toHaveLength(1);
+  });
+
+  it("restores an orphaned backup before the next run processes images", async () => {
+    const root = await temporaryDirectory();
+    const outputDirectory = join(root, "assets");
+    const backupDirectory = join(root, ".assets.backup-interrupted");
+    const orphanStaging = join(root, ".assets.staging-interrupted");
+    await mkdir(backupDirectory);
+    await mkdir(orphanStaging);
+    await writeFile(join(backupDirectory, "sentinel.txt"), "old");
+    await writeFile(join(orphanStaging, "partial.txt"), "partial");
+    const sourceUrl = "https://i-blog.csdnimg.cn/invalid-after-recovery.png";
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Invalid">`,
+      slug: "recover-interrupted",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: Buffer.from("invalid"), type: "image/png" } }),
+      articleTitle: "Recover Interrupted",
+    })).rejects.toThrow(/Invalid or unsupported image/i);
+
+    expect(await readFile(join(outputDirectory, "sentinel.txt"), "utf8")).toBe("old");
+    expect(await transactionArtifacts(outputDirectory)).toEqual([]);
+  });
+
+  it("preserves both trees when installation and rollback fail, then recovers next run", async () => {
+    const root = await temporaryDirectory();
+    const outputDirectory = join(root, "assets");
+    const sourceUrl = "https://i-blog.csdnimg.cn/rollback-failure.png";
+    await mkdir(outputDirectory);
+    await writeFile(join(outputDirectory, "sentinel.txt"), "old");
+    const renameWithFailedInstallAndRollback = vi.fn(async (from: string, to: string) => {
+      const fromName = basename(from);
+      if (to === outputDirectory && fromName.startsWith(".assets.staging-")) {
+        throw Object.assign(new Error("install is blocked"), { code: "EACCES" });
+      }
+      if (to === outputDirectory && fromName.startsWith(".assets.backup-")) {
+        throw Object.assign(new Error("rollback is blocked"), { code: "EBUSY" });
+      }
+      await rename(from, to);
+    });
+
+    await expect(localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Rollback failure">`,
+      slug: "rollback-failure",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: await imageBuffer(20, 20), type: "image/png" } }),
+      articleTitle: "Rollback Failure",
+      fileOperations: {
+        rename: renameWithFailedInstallAndRollback,
+        wait: async () => undefined,
+      },
+    })).rejects.toThrow(/installation and rollback both failed/i);
+
+    await expect(access(outputDirectory)).rejects.toThrow();
+    const preservedArtifacts = await transactionArtifacts(outputDirectory);
+    expect(preservedArtifacts).toHaveLength(2);
+    const backupDirectory = preservedArtifacts.find((path) => path.includes(".backup-"));
+    const stagingDirectory = preservedArtifacts.find((path) => path.includes(".staging-"));
+    expect(backupDirectory).toBeDefined();
+    expect(stagingDirectory).toBeDefined();
+    expect(await readFile(join(root, backupDirectory!, "sentinel.txt"), "utf8")).toBe("old");
+    await expect(access(join(root, stagingDirectory!, "image-01.webp"))).resolves.toBeUndefined();
+
+    const invalidUrl = "https://i-blog.csdnimg.cn/invalid-after-rollback.png";
+    await expect(localizeAssets({
+      html: `<img src="${invalidUrl}" alt="Invalid">`,
+      slug: "rollback-recovery",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [invalidUrl]: { body: Buffer.from("invalid"), type: "image/png" } }),
+      articleTitle: "Rollback Recovery",
+    })).rejects.toThrow(/Invalid or unsupported image/i);
+
+    expect(await readFile(join(outputDirectory, "sentinel.txt"), "utf8")).toBe("old");
     expect(await transactionArtifacts(outputDirectory)).toEqual([]);
   });
 
@@ -787,8 +968,8 @@ describe("localizeAssets", () => {
 
   it("removes decoded tracking pixels without discarding a legitimate tiny GIF", async () => {
     const outputDirectory = join(await temporaryDirectory(), "assets");
-    const pixelUrl = "https://cdn.example.com/transparent.png";
-    const gifUrl = "https://cdn.example.com/tiny-animation.gif";
+    const pixelUrl = "https://i-blog.csdnimg.cn/transparent.png";
+    const gifUrl = "https://i-blog.csdnimg.cn/tiny-animation.gif";
     const gif = await gifBuffer(3, 3);
 
     const result = await localizeAssets({
@@ -811,5 +992,29 @@ describe("localizeAssets", () => {
       animated: true,
     }]);
     expect(await readFile(join(outputDirectory, "image-01.gif"))).toEqual(gif);
+  });
+
+  it("removes a fully transparent large image before numbering or cover selection", async () => {
+    const outputDirectory = join(await temporaryDirectory(), "assets");
+    const transparentUrl = "https://i-blog.csdnimg.cn/transparent-placeholder.png";
+    const screenshotUrl = "https://i-blog.csdnimg.cn/real-screenshot.png";
+
+    const result = await localizeAssets({
+      html: `<img src="${transparentUrl}" alt="Placeholder"><img src="${screenshotUrl}" alt="Real screenshot">`,
+      slug: "transparent-cover",
+      outputDirectory,
+      fetchImpl: fetchFrom({
+        [transparentUrl]: { body: await transparentPng(640, 360), type: "image/png" },
+        [screenshotUrl]: { body: await imageBuffer(800, 450), type: "image/png" },
+      }),
+      articleTitle: "Transparent Cover",
+    });
+
+    expect(result.html).not.toContain(transparentUrl);
+    expect(result.assets.map((asset) => asset.publicPath)).toEqual([
+      "/images/posts/transparent-cover/image-01.webp",
+    ]);
+    expect(result.cover).toBe("/images/posts/transparent-cover/cover.webp");
+    expect(result.coverAlt).toBe("Real screenshot");
   });
 });

@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { lookup } from "node:dns/promises";
-import { mkdir, mkdtemp, rename, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { isIP } from "node:net";
 import { basename, dirname, join } from "node:path";
+import { setTimeout as wait } from "node:timers/promises";
 
 import { load } from "cheerio";
 import sharp, { type Metadata } from "sharp";
@@ -16,7 +17,16 @@ export interface LocalizeOptions {
   fetchImpl: FetchLike;
   articleTitle: string;
   resolveHostname?: (hostname: string) => Promise<string[]>;
+  fileOperations?: Partial<AssetFileOperations>;
 }
+
+type AssetFileOperations = {
+  access: (path: string) => Promise<void>;
+  list: (path: string) => Promise<string[]>;
+  remove: (path: string) => Promise<void>;
+  rename: (from: string, to: string) => Promise<void>;
+  wait: (milliseconds: number) => Promise<void>;
+};
 
 const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
 const MAX_INPUT_PIXELS = 40_000_000;
@@ -25,7 +35,15 @@ const MAX_ANIMATION_FRAMES = 200;
 const COVER_WIDTH = 1280;
 const COVER_HEIGHT = 720;
 const MAX_REDIRECTS = 5;
+const MAX_FILE_OPERATION_ATTEMPTS = 5;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+const TRANSIENT_WINDOWS_ERRORS = new Set(["EACCES", "EBUSY", "EPERM"]);
+const ALLOWED_IMAGE_HOSTS = new Set([
+  "i-blog.csdnimg.cn",
+  "img-blog.csdnimg.cn",
+  "img-blog.csdn.net",
+  "p-blog.csdn.net",
+]);
 const BLOCKED_IPV4_RANGES: Array<[string, number]> = [
   ["0.0.0.0", 8],
   ["10.0.0.0", 8],
@@ -43,6 +61,14 @@ const BLOCKED_IPV4_RANGES: Array<[string, number]> = [
   ["224.0.0.0", 4],
   ["240.0.0.0", 4],
 ];
+
+const DEFAULT_FILE_OPERATIONS: AssetFileOperations = {
+  access,
+  list: readdir,
+  remove: (path) => rm(path, { recursive: true, force: true }),
+  rename,
+  wait: (milliseconds) => wait(milliseconds),
+};
 
 function absoluteHttpUrl(value: string): URL {
   let url: URL;
@@ -117,7 +143,9 @@ function blockedIpv6(address: string): boolean {
   if (allZero || loopback) return true;
   if ((groups[0] & 0xfe00) === 0xfc00) return true;
   if ((groups[0] & 0xffc0) === 0xfe80) return true;
+  if ((groups[0] & 0xffc0) === 0xfec0) return true;
   if ((groups[0] & 0xff00) === 0xff00) return true;
+  if (groups[0] === 0x0064 && groups[1] === 0xff9b && groups[2] === 0x0001) return true;
   if (groups[0] === 0x2001 && groups[1] === 0x0db8) return true;
 
   const mappedIpv4 = groups.slice(0, 5).every((group) => group === 0) && groups[5] === 0xffff;
@@ -139,6 +167,14 @@ function normalizedHostname(url: URL): string {
   const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.$/, "");
   if (!hostname) throw new Error(`Image URL hostname is missing: ${url}`);
   return hostname;
+}
+
+function canonicalImageUrl(value: string): URL {
+  const url = absoluteHttpUrl(value);
+  if (url.protocol === "http:" && ALLOWED_IMAGE_HOSTS.has(normalizedHostname(url))) {
+    url.protocol = "https:";
+  }
+  return url;
 }
 
 function localHostname(hostname: string): boolean {
@@ -167,8 +203,18 @@ async function validateRemoteUrl(
   absoluteHttpUrl(url.toString());
   const hostname = normalizedHostname(url);
   const literalVersion = isIP(hostname);
+  if (literalVersion) {
+    throw new Error(`Image IP literals are not approved; manual review required: ${hostname}`);
+  }
+  if (!ALLOWED_IMAGE_HOSTS.has(hostname)) {
+    // Bulk migration fails closed so external-host images can be routed to manual review.
+    throw new Error(`Unapproved external image host; manual review required: ${hostname}`);
+  }
+  if (url.protocol !== "https:") {
+    throw new Error(`Image requests must use HTTPS: ${url}`);
+  }
   if (!literalVersion && localHostname(hostname)) throw new Error(`Unsafe local image hostname: ${hostname}`);
-  const addresses = literalVersion ? [hostname] : await resolveHostname(hostname);
+  const addresses = await resolveHostname(hostname);
   if (addresses.length === 0) throw new Error(`Image hostname did not resolve: ${hostname}`);
   for (const address of addresses) {
     if (unsafeAddress(address)) throw new Error(`Unsafe private or local address for image URL: ${address}`);
@@ -192,7 +238,7 @@ async function fetchImage(
     if (!location) return response;
     await response.body?.cancel();
     try {
-      url = absoluteHttpUrl(new URL(location, url).toString());
+      url = canonicalImageUrl(new URL(location, url).toString());
     } catch (error) {
       throw new Error(`Invalid image redirect from ${url}`, { cause: error });
     }
@@ -303,10 +349,101 @@ async function createCover(buffer: Buffer, gif: boolean, outputPath: string): Pr
     .toFile(outputPath);
 }
 
+async function fullyTransparent(buffer: Buffer, metadata: Metadata): Promise<boolean> {
+  if (!metadata.hasAlpha) return false;
+  const stats = await sharp(buffer, {
+    animated: true,
+    limitInputPixels: MAX_INPUT_PIXELS,
+  }).ensureAlpha().stats();
+  return stats.channels[3]?.max === 0;
+}
+
 function errorCode(error: unknown): string | undefined {
   return typeof error === "object" && error !== null && "code" in error
     ? String(error.code)
     : undefined;
+}
+
+class IncompleteAssetRollbackError extends Error {}
+
+async function retryTransientFileOperation<T>(
+  operation: () => Promise<T>,
+  fileOperations: AssetFileOperations,
+): Promise<T> {
+  for (let attempt = 1; attempt <= MAX_FILE_OPERATION_ATTEMPTS; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (!TRANSIENT_WINDOWS_ERRORS.has(errorCode(error) ?? "") || attempt === MAX_FILE_OPERATION_ATTEMPTS) {
+        throw error;
+      }
+      await fileOperations.wait(10 * attempt);
+    }
+  }
+  throw new Error("File operation retry loop exhausted");
+}
+
+async function pathExists(path: string, fileOperations: AssetFileOperations): Promise<boolean> {
+  try {
+    await fileOperations.access(path);
+    return true;
+  } catch (error) {
+    if (errorCode(error) === "ENOENT") return false;
+    throw error;
+  }
+}
+
+async function transactionArtifacts(
+  outputDirectory: string,
+  fileOperations: AssetFileOperations,
+): Promise<{ backups: string[]; stagings: string[] }> {
+  const parent = dirname(outputDirectory);
+  const outputName = basename(outputDirectory);
+  let names: string[];
+  try {
+    names = await fileOperations.list(parent);
+  } catch (error) {
+    if (errorCode(error) === "ENOENT") return { backups: [], stagings: [] };
+    throw error;
+  }
+  return {
+    backups: names
+      .filter((name) => name.startsWith(`.${outputName}.backup-`))
+      .map((name) => join(parent, name)),
+    stagings: names
+      .filter((name) => name.startsWith(`.${outputName}.staging-`))
+      .map((name) => join(parent, name)),
+  };
+}
+
+async function removeArtifact(path: string, fileOperations: AssetFileOperations): Promise<void> {
+  await retryTransientFileOperation(() => fileOperations.remove(path), fileOperations);
+}
+
+async function reconcileAssetDirectory(
+  outputDirectory: string,
+  fileOperations: AssetFileOperations,
+): Promise<void> {
+  const { backups, stagings } = await transactionArtifacts(outputDirectory, fileOperations);
+  if (await pathExists(outputDirectory, fileOperations)) {
+    for (const artifact of [...stagings, ...backups]) {
+      await removeArtifact(artifact, fileOperations).catch(() => undefined);
+    }
+    return;
+  }
+
+  if (backups.length > 1) {
+    throw new Error(`Multiple asset backups require manual recovery: ${outputDirectory}`);
+  }
+  if (backups.length === 1) {
+    await retryTransientFileOperation(
+      () => fileOperations.rename(backups[0], outputDirectory),
+      fileOperations,
+    );
+  }
+  for (const staging of stagings) {
+    await removeArtifact(staging, fileOperations).catch(() => undefined);
+  }
 }
 
 async function stagingDirectory(outputDirectory: string): Promise<string> {
@@ -315,7 +452,11 @@ async function stagingDirectory(outputDirectory: string): Promise<string> {
   return mkdtemp(join(parent, `.${basename(outputDirectory)}.staging-`));
 }
 
-async function swapAssetDirectory(staging: string, outputDirectory: string): Promise<void> {
+async function swapAssetDirectory(
+  staging: string,
+  outputDirectory: string,
+  fileOperations: AssetFileOperations,
+): Promise<void> {
   const backup = join(
     dirname(outputDirectory),
     `.${basename(outputDirectory)}.backup-${randomUUID()}`,
@@ -323,39 +464,47 @@ async function swapAssetDirectory(staging: string, outputDirectory: string): Pro
   let hasBackup = false;
 
   try {
-    try {
-      await rename(outputDirectory, backup);
-      hasBackup = true;
-    } catch (error) {
-      if (errorCode(error) !== "ENOENT") throw error;
-    }
+    await retryTransientFileOperation(
+      () => fileOperations.rename(outputDirectory, backup),
+      fileOperations,
+    );
+    hasBackup = true;
+  } catch (error) {
+    if (errorCode(error) !== "ENOENT") throw error;
+  }
 
-    try {
-      await rename(staging, outputDirectory);
-    } catch (error) {
-      if (hasBackup) await rename(backup, outputDirectory);
-      throw error;
-    }
-
+  try {
+    await retryTransientFileOperation(
+      () => fileOperations.rename(staging, outputDirectory),
+      fileOperations,
+    );
+  } catch (installError) {
     if (hasBackup) {
       try {
-        await rm(backup, { recursive: true, force: true });
-      } catch (error) {
-        await rename(outputDirectory, staging);
-        await rename(backup, outputDirectory);
-        await rm(staging, { recursive: true, force: true });
-        throw error;
+        await retryTransientFileOperation(
+          () => fileOperations.rename(backup, outputDirectory),
+          fileOperations,
+        );
+      } catch (rollbackError) {
+        throw new IncompleteAssetRollbackError(
+          `Asset directory installation and rollback both failed: ${outputDirectory}`,
+          { cause: new AggregateError([installError, rollbackError]) },
+        );
       }
     }
-  } catch (error) {
-    await rm(staging, { recursive: true, force: true });
-    throw error;
+    throw installError;
+  }
+
+  if (hasBackup) {
+    await removeArtifact(backup, fileOperations).catch(() => undefined);
   }
 }
 
 export async function localizeAssets(input: LocalizeOptions): Promise<AssetResult> {
   const { html, slug, outputDirectory, fetchImpl, articleTitle } = input;
   const resolveHostname = input.resolveHostname ?? defaultResolveHostname;
+  const fileOperations = { ...DEFAULT_FILE_OPERATIONS, ...input.fileOperations };
+  await reconcileAssetDirectory(outputDirectory, fileOperations);
   const $ = load(html);
   const body = $("body");
   const images = body.find("img").toArray();
@@ -368,7 +517,7 @@ export async function localizeAssets(input: LocalizeOptions): Promise<AssetResul
     for (const image of images) {
       const element = $(image);
       const sourceUrl = element.attr("src")?.trim() ?? "";
-      const url = absoluteHttpUrl(sourceUrl);
+      const url = canonicalImageUrl(sourceUrl);
       if (knownCsdnPlatformImage(url)) {
         element.remove();
         continue;
@@ -393,6 +542,10 @@ export async function localizeAssets(input: LocalizeOptions): Promise<AssetResul
 
       const dimensions = orientedDimensions(metadata);
       if (dimensions.width <= 2 && dimensions.height <= 2) {
+        element.remove();
+        continue;
+      }
+      if (await fullyTransparent(buffer, metadata)) {
         element.remove();
         continue;
       }
@@ -424,9 +577,11 @@ export async function localizeAssets(input: LocalizeOptions): Promise<AssetResul
       }
     }
 
-    await swapAssetDirectory(staging, outputDirectory);
+    await swapAssetDirectory(staging, outputDirectory, fileOperations);
   } catch (error) {
-    await rm(staging, { recursive: true, force: true });
+    if (!(error instanceof IncompleteAssetRollbackError)) {
+      await removeArtifact(staging, fileOperations).catch(() => undefined);
+    }
     throw error;
   }
 
