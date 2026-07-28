@@ -189,6 +189,23 @@ describe("localizeAssets", () => {
     expect(result.coverAlt).toBeUndefined();
   });
 
+  it("uses decoded image bytes over an incorrect GIF content type", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://i-blog.csdnimg.cn/mislabeled.gif";
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Mislabeled PNG">`,
+      slug: "mislabeled-png",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: await imageBuffer(640, 360), type: "image/gif" } }),
+      articleTitle: "Mislabeled PNG",
+    });
+
+    expect(result.html).toContain('src="/images/posts/mislabeled-png/image-01.webp"');
+    expect(result.assets[0]).toMatchObject({ animated: false, sourceUrl });
+    await expect(sharp(await readFile(result.assets[0].absolutePath)).metadata())
+      .resolves.toMatchObject({ format: "webp", width: 640, height: 360 });
+  });
+
   it("uses per-frame GIF height when deciding whether to create a cover", async () => {
     const outputDirectory = await temporaryDirectory();
     const sourceUrl = "https://i-blog.csdnimg.cn/wide-short.gif";
@@ -231,6 +248,22 @@ describe("localizeAssets", () => {
     await expect(sharp(cover).metadata()).resolves.toMatchObject({ width: 1280, height: 720, format: "webp" });
     const firstPixel = await sharp(cover).raw().toBuffer();
     expect(firstPixel[0]).toBeGreaterThan(firstPixel[2] + 100);
+  });
+
+  it("preserves long CSDN GIF recordings up to 300 frames", async () => {
+    const outputDirectory = await temporaryDirectory();
+    const sourceUrl = "https://i-blog.csdnimg.cn/long-recording.gif";
+    const source = await animatedBuffer(3, 3, "gif", 270);
+    const result = await localizeAssets({
+      html: `<img src="${sourceUrl}" alt="Long recording">`,
+      slug: "long-recording",
+      outputDirectory,
+      fetchImpl: fetchFrom({ [sourceUrl]: { body: source, type: "image/gif" } }),
+      articleTitle: "Long Recording",
+    });
+
+    expect(result.assets[0]).toMatchObject({ animated: true });
+    expect(await readFile(result.assets[0].absolutePath)).toEqual(source);
   });
 
   it("uses the first qualifying image for the cover while keeping body images in order", async () => {
@@ -659,8 +692,8 @@ describe("localizeAssets", () => {
   it("rejects animations over the frame-count limit", async () => {
     const outputDirectory = await temporaryDirectory();
     const sourceUrl = "https://i-blog.csdnimg.cn/too-many-frames.gif";
-    const source = await animatedBuffer(3, 3, "gif", 201);
-    await expect(sharp(source, { animated: true }).metadata()).resolves.toMatchObject({ pages: 201 });
+    const source = await animatedBuffer(3, 3, "gif", 301);
+    await expect(sharp(source, { animated: true }).metadata()).resolves.toMatchObject({ pages: 301 });
 
     await expect(localizeAssets({
       html: `<img src="${sourceUrl}" alt="Too many frames">`,

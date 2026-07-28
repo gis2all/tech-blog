@@ -37,8 +37,11 @@ function normalized(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-function categoryFor(columns: string[]): string {
-  const mapped = new Set(columns.map(normalized));
+function categoryFor(columns: string[], keywords: string[]): string {
+  const categorySignals = columns.length
+    ? columns
+    : keywords.flatMap((keyword) => keyword.split(","));
+  const mapped = new Set(categorySignals.map(normalized));
   for (const [category, names] of CATEGORY_RULES) {
     if (names.some((name) => mapped.has(name))) return category;
   }
@@ -102,10 +105,14 @@ function semanticParagraphs(markdown: string): string[] {
     .filter(Boolean);
 }
 
-function describe(markdown: string): string {
+function describe(markdown: string, fallback?: string): string {
   const paragraphs = semanticParagraphs(markdown);
   const availableText = paragraphs.join(" ").trim();
-  if (availableText.length < 60) throw new Error("Extractive description requires at least 60 characters");
+  if (!availableText) {
+    if (fallback?.trim()) return fallback.trim();
+    throw new Error("Extractive description requires at least 60 characters of prose content");
+  }
+  if (availableText.length < 60) return availableText;
 
   let text = "";
   for (const paragraph of paragraphs) {
@@ -137,9 +144,9 @@ export function createSlug(articleId: string, title: string): string {
 export function buildMetadata(input: MetadataInput): MigratedMetadata {
   const frontmatter: Frontmatter = {
     title: input.title,
-    description: describe(input.markdown),
+    description: describe(input.markdown, input.cover ? input.title : undefined),
     publishedAt: input.publishedAt,
-    category: categoryFor(input.columns),
+    category: categoryFor(input.columns, input.keywords),
     tags: tagsFor(input.columns, input.keywords),
     draft: true,
     featured: false,

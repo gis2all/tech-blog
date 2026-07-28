@@ -29,7 +29,8 @@ afterEach(async () => {
 });
 
 async function pilotFixtures(): Promise<{ articleHtml: string; profileHtml: string; png: Buffer }> {
-  const fixture = await readFile(new URL("./fixtures/article.html", import.meta.url), "utf8");
+  const fixture = (await readFile(new URL("./fixtures/article.html", import.meta.url), "utf8"))
+    .replace("</head>", `<script type="application/ld+json">{"upDate":"2021-08-01T10:20:30"}</script></head>`);
   const articleHtml = fixture.replace(
     /<div id="content_views">[\s\S]*?<\/div>\s*<\/body>/,
     `<div id="content_views">
@@ -97,7 +98,7 @@ describe("migrateOneArticle", () => {
     });
     expect(markdown).toContain("draft: true");
     expect(markdown).toContain("publishedAt: 2021-07-29");
-    expect(markdown).toContain("updatedAt: 2021-07-30");
+    expect(markdown).toContain("updatedAt: 2021-08-01");
     expect(markdown).toContain("/images/posts/jenkins-groovy-practices/image-01.webp");
     expect(markdown).not.toContain("i-blog.csdnimg.cn");
     expect(markdown).not.toMatch(/sourceUrl|sourcePlatform|migrationNotice/);
@@ -135,7 +136,71 @@ describe("migrateOneArticle", () => {
     const manifest = await readManifest(join(rootDirectory, ".migration/csdn/manifest.json"));
     expect(manifest["119208326"]).toMatchObject({ status: "failed" });
     expect(manifest["119208326"].error).toContain("HTTP 503");
-    expect(fetchImpl).toHaveBeenCalledTimes(6);
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not require the profile page when the article detail has an update date", async () => {
+    const rootDirectory = await temporaryDirectory();
+    const { articleHtml, png } = await pilotFixtures();
+    const fetchImpl: FetchLike = async (input, init) => {
+      const url = String(input);
+      if (url.endsWith("/article/details/119208326")) return new Response(articleHtml);
+      if (url === "https://blog.csdn.net/DynastyRumble") return new Response("Unavailable", { status: 521 });
+      if (url === "https://i-blog.csdnimg.cn/pilot.png") {
+        expect(init?.redirect).toBe("manual");
+        return new Response(Uint8Array.from(png).buffer, {
+          headers: { "content-type": "image/png" },
+        });
+      }
+      return new Response("Not Found", { status: 404 });
+    };
+
+    const result = await migrateOneArticle({
+      articleId: "119208326",
+      rootDirectory,
+      force: false,
+      fetchImpl,
+      resolveHostname: async () => [PUBLIC_TEST_ADDRESS],
+      wait: async () => undefined,
+    });
+
+    expect(await readFile(result.draftPath, "utf8")).toContain("updatedAt: 2021-08-01");
+  });
+
+  it("migrates image-only articles without rejecting zero prose length", async () => {
+    const rootDirectory = await temporaryDirectory();
+    const { articleHtml, png } = await pilotFixtures();
+    const imageOnlyHtml = articleHtml.replace(
+      /<div id="content_views">[\s\S]*?<\/div><\/body>/,
+      `<div id="content_views">
+        <p><img data-original-src="https://i-blog.csdnimg.cn/pilot.png" alt="diagram"></p>
+      </div></body>`,
+    );
+    const fetchImpl: FetchLike = async (input, init) => {
+      const url = String(input);
+      if (url.endsWith("/article/details/119208326")) return new Response(imageOnlyHtml);
+      if (url === "https://i-blog.csdnimg.cn/pilot.png") {
+        expect(init?.redirect).toBe("manual");
+        return new Response(Uint8Array.from(png).buffer, {
+          headers: { "content-type": "image/png" },
+        });
+      }
+      return new Response("Not Found", { status: 404 });
+    };
+
+    const result = await migrateOneArticle({
+      articleId: "119208326",
+      rootDirectory,
+      force: false,
+      fetchImpl,
+      resolveHostname: async () => [PUBLIC_TEST_ADDRESS],
+      wait: async () => undefined,
+    });
+
+    const markdown = await readFile(result.draftPath, "utf8");
+    expect(result.imageCount).toBe(1);
+    expect(markdown).toContain("description:");
+    expect(markdown).toContain("/images/posts/jenkins-groovy-practices/image-01.webp");
   });
 
   it("does not replace existing draft assets when force is disabled", async () => {

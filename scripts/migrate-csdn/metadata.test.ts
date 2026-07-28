@@ -29,6 +29,7 @@ function article(overrides: Partial<MetadataInput> = {}): MetadataInput {
 describe("buildMetadata", () => {
   it("uses category priority and rejects unmapped columns", () => {
     expect(buildMetadata(article({ columns: ["Coding", "GIS", "Books"] })).frontmatter.category).toBe("GIS");
+    expect(buildMetadata(article({ columns: [], keywords: ["Jenkins, permissions"] })).frontmatter.category).toBe("DevOps");
     expect(() => buildMetadata(article({ columns: ["Photography"] }))).toThrow(/manual review/i);
   });
 
@@ -59,7 +60,8 @@ describe("buildMetadata", () => {
     expect(description.length).toBeLessThanOrEqual(120);
     expect(description).not.toContain("Ignored heading");
     expect(description).not.toContain("pipeline {");
-    expect(() => buildMetadata(article({ markdown: "Short but genuine prose." }))).toThrow(/60/i);
+    expect(buildMetadata(article({ markdown: "Short but genuine prose." })).frontmatter.description)
+      .toBe("Short but genuine prose.");
   });
 
   it.each([

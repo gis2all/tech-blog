@@ -31,7 +31,7 @@ type AssetFileOperations = {
 const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
 const MAX_INPUT_PIXELS = 120_000_000;
 const MAX_IMAGE_DIMENSION = 20_000;
-const MAX_ANIMATION_FRAMES = 200;
+const MAX_ANIMATION_FRAMES = 300;
 const COVER_WIDTH = 1280;
 const COVER_HEIGHT = 720;
 const MAX_REDIRECTS = 5;
@@ -305,7 +305,7 @@ async function responseBuffer(response: Response, sourceUrl: string): Promise<Bu
 
 async function imageMetadata(buffer: Buffer): Promise<Metadata> {
   try {
-    return await sharp(buffer, { animated: true, limitInputPixels: MAX_INPUT_PIXELS }).metadata();
+    return await sharp(buffer, { animated: true, limitInputPixels: false }).metadata();
   } catch (error) {
     if (error instanceof Error && /pixel limit/i.test(error.message)) {
       throw new Error(`Image exceeds ${MAX_INPUT_PIXELS} pixel limit`, { cause: error });
@@ -329,7 +329,7 @@ function validateImageLimits(metadata: Metadata): void {
 
   const framePixels = width * frameHeight;
   const totalPixels = framePixels * frames;
-  if (framePixels > MAX_INPUT_PIXELS || totalPixels > MAX_INPUT_PIXELS) {
+  if (framePixels > MAX_INPUT_PIXELS || (metadata.format !== "gif" && totalPixels > MAX_INPUT_PIXELS)) {
     throw new Error(`Image exceeds ${MAX_INPUT_PIXELS} pixel limit`);
   }
 }
@@ -524,11 +524,9 @@ export async function localizeAssets(input: LocalizeOptions): Promise<AssetResul
       }
       const response = await fetchImage(url, fetchImpl, resolveHostname);
       const buffer = await responseBuffer(response, sourceUrl);
-      const contentType = response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() ?? "";
 
       const metadata = await imageMetadata(buffer);
       validateImageLimits(metadata);
-      const gifByType = contentType === "image/gif";
       const gifByMagic = hasGifMagic(buffer);
       const gifByMetadata = metadata.format === "gif";
       const gif = gifByMetadata;
@@ -537,7 +535,7 @@ export async function localizeAssets(input: LocalizeOptions): Promise<AssetResul
       if (metadata.format === "webp" && (metadata.pages ?? 1) > 1) {
         throw new Error(`Animated WebP images are not supported: ${sourceUrl}`);
       }
-      if ((gifByType || gifByMagic) && !gif) throw new Error(`Invalid or unsupported image: ${sourceUrl}`);
+      if (gifByMagic && !gif) throw new Error(`Invalid or unsupported image: ${sourceUrl}`);
       if (!supportedFormat(metadata, gif)) throw new Error(`Invalid or unsupported image format: ${sourceUrl}`);
 
       const dimensions = orientedDimensions(metadata);
@@ -545,7 +543,7 @@ export async function localizeAssets(input: LocalizeOptions): Promise<AssetResul
         element.remove();
         continue;
       }
-      if (await fullyTransparent(buffer, metadata)) {
+      if (!gif && await fullyTransparent(buffer, metadata)) {
         element.remove();
         continue;
       }

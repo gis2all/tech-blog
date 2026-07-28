@@ -49,32 +49,32 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 
 ## 3. 当前实际状态
 
-截至 2026-07-28，当前生产分支为 `main`：
+截至 2026-07-29，当前生产分支为 `main`：
 
 - `main` 已包含项目上下文、架构设计稿、实施计划和 Astro 第一版生产代码。
 - 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
-- 已有 21 篇 Markdown 文章：20 篇为从 CSDN `DynastyRumble` 账号迁移来的公开文章，`git-team-workflow.md` 为 `draft: true` 草稿；早期 5 篇测试文章已删除。
+- 本地当前已有 106 篇 Markdown 文章：105 篇为从 CSDN `DynastyRumble` / `gis2all` 账号迁移来的公开文章，`git-team-workflow.md` 为 `draft: true` 草稿；早期 5 篇测试文章已删除。
 - 已实现首页、文章详情、分类、标签、归档、专题、项目、关于、搜索、RSS、站点地图和 404。
 - 已实现 Decap CMS 最小后台：`public/admin/index.html` 和 `public/admin/config.yml`。
 - 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
 - OpenDesign 原型目录在本机保留为参考，并通过 `.gitignore` 排除，不作为生产运行时代码。
 - `docs/` 目录只作为本地规划、草稿和 Agent 交接资料，通过 `.gitignore` 排除，不进入 GitHub 仓库。
 - 2026-07-28 已完成首页和文章页第一轮 UI 同步：统一导航、移动站点操作、真实首页统计、精选复盘、文章元信息、相邻文章、作者说明和移动目录。
-- 首页当前展示 20 篇公开文章、3 个真实分类和 78 个真实标签；右栏继续只展示真实分类与标签，不展示虚构浏览量、学习进度或归档填充项。
+- 首页会随 Content Collections 展示当前公开文章；2026-07-29 已完成 CSDN 公开列表 105 / 105 篇迁移，本地仅保留 `git-team-workflow.md` 一个草稿。右栏继续只展示真实分类与标签，不展示虚构浏览量、学习进度或归档填充项。
 - OpenDesign 继续保留更丰富的演示正文用于排版覆盖；Astro 只渲染仓库中真实 Markdown，内容长度不同不视为 UI 不一致。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
-最近验证结果（2026-07-29 完成 CSDN 全量迁移后）：
+最近验证结果（2026-07-29 CSDN 全量迁移完成后）：
 
 ```text
-npm run build  → 111 pages built, Pagefind indexed 20 public article pages
-npx vitest run scripts/migrate-csdn/extract.test.ts -t "legacy JSON-LD" → 1 passed
-npx vitest run scripts/migrate-csdn/assets.test.ts -t "highly compressed" → 1 passed
+npm test       → 8 test files passed, 167 tests passed
+npm run build  → 431 pages built, dist/posts has 105 public article pages
+Pagefind       → indexed 104 pages; one image-only article has almost no searchable text
 ```
 
-本轮尚未重新运行完整 `npm run test`、`npm run test:e2e` 或 `npm run check`；继续改 UI、脚本或迁移工具时，应按风险补跑。
+本轮已覆盖完整单元测试和生产构建；尚未重新运行 `npm run test:e2e` 或 `npm run check`。继续改 UI、脚本或迁移工具时，应按风险补跑。
 
 浏览器验证：
 
@@ -501,7 +501,7 @@ public/images/posts/
 6. 添加 RSS、站点地图、SEO、部署预览和生产域名配置。
 7. 使用浏览器端到端验证桌面与移动端关键路径，然后再扩展评论、统计或高级 CMS 能力。
 
-当前项目已完成第一版最小闭环：Astro 前台、Decap 后台、GitHub 保存、Netlify 构建发布、文章发布测试和图片上传测试均已验证。后续优先进入真实文章迁移、图片目录规则、前台细节、正式域名，以及剩余 CSDN 文章的持续导入。
+当前项目已完成第一版最小闭环：Astro 前台、Decap 后台、GitHub 保存、Netlify 构建发布、文章发布测试、图片上传测试和 105 篇 CSDN 文章全量迁移均已验证。后续优先进入前台细节、正式域名、内容整理、线上发布检查，以及评论、统计或高级 CMS 能力评估。
 
 第一阶段验收不是“页面看起来像原型”，而是：
 
@@ -561,8 +561,12 @@ public/images/posts/
 
 ## 19. CSDN 迁移状态
 
-- 来源账号是 `DynastyRumble`；2026-07-29 已完成账号页公开 20 篇文章迁移，当前剩余未迁移文章为 0。
+- 来源账号是 `DynastyRumble` / `gis2all`。
+- 2026-07-29 重新确认真实全量来源不是账号页首屏 20 篇，而是 CSDN 接口 `community/home-api/v1/get-business-list` 返回的 `total: 105`。
+- 当前本地已覆盖 105 / 105 篇：其中 20 篇为前序迁移已存在/跳过，85 篇由本轮批量迁移成功补齐；剩余未迁移文章为 0。
+- 后半段 43 篇不是文章不存在，而是 Node/普通浏览器新会话抓取详情页时被 CSDN WAF 拦截。最终使用已登录的 `csdn-pilot` Playwright 会话逐篇缓存详情页 HTML，再用 `.migration/csdn/migrate-all-remaining.ts` 从缓存生成 Markdown 和本地图片。`.migration/` 已被 `.gitignore` 排除，不要提交 CSDN 登录态、原始 HTML 缓存或临时批量脚本。
+- 已修正迁移工具的全量迁移问题：详情页 `upDate` 作为 `updatedAt` 来源；短正文允许直接生成短摘要；栏目为空时按关键词兜底分类；CSDN 长 GIF 录屏保留原文件并允许最多 300 帧；profile 页抓取失败不再阻塞详情页已有更新时间的文章；图片型文章允许以标题兜底摘要；误标为 GIF 的 PNG 按真实解码格式处理。
 - 每篇迁移文落到 `src/content/posts/<slug>.md` 与 `public/images/posts/<slug>/`，再检查首页、分类、标签、归档和搜索。
 - 迁移时优先保持原文标题、结构、发布时间、更新时间、图片和链接，不擅自改写正文。
-- 迁移脚本仍默认输出草稿；本轮全量迁移后，19 篇新增迁移文已统一改为 `draft: false` 公开，`git-team-workflow.md` 仍是测试草稿。
+- 迁移脚本仍默认输出草稿；批量脚本会把成功迁移的 CSDN 文章统一改为 `draft: false` 公开，`git-team-workflow.md` 仍是测试草稿。
 - 早期 5 篇测试文章已删除，不要再把它们当作正式内容恢复。

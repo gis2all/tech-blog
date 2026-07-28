@@ -1,0 +1,91 @@
+---
+title: 【自动化测试】用图像识别来设置系统默认输入法
+description: 在做自动化测试时，有时会忘记把测试机器的输入法调成英文状态，这就导致Sendkey()输入时是中文，导致测试失败，所以我们需要在运行测试前确保输入法是英文状态，最保险的做法是Win+Space键直接切换到 ENG英语输入法，那么该如何自动实
+publishedAt: 2020-04-04
+category: 测试工程
+tags:
+  - Automated Testing
+  - 默认输入法
+  - 设置输入法
+  - 测试输入法
+  - 自动化测试
+  - Win32
+draft: false
+featured: false
+updatedAt: 2020-04-04
+cover: /images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/cover.webp
+coverAlt: 在这里插入图片描述
+---
+
+在做自动化测试时，有时会忘记把测试机器的输入法调成英文状态，这就导致`Sendkey()`输入时是中文，导致测试失败，所以我们需要在运行测试前确保输入法是英文状态，最保险的做法是`Win+Space`键直接切换到 `ENG英语输入法`，那么该如何自动实现呢？  
+
+## 一、参考研究
+
+查了大部分资料，主流的提供这两种方法更改输入法
+
+-   `InputLanguage`接口，设置`InputLanguage.CurrentInputLangaue`属性，位于`System.Window.Form.dll`中，使用时需要引用该dll
+-   `Win32 API`，模拟键盘快捷键，`Win+Space`键切换输入法
+
+我的测试程序希望更改计算机系统全局输入法，而第一种方案不能更改系统输入法只能更改自己程序输入时的状态，其他程序的输入法状态不能改变。所以只能选择第二种方案
+
+## 二、模拟快捷键
+
+`Win32 API`关于键盘操作需要用到以下关键函数
+
+```csharp
+ //第一个参数：虚拟键码
+ //第二个参数：硬件扫描码，一般设置为0即可；
+ //第三个参数：函数操作的一个标志位，按键压着或者释放
+ //第四个参数：定义与击键相关的附加的32位值，一般设置为0即可。
+[DllImport("User32.dll", EntryPoint = "keybd_event", SetLastError = true)]
+public static extern void KeyBoard_Event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
+```
+
+具体的代码就不在这里放了，文章末尾有完整代码库。现在切换输入法的问题解决了，但是怎么自动设置我们预先想要的输入法呢？搜了很多资料，不管是墙内还是墙外好像还没人有这么奇怪的需求，正好前段时间研究了如何判断两张图像的相似度，就想着用计算机视觉方法尝试解决下
+
+## 三、图像处理
+
+### 1\. 设计思路
+
+这里把我完整的思路先用文字叙述一遍：
+
+1.  调用`Win32 API`模拟`Win+Space`键，按一下切换输入法，使得输入法窗口出现
+2.  获取右边输入法窗口的截图并保存
+3.  设置原始输入法图片(比如`ENG输入法`，只对ENG截图保存)
+4.  使用原始输入法图片对第2步中的截图区域进行模板匹配，找到匹配区域并保存
+5.  计算原始输入法图片和第4步中匹配区域图片的相似程度(SSIM指数)
+6.  对每种输入法均做上述操作
+7.  求出图片相似程度最高值对应的切换输入法次数N
+8.  再调用N次`Win+Sapce`键切换输入法，最后输入法就是我们想预设的
+
+![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-01.webp)
+
+### 2\. 图片说明
+
+这是原始图片，也就是我们想要的默认输入法(注意，这是选中状态下的ENG截图)  
+![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-02.webp)  
+这是`Win+Space`键切换输入法时的截图  
+![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-03.webp)  
+这是原始图像在上述截图中的匹配区域(注意，这不是我手动加上的，是模板匹配自动生成矩形框)，其实这时候我们可以看到三个矩形都找到了`ENG 英语美国`这个输入法，但是它们背景颜色有深浅之分，所以需要对比这三次的结果  
+![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-04.webp)  
+为了对比结果，将上述红框里的内容导出成和原始图像一样尺寸的图像，计算导出后的图像和原始图像的结构相似度(SSIM)，得到最高相似度后显然我们知道是第二次点击时得到的，所以最后又重新`Win+Sapce`键切换，只是这次我们知道只需切换2次就可以匹配上我们默认的输入法，从而成功的设置想要的输入法  
+![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-05.webp)  
+![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-06.webp)
+
+> 关于如何比较两张图片相似度，参考我的这篇博客 [【OpenCvSharp】使用SSIM指数衡量图片相似度](https://blog.csdn.net/DynastyRumble/article/details/105294175)
+
+## 四、完整代码
+
+完整代码已经上传到Github, 请移步自取 [InputLanguage.Editor](https://github.com/gis2all/csharp-scripts/tree/master/Scripts/InputLanguage.Editor)
+
+* * *
+
+2020-04-21 更新
+
+遇到了很奇怪的问题，在测试机器上怎么也识别不出来EN输入法，最终发现问题了。因为选中输入法时，有一种Hover上去的效果，Hover的颜色与Windows系统主题颜色一致
+
+![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-07.webp)  
+![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-08.webp)  
+而测试机器上主题颜色不一致  
+![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-09.webp)  
+所以设置好测试机器的主题

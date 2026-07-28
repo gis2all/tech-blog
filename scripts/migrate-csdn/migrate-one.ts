@@ -64,6 +64,10 @@ function markdownTextLength(markdown: string): number {
     .replace(/\s/g, "").length;
 }
 
+function markdownHasImage(markdown: string): boolean {
+  return /!\[[^\]]*\]\([^)]*\)/.test(markdown);
+}
+
 function resultFromManifest(
   articleId: string,
   manifest: MigrationManifest,
@@ -102,21 +106,22 @@ export async function migrateOneArticle(options: MigrateOneOptions): Promise<Mig
   let slug: string | undefined;
   try {
     const sourceUrl = `${PROFILE_URL}/article/details/${options.articleId}`;
-    const [articleHtml, profileHtml] = await Promise.all([
-      fetchText(fetchImpl, sourceUrl),
-      fetchText(fetchImpl, PROFILE_URL),
-    ]);
+    const articleHtml = await fetchText(fetchImpl, sourceUrl);
+    const articleUpdatedAt = extractUpdatedAt(articleHtml, options.articleId);
+    let profileHtml: string | undefined;
+    if (!articleUpdatedAt) {
+      profileHtml = await fetchText(fetchImpl, PROFILE_URL).catch(() => undefined);
+    }
     const rawDirectory = join(options.rootDirectory, ".migration", "csdn", "raw");
     await mkdir(rawDirectory, { recursive: true });
-    await Promise.all([
-      writeFile(join(rawDirectory, `${options.articleId}.html`), articleHtml, "utf8"),
-      writeFile(join(rawDirectory, "profile.html"), profileHtml, "utf8"),
-    ]);
+    await writeFile(join(rawDirectory, `${options.articleId}.html`), articleHtml, "utf8");
+    if (profileHtml) await writeFile(join(rawDirectory, "profile.html"), profileHtml, "utf8");
 
     const extracted = extractArticle(articleHtml, sourceUrl);
     const article = {
       ...extracted,
-      updatedAt: extractUpdatedAt(profileHtml, options.articleId),
+      updatedAt: articleUpdatedAt
+        ?? (profileHtml ? extractUpdatedAt(profileHtml, options.articleId) : undefined),
     };
     const cleanedHtml = cleanArticleHtml(article.contentHtml);
     slug = createSlug(article.articleId, article.title);
@@ -141,7 +146,10 @@ export async function migrateOneArticle(options: MigrateOneOptions): Promise<Mig
     const markdown = convertToMarkdown(assets.html);
     const originalLength = sourceTextLength(cleanedHtml);
     const convertedLength = markdownTextLength(markdown);
-    if (originalLength === 0 || convertedLength / originalLength < 0.7) {
+    if (
+      (originalLength === 0 && !markdownHasImage(markdown))
+      || (originalLength > 0 && convertedLength / originalLength < 0.7)
+    ) {
       throw new Error(`Converted content ratio below 70%: ${convertedLength}/${originalLength}`);
     }
 

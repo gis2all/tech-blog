@@ -99,6 +99,9 @@ export function extractArticle(html: string, sourceUrl: string): CsdnArticle {
 }
 
 export function extractUpdatedAt(html: string, articleId: string): string | undefined {
+  const jsonLdUpdatedAt = html.match(/"upDate"\s*:\s*"([^"]+)"/);
+  if (jsonLdUpdatedAt) return required(articleId, "update date", normalizeDate(jsonLdUpdatedAt[1]));
+
   const $ = load(html);
   const escapedArticleId = articleId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const detailsPath = new RegExp(`/article/details/${escapedArticleId}(?:[/?#]|$)`);

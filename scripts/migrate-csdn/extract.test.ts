@@ -98,6 +98,14 @@ describe("extractArticle", () => {
 });
 
 describe("extractUpdatedAt", () => {
+  it("returns the article detail JSON-LD update date", () => {
+    expect(extractUpdatedAt(`
+      <script type="application/ld+json">
+        {"pubDate":"2022-08-08T15:53:49","upDate":"2022-08-08T16:15:36"}
+      </script>
+    `, "126229361")).toBe("2022-08-08");
+  });
+
   it("returns the matching profile card's normalized update date", async () => {
     expect(extractUpdatedAt(await readFile(profileFixture, "utf8"), "119208326")).toBe("2021-07-30");
   });
