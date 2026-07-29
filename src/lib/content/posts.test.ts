@@ -8,6 +8,8 @@ import {
   groupPostsByArchive,
   groupPostsByCategory,
   groupPostsByTag,
+  groupTagsByInitial,
+  getTagInitial,
   sortPostsByDate
 } from "./posts";
 
@@ -41,6 +43,53 @@ const posts = [
       title: "Draft Post",
       publishedAt: new Date("2026-07-25"),
       category: "工程实践",
+      tags: ["Git"],
+      draft: true
+    }
+  }
+];
+
+const directoryPosts = [
+  {
+    id: "alpha-post.md",
+    body: "alpha",
+    data: {
+      title: "Alpha Post",
+      publishedAt: new Date("2026-07-18"),
+      category: "工具",
+      tags: ["Astro"],
+      draft: false
+    }
+  },
+  {
+    id: "docker-post.md",
+    body: "docker",
+    data: {
+      title: "Docker Post",
+      publishedAt: new Date("2026-07-17"),
+      category: "DevOps",
+      tags: ["Docker", "读书笔记"],
+      draft: false
+    }
+  },
+  {
+    id: "automation-post.md",
+    body: "automation",
+    data: {
+      title: "Automation Post",
+      publishedAt: new Date("2026-07-16"),
+      category: "测试",
+      tags: ["自动化测试"],
+      draft: false
+    }
+  },
+  {
+    id: "ignored-draft.md",
+    body: "ignored",
+    data: {
+      title: "Draft Tag Post",
+      publishedAt: new Date("2026-07-15"),
+      category: "工具",
       tags: ["Git"],
       draft: true
     }
@@ -88,6 +137,21 @@ describe("post helpers", () => {
       ["Docker", 1],
       ["TypeScript", 1]
     ]);
+  });
+
+  test("groupTagsByInitial groups Chinese tags by pinyin initials", () => {
+    expect(getTagInitial("读书笔记")).toBe("D");
+    expect(getTagInitial("自动化测试")).toBe("Z");
+
+    const grouped = groupTagsByInitial(directoryPosts);
+
+    expect(grouped.map((group) => group.initial)).toEqual(["A", "D", "Z"]);
+    expect(grouped.find((group) => group.initial === "D")?.tags.map((tag) => tag.name)).toEqual([
+      "Docker",
+      "读书笔记"
+    ]);
+    expect(grouped.find((group) => group.initial === "D")?.postsCount).toBe(2);
+    expect(grouped.some((group) => group.initial === "G")).toBe(false);
   });
 
   test("groupPostsByArchive groups public posts by year and month", () => {
