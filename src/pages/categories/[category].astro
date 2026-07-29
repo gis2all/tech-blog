@@ -23,8 +23,7 @@ const { category, categories, totalCount } = Astro.props;
   <main class="wrap">
     <div class="page-head">
       <div>
-        <span class="kicker">CATEGORY</span>
-        <h1>文章分类</h1>
+        <h1>{category.name}</h1>
         <p>{totalCount} 篇学习记录，按技术领域整理</p>
       </div>
     </div>

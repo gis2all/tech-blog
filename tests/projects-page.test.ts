@@ -58,7 +58,7 @@ describe("projects page", () => {
       readFile(`${root}src/styles/global.css`, "utf8"),
     ]);
 
-    expect(page).toContain("我的开源项目与工程实践。");
+    expect(page).toContain("<p>我的开源项目与工程实践</p>");
     expect(page).toContain('class="project-card-media"');
     expect(page).toContain('class="project-card-title"');
     expect(page).toContain('class="button project-card-repo"');

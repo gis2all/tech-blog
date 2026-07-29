@@ -141,7 +141,7 @@ describe("series page", () => {
       readFile(`${root}src/styles/global.css`, "utf8"),
     ]);
 
-    expect(page).toContain("按主题整理的系列文章与实践路径。");
+    expect(page).toContain("<p>按主题整理的系列文章与实践路径</p>");
     expect(page).toContain('class="series-grid"');
     expect(page).toContain('class="series-card-media"');
     expect(page).toContain('class="series-card-title"');

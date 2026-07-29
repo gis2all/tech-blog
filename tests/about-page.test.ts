@@ -37,7 +37,7 @@ describe("about page", () => {
 
     expect(page).toContain("<h1>关于</h1>");
     expect(page).toContain("<h2>知行</h2>");
-    expect(page).toContain("<p>吾日三省吾身，积少成多</p>");
+    expect(page).toContain("<p>吾日三省吾身，积少成多。</p>");
     expect(page).toContain("<h2>原则</h2>");
     expect(page).toContain("<ul>");
     expect(page).not.toContain("<ol>");
