@@ -122,7 +122,7 @@ test.describe("mobile navigation and article controls", () => {
     });
     await page.goto("/posts/jenkins-groovy-practices/");
 
-    const copyButton = page.getByRole("button", { name: "复制" });
+    const copyButton = page.getByRole("button", { name: "复制" }).first();
     await copyButton.click();
     await expect(copyButton).toHaveText("复制失败");
   });
@@ -131,9 +131,19 @@ test.describe("mobile navigation and article controls", () => {
 test("keeps all article tags outside the homepage", async ({ page }) => {
   await page.goto("/categories/DevOps/");
 
-  await expect(page.locator(".article-row").first().locator(".tag.ghost")).toHaveCount(
-    4,
-  );
+  const firstArticle = page.locator(".article-row").first();
+  await expect(
+    firstArticle.getByRole("heading", {
+      name: "Jenkins Pipeline项目无法在windows子节点中执行cmd命令",
+    }),
+  ).toBeVisible();
+  await expect(firstArticle.locator(".tag.ghost")).toContainText([
+    "Jenkins",
+    "运维",
+    "jenkins子节点",
+    "windows节点cmd",
+    "jenkins cmd",
+  ]);
 });
 
 test("keeps homepage side rails pinned while the desktop feed scrolls", async ({
@@ -201,6 +211,76 @@ test("keeps homepage side rails pinned while the desktop feed scrolls", async ({
 
   expect(Math.abs(after.leftTop - before.leftTop)).toBeLessThanOrEqual(2);
   expect(Math.abs(after.rightTop - before.rightTop)).toBeLessThanOrEqual(2);
+});
+
+test("pins the active desktop nav indicator to the header bottom", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1200, height: 800 });
+  await page.goto("/tags/");
+
+  const metrics = await page.locator(".nav-links a.active").evaluate((link) => {
+    const header = document.querySelector<HTMLElement>(".site-header");
+    if (!header) throw new Error("Missing site header");
+
+    const linkRect = link.getBoundingClientRect();
+    const headerRect = header.getBoundingClientRect();
+    const indicator = getComputedStyle(link, "::after");
+    const indicatorBottom = linkRect.bottom - Number.parseFloat(indicator.bottom);
+
+    return {
+      distanceFromHeaderBottom: Math.abs(headerRect.bottom - indicatorBottom),
+      headerHeight: headerRect.height,
+      indicatorHeight: Number.parseFloat(indicator.height),
+      linkHeight: linkRect.height,
+    };
+  });
+
+  expect(metrics.indicatorHeight).toBeGreaterThanOrEqual(2);
+  expect(metrics.linkHeight).toBeGreaterThanOrEqual(metrics.headerHeight - 1);
+  expect(metrics.distanceFromHeaderBottom).toBeLessThanOrEqual(2);
+});
+
+test("shows category tabs above the complete article list", async ({ page }) => {
+  await page.goto("/categories/");
+
+  const tabs = page.getByRole("navigation", { name: "文章分类" });
+  const allTab = tabs.getByRole("link", { name: /^全部 \d+$/ });
+  const total = Number.parseInt((await allTab.textContent())?.match(/\d+/)?.[0] ?? "0", 10);
+
+  await expect(allTab).toHaveAttribute("aria-current", "page");
+  await expect(tabs.getByRole("link", { name: /^DevOps \d+$/ })).toBeVisible();
+  await expect(page.locator(".category-articles .article-row")).toHaveCount(total);
+});
+
+test("keeps category tabs visible and marks the selected category", async ({
+  page,
+}) => {
+  await page.goto("/categories/DevOps/");
+
+  const tabs = page.getByRole("navigation", { name: "文章分类" });
+  await expect(tabs.getByRole("link", { name: /^全部 \d+$/ })).toBeVisible();
+  await expect(tabs.getByRole("link", { name: /^DevOps \d+$/ })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+});
+
+test("keeps category tabs horizontally scrollable on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/categories/");
+
+  const widths = await page.getByRole("navigation", { name: "文章分类" }).evaluate(
+    (tabs) => ({
+      client: tabs.clientWidth,
+      scroll: tabs.scrollWidth,
+      pageClient: document.documentElement.clientWidth,
+      pageScroll: document.documentElement.scrollWidth,
+    }),
+  );
+
+  expect(widths.scroll).toBeGreaterThan(widths.client);
+  expect(widths.pageScroll).toBeLessThanOrEqual(widths.pageClient);
 });
 
 test("shows the gis2all identity and programming font", async ({ page }) => {

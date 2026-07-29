@@ -146,6 +146,7 @@ img {
 .nav-links a {
   display: grid;
   place-items: center;
+  align-self: stretch;
   color: var(--muted);
   position: relative;
 }
@@ -419,6 +420,64 @@ img {
 .article-list {
   display: flex;
   flex-direction: column;
+}
+
+.category-browser {
+  overflow: hidden;
+}
+
+.category-tabs {
+  min-height: 58px;
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tabs a {
+  min-height: 58px;
+  flex: none;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.category-tabs a:hover,
+.category-tabs a.active {
+  color: var(--text);
+}
+
+.category-tabs a.active {
+  font-weight: 750;
+}
+
+.category-tabs a.active::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 2px;
+  background: var(--brand);
+}
+
+.category-tabs b {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.category-tabs a.active b {
+  color: var(--brand);
 }
 
 .article-row {
