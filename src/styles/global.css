@@ -789,6 +789,14 @@ img {
   padding: 34px 42px;
 }
 
+.about-page .prose h2 {
+  margin: 24px 0 8px;
+}
+
+.about-page .prose > h2:first-child {
+  margin-top: 0;
+}
+
 .about-author {
   display: flex;
   flex-wrap: wrap;

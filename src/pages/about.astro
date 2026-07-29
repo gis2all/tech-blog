@@ -10,18 +10,19 @@ import { site } from "../lib/site";
     <div class="page-head">
       <div>
         <span class="kicker">ABOUT</span>
-        <h1>关于知行</h1>
+        <h1>关于</h1>
         <p>{site.description}</p>
       </div>
     </div>
     <section class="panel about-page">
       <div class="prose">
-        <p>知行用于记录编程、AI 与工程实践。这里更关心真实排查、复盘和长期可迁移的内容，而不是漂亮但空泛的技术口号。</p>
-        <h2>写作原则</h2>
+        <h2>知行</h2>
+        <p>吾日三省吾身，积少成多</p>
+        <h2>原则</h2>
         <ul>
-          <li>优先写真实问题和真实约束。</li>
-          <li>保留排查路径，而不是只写最终答案。</li>
-          <li>内容以 Markdown 存在 GitHub，方便迁移和备份。</li>
+          <li>真实记录</li>
+          <li>过程比结果更重要</li>
+          <li>举一反三</li>
         </ul>
         <h2>技术栈</h2>
         <p>Astro 负责生成静态页面，Decap CMS 提供网页写作后台，GitHub 保存内容，Netlify 负责构建和发布。</p>
@@ -34,7 +35,7 @@ import { site } from "../lib/site";
             <p>{site.description}</p>
           </div>
         </div>
-        <a class="button about-author-link" href={site.githubUrl}>
+        <a class="button about-author-link" href="https://github.com/gis2all">
           <GithubIcon size={16} />
           <span>GitHub</span>
         </a>
