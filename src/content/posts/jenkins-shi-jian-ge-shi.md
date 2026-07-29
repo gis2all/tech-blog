@@ -10,6 +10,8 @@ tags:
 draft: false
 featured: false
 updatedAt: 2020-01-09
+series: jenkins-pipeline-engineering
+seriesOrder: 4
 ---
 
 `Jenkins`时间表使用的UNIX知名的`Cron`语法

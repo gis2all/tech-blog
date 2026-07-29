@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2020-06-21
 cover: /images/posts/jenkins-shi-yong-vs-code-cha-jian-jiao-yan-jenkinsfile-ge-shi/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-pipeline-engineering
+seriesOrder: 8
 ---
 
 在编写Jenkinsfile时候，经常由于代码格式不正确而导致项目编译失败，而Jenkins并没有提供很好的解决方法，大部分的时候只能现在一个临时项目里检查代码是否错误，然后再提交Jenkinsfile到脚本仓库，中间的过程过于繁琐😡，实在不优雅😤。不过好在VS Code有 插件 提供Jenkinsfile文件的校验

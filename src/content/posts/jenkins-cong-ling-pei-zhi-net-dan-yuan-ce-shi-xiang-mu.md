@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2020-03-21
 cover: /images/posts/jenkins-cong-ling-pei-zhi-net-dan-yuan-ce-shi-xiang-mu/cover.webp
 coverAlt: 在这里插入图片描述
+series: dotnet-testing-quality
+seriesOrder: 2
 ---
 
 > 经常忘，还是做个总结吧

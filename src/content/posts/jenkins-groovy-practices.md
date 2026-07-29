@@ -13,6 +13,8 @@ featured: false
 updatedAt: 2021-07-29
 cover: /images/posts/jenkins-groovy-practices/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-pipeline-engineering
+seriesOrder: 11
 ---
 
 * * *

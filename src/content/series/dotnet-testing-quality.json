@@ -1,0 +1,9 @@
+{
+  "title": ".NET Core 测试与代码质量",
+  "description": "围绕单元测试、覆盖率、构建日志与 SonarQube，搭建持续代码质量体系。",
+  "slug": "dotnet-testing-quality",
+  "image": "/images/series/dotnet-testing-quality.webp",
+  "imageAlt": ".NET Core 测试与 SonarQube 代码质量分析流程",
+  "order": 3,
+  "draft": false
+}

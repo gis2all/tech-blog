@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2020-05-09
 cover: /images/posts/jenkins-gong-xiang-wen-jian-jia-hou-fang-wen-shou-xian/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-operations
+seriesOrder: 6
 ---
 
 ## 一、问题

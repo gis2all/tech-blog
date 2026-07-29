@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2020-09-09
 cover: /images/posts/jenkins-zeng-jia-mac-zi-jie-dian/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-operations
+seriesOrder: 2
 ---
 
 * * *

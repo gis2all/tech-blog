@@ -39,6 +39,8 @@ const series = defineCollection({
     title: z.string(),
     description: z.string(),
     slug: z.string(),
+    image: z.string(),
+    imageAlt: z.string(),
     order: z.number().int().positive().optional(),
     draft: z.boolean().default(false)
   })

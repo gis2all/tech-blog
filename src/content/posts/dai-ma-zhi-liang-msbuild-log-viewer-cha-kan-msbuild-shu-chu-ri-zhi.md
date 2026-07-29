@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2020-06-12
 cover: /images/posts/dai-ma-zhi-liang-msbuild-log-viewer-cha-kan-msbuild-shu-chu-ri-zhi/cover.webp
 coverAlt: 在这里插入图片描述
+series: dotnet-testing-quality
+seriesOrder: 4
 ---
 
 ## 一、命令行输出日志

@@ -11,6 +11,8 @@ tags:
 draft: false
 featured: false
 updatedAt: 2020-12-02
+series: appium-android-automation
+seriesOrder: 6
 ---
 
 * * *

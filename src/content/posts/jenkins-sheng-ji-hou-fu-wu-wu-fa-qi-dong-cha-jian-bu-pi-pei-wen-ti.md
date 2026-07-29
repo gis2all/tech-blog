@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2022-08-08
 cover: /images/posts/jenkins-sheng-ji-hou-fu-wu-wu-fa-qi-dong-cha-jian-bu-pi-pei-wen-ti/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-operations
+seriesOrder: 10
 ---
 
 Jenkins升级至最新版本后从服务里启动失败  

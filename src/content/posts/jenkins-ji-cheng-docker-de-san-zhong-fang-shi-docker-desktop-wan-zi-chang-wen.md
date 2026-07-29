@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2021-07-13
 cover: /images/posts/jenkins-ji-cheng-docker-de-san-zhong-fang-shi-docker-desktop-wan-zi-chang-wen/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-pipeline-engineering
+seriesOrder: 12
 ---
 
 * * *

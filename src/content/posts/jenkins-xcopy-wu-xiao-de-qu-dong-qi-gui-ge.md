@@ -10,6 +10,8 @@ tags:
 draft: false
 featured: false
 updatedAt: 2020-03-10
+series: jenkins-operations
+seriesOrder: 5
 ---
 
 #### 一、问题

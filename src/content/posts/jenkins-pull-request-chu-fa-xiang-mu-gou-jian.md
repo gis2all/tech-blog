@@ -12,6 +12,8 @@ featured: false
 updatedAt: 2020-01-09
 cover: /images/posts/jenkins-pull-request-chu-fa-xiang-mu-gou-jian/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-pipeline-engineering
+seriesOrder: 2
 ---
 
 * * *

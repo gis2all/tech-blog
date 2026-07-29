@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2022-08-08
 cover: /images/posts/jenkins-pipeline-xiang-mu-wu-fa-zai-windows-zi-jie-dian-zhong-zhi-xing-cmd-ming/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-operations
+seriesOrder: 4
 ---
 
 最近遇到了一个非常特别的issue，测试的pipeline项目脚本如下

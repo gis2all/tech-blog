@@ -11,6 +11,8 @@ tags:
 draft: false
 featured: false
 updatedAt: 2020-05-09
+series: jenkins-pipeline-engineering
+seriesOrder: 6
 ---
 
 ## 一、Pipeline中环境变量

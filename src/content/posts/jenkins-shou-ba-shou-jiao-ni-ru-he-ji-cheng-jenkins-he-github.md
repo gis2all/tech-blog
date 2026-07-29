@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2020-12-03
 cover: /images/posts/jenkins-shou-ba-shou-jiao-ni-ru-he-ji-cheng-jenkins-he-github/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-pipeline-engineering
+seriesOrder: 1
 ---
 
 ## 一、理解webhook工作原理

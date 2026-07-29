@@ -13,6 +13,8 @@ featured: false
 updatedAt: 2021-07-26
 cover: /images/posts/shi-yong-bing-fa-can-shu-bian-yi-xiang-mu-he-yun-xing-dan-yuan-ce-shi/cover.webp
 coverAlt: 在这里插入图片描述
+series: dotnet-testing-quality
+seriesOrder: 7
 ---
 
 * * *

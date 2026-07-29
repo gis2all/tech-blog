@@ -10,6 +10,8 @@ tags:
 draft: false
 featured: false
 updatedAt: 2020-05-26
+series: jenkins-pipeline-engineering
+seriesOrder: 7
 ---
 
 在默认的情况下，一旦设置了新的环境变量，那么这个环境变量在整个Pipeline生命周期里都不会改变，但是有时我们需要在Stage阶段临时修改变量值，传递给其他命令使用，那么如何实现呢？

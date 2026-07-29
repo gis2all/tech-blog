@@ -1,0 +1,9 @@
+{
+  "title": "Jenkins Pipeline 工程实践",
+  "description": "从 GitHub 触发、参数化构建到 Groovy 与 Docker，完善 Pipeline 工程实践。",
+  "slug": "jenkins-pipeline-engineering",
+  "image": "/images/series/jenkins-pipeline-engineering.webp",
+  "imageAlt": "Jenkins 与 Groovy Pipeline 工程实践界面",
+  "order": 4,
+  "draft": false
+}

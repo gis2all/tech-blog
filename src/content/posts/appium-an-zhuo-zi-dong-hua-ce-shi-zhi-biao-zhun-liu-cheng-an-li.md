@@ -15,6 +15,8 @@ featured: false
 updatedAt: 2020-04-27
 cover: /images/posts/appium-an-zhuo-zi-dong-hua-ce-shi-zhi-biao-zhun-liu-cheng-an-li/cover.webp
 coverAlt: 在这里插入图片描述
+series: appium-android-automation
+seriesOrder: 2
 ---
 
 ## 一、虚拟设备设置

@@ -15,6 +15,8 @@ featured: false
 updatedAt: 2020-06-15
 cover: /images/posts/sonarqube-cong-ling-da-jian-net-core-dai-ma-zhi-liang-jian-cha-ping-tai/cover.webp
 coverAlt: 在这里插入图片描述
+series: dotnet-testing-quality
+seriesOrder: 5
 ---
 
 > 网上看了一些SonarQube的教程，感觉还是太繁琐😠，这里重新梳理下学习过程。其实从安装配置来说现在最新`SonarQube`可以不需要连接数据库，直接用默认的数据库就可以，这样降低了学习成本，可以很快速地熟悉软件的基本使用

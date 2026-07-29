@@ -11,6 +11,8 @@ featured: false
 updatedAt: 2020-12-04
 cover: /images/posts/jenkins-cha-kan-suo-you-quan-ju-bian-liang/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-pipeline-engineering
+seriesOrder: 5
 ---
 
 全局变量分为两种，一种是`系统全局变量`, 一种是`Jenkins全局变量`

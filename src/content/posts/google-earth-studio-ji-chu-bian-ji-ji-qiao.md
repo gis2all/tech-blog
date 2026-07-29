@@ -12,6 +12,8 @@ featured: false
 updatedAt: 2020-01-15
 cover: /images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/cover.webp
 coverAlt: 在这里插入图片描述
+series: google-earth-studio
+seriesOrder: 2
 ---
 
 **Google Earth Studio教程专栏**

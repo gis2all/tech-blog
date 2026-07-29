@@ -13,6 +13,8 @@ featured: false
 updatedAt: 2020-04-22
 cover: /images/posts/jenkins-pipeline-yu-dao-de-wen-ti-he-jie-jue-fang-fa/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-pipeline-engineering
+seriesOrder: 9
 ---
 
 ## 一、从指定阶段重新构建

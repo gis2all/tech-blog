@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2020-03-19
 cover: /images/posts/jenkins-net-core-dan-yuan-ce-shi-bao-gao-he-dai-ma-fu-gai-l/cover.webp
 coverAlt: 在这里插入图片描述
+series: dotnet-testing-quality
+seriesOrder: 3
 ---
 
 * * *

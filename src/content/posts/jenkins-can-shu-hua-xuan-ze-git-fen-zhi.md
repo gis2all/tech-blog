@@ -12,6 +12,8 @@ featured: false
 updatedAt: 2020-03-03
 cover: /images/posts/jenkins-can-shu-hua-xuan-ze-git-fen-zhi/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-pipeline-engineering
+seriesOrder: 3
 ---
 
 #### 一、项目配置

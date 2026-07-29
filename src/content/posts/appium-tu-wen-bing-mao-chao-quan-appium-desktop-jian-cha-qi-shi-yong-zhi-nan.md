@@ -15,6 +15,8 @@ featured: false
 updatedAt: 2020-04-28
 cover: /images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/cover.webp
 coverAlt: 在这里插入图片描述
+series: appium-android-automation
+seriesOrder: 3
 ---
 
 > 其实对于自动化测试而言，脚本的编写其实不算太难，难点是如何找到我们想要的控件元素，而Appium Desktop检查器完美解决了这个难题

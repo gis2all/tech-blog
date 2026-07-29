@@ -15,6 +15,8 @@ featured: false
 updatedAt: 2020-11-13
 cover: /images/posts/jenkins-bei-fen-pei-zhi-yu-xiang-mu/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-operations
+seriesOrder: 8
 ---
 
 在一次更换密码的过程中，意外的丢失了大多数Jenkins项目，导致一个个配置很麻烦，虽然已经使用的`SCM Pipeline`的方式简化了配置模式， 但手动的配置还是让我花费1个小时才完成所有项目的恢复，所以备份真的很重要

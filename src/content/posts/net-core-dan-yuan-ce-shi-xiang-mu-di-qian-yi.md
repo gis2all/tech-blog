@@ -11,6 +11,8 @@ featured: false
 updatedAt: 2020-03-10
 cover: /images/posts/net-core-dan-yuan-ce-shi-xiang-mu-di-qian-yi/cover.webp
 coverAlt: 在这里插入图片描述
+series: dotnet-testing-quality
+seriesOrder: 1
 ---
 
 > [将 .NET Framework 库移植到 .NET Core](https://docs.microsoft.com/zh-cn/dotnet/core/porting/libraries)  

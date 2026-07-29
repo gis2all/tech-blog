@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2020-06-16
 cover: /images/posts/sonarqube-ji-cheng-net-core-xiang-mu-dan-yuan-ce-shi-he-dai-ma-fu-gai-l/cover.webp
 coverAlt: 在这里插入图片描述
+series: dotnet-testing-quality
+seriesOrder: 6
 ---
 
 ## 一、对应关系

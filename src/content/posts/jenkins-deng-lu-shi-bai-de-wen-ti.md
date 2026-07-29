@@ -11,6 +11,8 @@ featured: false
 updatedAt: 2020-03-03
 cover: /images/posts/jenkins-deng-lu-shi-bai-de-wen-ti/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-operations
+seriesOrder: 9
 ---
 
 > 前段时间手滑不小心点错Jenkins登录设置，结果再怎么也登不进去。这里汇总网上资料，最终解决了该问题。

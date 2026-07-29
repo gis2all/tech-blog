@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2020-09-11
 cover: /images/posts/jenkins-pipeline-ji-cheng-groovy-jiao-ben/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-pipeline-engineering
+seriesOrder: 10
 ---
 
 ## 一、Groovy脚本的创建

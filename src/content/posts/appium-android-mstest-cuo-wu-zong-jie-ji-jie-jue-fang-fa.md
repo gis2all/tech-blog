@@ -11,6 +11,8 @@ featured: false
 updatedAt: 2020-04-29
 cover: /images/posts/appium-android-mstest-cuo-wu-zong-jie-ji-jie-jue-fang-fa/cover.webp
 coverAlt: 在这里插入图片描述
+series: appium-android-automation
+seriesOrder: 5
 ---
 
 | 平台 | 自动化测试框架 | 单元测试框架 |

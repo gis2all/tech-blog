@@ -15,6 +15,8 @@ featured: false
 updatedAt: 2020-03-22
 cover: /images/posts/appium-cong-ling-da-jian-android-zi-dong-hua-ce-shi-huan-jing/cover.webp
 coverAlt: 在这里插入图片描述
+series: appium-android-automation
+seriesOrder: 1
 ---
 
 * * *

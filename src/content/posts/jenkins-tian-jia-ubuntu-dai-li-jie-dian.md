@@ -14,6 +14,8 @@ featured: false
 updatedAt: 2021-07-12
 cover: /images/posts/jenkins-tian-jia-ubuntu-dai-li-jie-dian/cover.webp
 coverAlt: 在这里插入图片描述
+series: jenkins-operations
+seriesOrder: 3
 ---
 
 * * *

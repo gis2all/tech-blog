@@ -11,6 +11,8 @@ tags:
 draft: false
 featured: false
 updatedAt: 2020-04-29
+series: appium-android-automation
+seriesOrder: 4
 ---
 
 | 命令 | 功能 |
