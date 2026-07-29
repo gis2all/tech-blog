@@ -1,30 +1,69 @@
 ---
+import GithubIcon from "../components/common/GithubIcon.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getAllProjects } from "../lib/content/queries";
 
 const projects = await getAllProjects();
 ---
 
-<BaseLayout title="项目" description="知行的工程项目和实践工具">
+<BaseLayout title="项目" description="我的开源项目与工程实践。">
   <main class="wrap">
     <div class="page-head">
       <div>
         <span class="kicker">PROJECTS</span>
         <h1>项目</h1>
-        <p>把文章里的方法沉淀成可复用工具。</p>
+        <p>我的开源项目与工程实践。</p>
       </div>
     </div>
     <section class="project-grid">
-      {projects.map((project) => (
-        <article class="panel project-card">
-          <h2>{project.data.title}</h2>
-          <p>{project.data.description}</p>
-          <div class="article-meta">
-            {project.data.tech.map((item) => <span class="tag ghost">{item}</span>)}
-          </div>
-          {project.data.repoUrl && <p><a class="button" href={project.data.repoUrl}>查看仓库</a></p>}
-        </article>
-      ))}
+      {projects.map((project) => {
+        const projectHref = project.data.repoUrl ?? project.data.url;
+
+        return (
+          <article class="panel project-card">
+            {projectHref ? (
+              <a
+                class="project-card-media"
+                href={projectHref}
+                aria-label={`查看 ${project.data.title} 仓库`}
+              >
+                <img
+                  src={project.data.image}
+                  alt={project.data.imageAlt}
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                />
+              </a>
+            ) : (
+              <div class="project-card-media">
+                <img
+                  src={project.data.image}
+                  alt={project.data.imageAlt}
+                  width="1440"
+                  height="810"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <div class="project-card-body">
+              <h2 class="project-card-title">
+                {projectHref ? <a href={projectHref}>{project.data.title}</a> : project.data.title}
+              </h2>
+              <p class="project-card-description">{project.data.description}</p>
+              <div class="article-meta project-card-tech">
+                {project.data.tech.map((item) => <span class="tag ghost">{item}</span>)}
+              </div>
+              {project.data.repoUrl && (
+                <a class="button project-card-repo" href={project.data.repoUrl}>
+                  <GithubIcon size={16} />
+                  <span>查看仓库</span>
+                </a>
+              )}
+            </div>
+          </article>
+        );
+      })}
     </section>
   </main>
 </BaseLayout>

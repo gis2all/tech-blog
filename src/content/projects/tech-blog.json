@@ -1,0 +1,12 @@
+{
+  "title": "tech-blog",
+  "description": "基于 Astro 构建的个人技术博客，支持分类、专题、标签、归档与文章阅读。",
+  "repoUrl": "https://github.com/gis2all/tech-blog",
+  "tech": ["Astro", "TypeScript", "CSS"],
+  "image": "/images/projects/tech-blog.webp",
+  "imageAlt": "tech-blog 个人技术博客首页",
+  "order": 3,
+  "featured": true,
+  "publishedAt": "2026-07-28",
+  "draft": false
+}

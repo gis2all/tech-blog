@@ -1,5 +1,6 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import { getPublicPosts, sortPostsByDate } from "./posts";
+import { getPublicProjects } from "./projects";
 
 export type PostEntry = CollectionEntry<"posts">;
 export type SeriesEntry = CollectionEntry<"series">;
@@ -24,7 +25,5 @@ export async function getAllSeries(): Promise<SeriesEntry[]> {
 
 export async function getAllProjects(): Promise<ProjectEntry[]> {
   const entries = await getCollection("projects");
-  return entries
-    .filter((entry) => !entry.data.draft)
-    .sort((a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime());
+  return getPublicProjects(entries);
 }
