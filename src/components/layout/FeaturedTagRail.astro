@@ -1,0 +1,43 @@
+---
+import {
+  getFeaturedPosts,
+  getPostSlug,
+  groupPostsByTag,
+  type PostLike
+} from "../../lib/content/posts";
+
+type Props = {
+  posts: PostLike[];
+};
+
+const { posts } = Astro.props;
+const featured = getFeaturedPosts(posts, 3);
+const hotTags = groupPostsByTag(posts)
+  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "zh-CN"))
+  .slice(0, 12);
+---
+
+<aside class="right-rail stack" aria-label="精选与标签">
+  <section class="panel">
+    <div class="section-title">精选复盘 <small>编辑推荐</small></div>
+    <ol class="featured-list">
+      {featured.map((post, index) => (
+        <li>
+          <span>{String(index + 1).padStart(2, "0")}</span>
+          <div>
+            <a href={`/posts/${getPostSlug(post)}/`}>{post.data.title}</a>
+            <small>{post.data.category}</small>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+  <section class="panel">
+    <div class="section-title">热门标签 <small><a href="/tags/">全部</a></small></div>
+    <div class="tag-cloud">
+      {hotTags.map((tag) => (
+        <a class="tag" href={`/tags/${encodeURIComponent(tag.name)}/`}>{tag.name} · {tag.count}</a>
+      ))}
+    </div>
+  </section>
+</aside>

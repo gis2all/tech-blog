@@ -1,89 +1,26 @@
 ---
 import ArticleList from "../components/article/ArticleList.astro";
-import AuthorAvatar from "../components/common/AuthorAvatar.astro";
+import DiscoveryRail from "../components/layout/DiscoveryRail.astro";
+import FeaturedTagRail from "../components/layout/FeaturedTagRail.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { getAllPosts } from "../lib/content/queries";
-import {
-  getFeaturedPosts,
-  getPostSlug,
-  groupPostsByCategory,
-  groupPostsByTag
-} from "../lib/content/posts";
-import { site } from "../lib/site";
+import { getAllPosts, getAllSeries } from "../lib/content/queries";
 
 const posts = await getAllPosts();
-const featured = getFeaturedPosts(posts, 3);
-const categories = groupPostsByCategory(posts);
-const allTags = groupPostsByTag(posts);
-const hotTags = [...allTags]
-  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "zh-CN"))
-  .slice(0, 12);
+const allSeries = await getAllSeries();
 ---
 
 <BaseLayout>
   <main class="wrap home-grid">
-    <aside class="left-rail stack" aria-label="作者与分类">
-      <section class="panel profile">
-        <AuthorAvatar />
-        <h2>{site.author}</h2>
-        <p class="brand-note">知行合一 · 持续积累</p>
-        <p>{site.description}</p>
-        <div class="stats">
-          <div class="stat"><strong>{posts.length}</strong><span>文章</span></div>
-          <div class="stat"><strong>{categories.length}</strong><span>分类</span></div>
-          <div class="stat"><strong>{allTags.length}</strong><span>标签</span></div>
-        </div>
-      </section>
-      <section class="panel">
-        <div class="section-title">
-          技术分类
-          <small>
-            <a class="active" href="/categories/" data-home-category-all aria-current="page">全部</a>
-          </small>
-        </div>
-        <div class="taxonomy-list">
-          {categories.map((category) => (
-            <a
-              class="taxonomy-row"
-              href={`/categories/${encodeURIComponent(category.name)}/`}
-              data-home-category={category.name}
-            >
-              <span>{category.name}</span>
-              <b>{category.count}</b>
-            </a>
-          ))}
-        </div>
-      </section>
-    </aside>
+    <DiscoveryRail posts={posts} allSeries={allSeries} mode="home" />
     <section class="panel home-feed">
       <div class="section-title home-feed-head">
         <h1 data-home-feed-title>最新文章</h1>
         <small data-home-feed-count>共 {posts.length} 篇公开记录</small>
       </div>
       <ArticleList posts={posts} showCategory={false} tagLimit={2} />
+      <p class="article-filter-empty" data-home-filter-empty hidden>该筛选下暂无文章</p>
     </section>
-    <aside class="right-rail stack" aria-label="精选与标签">
-      <section class="panel">
-        <div class="section-title">精选复盘 <small>编辑推荐</small></div>
-        <ol class="featured-list">
-          {featured.map((post, index) => (
-            <li>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <div>
-                <a href={`/posts/${getPostSlug(post)}/`}>{post.data.title}</a>
-                <small>{post.data.category}</small>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-      <section class="panel">
-        <div class="section-title">热门标签 <small><a href="/tags/">全部</a></small></div>
-        <div class="tag-cloud">
-          {hotTags.map((tag) => <a class="tag" href={`/tags/${encodeURIComponent(tag.name)}/`}>{tag.name} · {tag.count}</a>)}
-        </div>
-      </section>
-    </aside>
+    <FeaturedTagRail posts={posts} />
   </main>
 </BaseLayout>
 

@@ -263,6 +263,109 @@ test("restores the homepage category filter from the URL and browser history", a
   await expect(page.locator("[data-home-feed-title]")).toHaveText("GIS");
 });
 
+test("keeps only the all link active after clearing the homepage filter", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const rail = page.getByRole("complementary", { name: "作者、分类与专题" });
+  await rail.locator('[data-filter-category="DevOps"]').click();
+  await rail.locator("[data-filter-all]").click();
+
+  await expect(page).toHaveURL(/\/$/);
+  await expect(rail.locator("[data-filter-all]")).toHaveAttribute("aria-current", "page");
+  await expect(rail.locator(".taxonomy-row.active")).toHaveCount(0);
+});
+
+test("filters the homepage feed by series from the shared discovery rail", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  await page.locator(".home-feed .article-row").first().evaluate((row) => {
+    row.dataset.series = "ai-agent-engineering";
+  });
+
+  const seriesLink = page.locator('[data-filter-series="ai-agent-engineering"]');
+  await seriesLink.click();
+
+  await expect(page).toHaveURL(/\/?series=ai-agent-engineering$/);
+  await expect(seriesLink).toHaveAttribute("aria-current", "page");
+  await expect(page.locator("[data-home-feed-title]")).toHaveText("AI Agent 工程化");
+  await expect(page.locator(".home-feed .article-row:visible")).toHaveCount(1);
+});
+
+test("uses the same author category and series rail on article pages", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/posts/jenkins-groovy-practices/");
+
+  const rail = page.getByRole("complementary", { name: "作者、分类与专题" });
+  await expect(rail.getByText("gis2all", { exact: true })).toBeVisible();
+  await expect(rail.getByText("技术分类", { exact: true })).toBeVisible();
+  await expect(rail.getByText("专题列表", { exact: true })).toBeVisible();
+  await expect(rail.locator('[data-filter-category="DevOps"]')).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+});
+
+test("replaces article content with a filtered list and restores it with history", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/posts/jenkins-groovy-practices/");
+
+  await page.locator('[data-filter-category="DevOps"]').click();
+
+  await expect(page).toHaveURL(/\/?category=DevOps$/);
+  await expect(page.locator("[data-article-view]")).toBeHidden();
+  await expect(page.locator("[data-article-filter-view]")).toBeVisible();
+  await expect(page.locator("[data-article-filter-title]")).toHaveText("DevOps");
+  await expect(page.locator("[data-article-filter-view] .article-row")).toHaveCount(38);
+  await expect(page.locator("[data-article-toc-view]")).toBeHidden();
+  await expect(page.locator("[data-article-discovery-view]")).toBeVisible();
+  await expect(page.getByRole("button", { name: "返回正文" })).toHaveCount(0);
+
+  await page.goBack();
+  await expect(page.locator("[data-article-view]")).toBeVisible();
+  await expect(page.locator("[data-article-filter-view]")).toBeHidden();
+  await expect(page.locator("[data-article-toc-view]")).toBeVisible();
+  await expect(page.locator("[data-article-discovery-view]")).toBeHidden();
+});
+
+test("shows all articles in place when all is clicked from an article", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/posts/jenkins-groovy-practices/");
+
+  const rail = page.getByRole("complementary", { name: "作者、分类与专题" });
+  await rail.locator("[data-filter-all]").click();
+
+  await expect(page).toHaveURL(/\/posts\/jenkins-groovy-practices\/?\?view=all$/);
+  await expect(page.locator("[data-article-view]")).toBeHidden();
+  await expect(page.locator("[data-article-filter-view] .article-row")).toHaveCount(105);
+  await expect(rail.locator("[data-filter-all]")).toHaveAttribute("aria-current", "page");
+  await expect(rail.locator(".taxonomy-row.active")).toHaveCount(0);
+});
+
+test("keeps the discovery rail the same width on home and article pages", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const homeWidth = await page
+    .getByRole("complementary", { name: "作者、分类与专题" })
+    .evaluate((rail) => rail.getBoundingClientRect().width);
+
+  await page.goto("/posts/jenkins-groovy-practices/");
+  const articleWidth = await page
+    .getByRole("complementary", { name: "作者、分类与专题" })
+    .evaluate((rail) => rail.getBoundingClientRect().width);
+
+  expect(Math.abs(articleWidth - homeWidth)).toBeLessThanOrEqual(1);
+});
+
 test("pins the active desktop nav indicator to the header bottom", async ({
   page,
 }) => {

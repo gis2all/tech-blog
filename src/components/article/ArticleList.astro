@@ -22,6 +22,7 @@ const {
     <article
       class:list={["article-row", { "has-thumb": post.data.cover && !compact }]}
       data-category={post.data.category}
+      data-series={post.data.series}
     >
       <div class="article-row-body">
         <h2><a href={`/posts/${getPostSlug(post)}/`}>{post.data.title}</a></h2>

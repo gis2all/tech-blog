@@ -3,8 +3,10 @@ import ArticleMeta from "../components/article/ArticleMeta.astro";
 import ArticleToc from "../components/article/ArticleToc.astro";
 import ArticleTocButton from "../components/article/ArticleTocButton.astro";
 import AuthorAvatar from "../components/common/AuthorAvatar.astro";
-import SeriesNav from "../components/article/SeriesNav.astro";
+import DiscoveryRail from "../components/layout/DiscoveryRail.astro";
+import FeaturedTagRail from "../components/layout/FeaturedTagRail.astro";
 import BaseLayout from "./BaseLayout.astro";
+import type { SeriesEntry } from "../lib/content/queries";
 import {
   calculateReadingTime,
   getAdjacentPosts,
@@ -16,17 +18,11 @@ import { site } from "../lib/site";
 type Props = {
   post: PostLike;
   allPosts: PostLike[];
+  allSeries: SeriesEntry[];
   headings: { depth: number; slug: string; text: string }[];
-  series?: {
-    data: {
-      title: string;
-      description: string;
-      slug: string;
-    };
-  };
 };
 
-const { post, allPosts, headings, series } = Astro.props;
+const { post, allPosts, allSeries, headings } = Astro.props;
 const published = post.data.publishedAt.toISOString().slice(0, 10);
 const updated = "updatedAt" in post.data && post.data.updatedAt instanceof Date
   ? post.data.updatedAt.toISOString().slice(0, 10)
@@ -39,16 +35,15 @@ const { previous, next } = getAdjacentPosts(allPosts, currentSlug);
 <BaseLayout title={post.data.title} description={post.data.description}>
   <ArticleTocButton slot="header-actions" headings={headings} />
   <main class="wrap article-shell">
-    <div class="left-rail" aria-label="专题导航">
-      <SeriesNav
-        posts={allPosts}
-        seriesSlug={post.data.series}
-        currentSlug={currentSlug}
-        title={series?.data.title}
-        description={series?.data.description}
-      />
-    </div>
-    <article class="panel article-page">
+    <DiscoveryRail
+      posts={allPosts}
+      allSeries={allSeries}
+      mode="article"
+      currentCategory={post.data.category}
+      currentSeries={post.data.series}
+    />
+    <div class="article-main">
+    <article class="panel article-page" data-article-view>
       <header class="article-head">
         <span class="kicker">{post.data.category}</span>
         <h1>{post.data.title}</h1>
@@ -116,6 +111,26 @@ const { previous, next } = getAdjacentPosts(allPosts, currentSlug);
         </section>
       </footer>
     </article>
-    <ArticleToc headings={headings} />
+    <section class="panel article-filter-page" data-article-filter-view hidden aria-live="polite">
+      <div class="section-title home-feed-head">
+        <h1 data-article-filter-title>文章列表</h1>
+        <small data-article-filter-count></small>
+      </div>
+      <div data-article-filter-list></div>
+      <p class="article-filter-empty" data-article-filter-empty hidden>该筛选下暂无文章</p>
+    </section>
+    </div>
+    <div class="article-right">
+      <div data-article-toc-view>
+        <ArticleToc headings={headings} />
+      </div>
+      <div data-article-discovery-view hidden>
+        <FeaturedTagRail posts={allPosts} />
+      </div>
+    </div>
   </main>
 </BaseLayout>
+
+<script>
+  import "../scripts/article-discovery-filter";
+</script>
