@@ -340,6 +340,11 @@ img {
   font-weight: 400;
 }
 
+.section-title small a.active {
+  color: var(--brand);
+  font-weight: 700;
+}
+
 .home-feed {
   min-width: 0;
   align-self: start;
@@ -488,6 +493,10 @@ img {
   border-bottom: 1px solid var(--line);
 }
 
+.home-feed .article-row[hidden] {
+  display: none;
+}
+
 .article-row.has-thumb {
   grid-template-columns: minmax(0, 1fr) 136px;
 }
@@ -631,6 +640,16 @@ img {
 .archive-row b {
   color: var(--muted);
   font: 12px ui-monospace, Consolas, monospace;
+}
+
+.taxonomy-row.active {
+  background: var(--brand-soft);
+  color: var(--brand);
+  box-shadow: inset 2px 0 var(--brand);
+}
+
+.taxonomy-row.active b {
+  color: var(--brand);
 }
 
 .article-page {

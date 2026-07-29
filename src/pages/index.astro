@@ -35,10 +35,19 @@ const hotTags = [...allTags]
         </div>
       </section>
       <section class="panel">
-        <div class="section-title">技术分类 <small><a href="/categories/">全部</a></small></div>
+        <div class="section-title">
+          技术分类
+          <small>
+            <a class="active" href="/categories/" data-home-category-all aria-current="page">全部</a>
+          </small>
+        </div>
         <div class="taxonomy-list">
           {categories.map((category) => (
-            <a class="taxonomy-row" href={`/categories/${encodeURIComponent(category.name)}/`}>
+            <a
+              class="taxonomy-row"
+              href={`/categories/${encodeURIComponent(category.name)}/`}
+              data-home-category={category.name}
+            >
               <span>{category.name}</span>
               <b>{category.count}</b>
             </a>
@@ -47,7 +56,10 @@ const hotTags = [...allTags]
       </section>
     </aside>
     <section class="panel home-feed">
-      <div class="section-title home-feed-head"><h1>最新文章</h1><small>共 {posts.length} 篇公开记录</small></div>
+      <div class="section-title home-feed-head">
+        <h1 data-home-feed-title>最新文章</h1>
+        <small data-home-feed-count>共 {posts.length} 篇公开记录</small>
+      </div>
       <ArticleList posts={posts} showCategory={false} tagLimit={2} />
     </section>
     <aside class="right-rail stack" aria-label="精选与标签">
@@ -74,3 +86,7 @@ const hotTags = [...allTags]
     </aside>
   </main>
 </BaseLayout>
+
+<script>
+  import "../scripts/home-category-filter";
+</script>

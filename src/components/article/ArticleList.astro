@@ -19,7 +19,10 @@ const {
 
 <div class:list={["article-list", { compact }]}>
   {posts.map((post) => (
-    <article class:list={["article-row", { "has-thumb": post.data.cover && !compact }]}>
+    <article
+      class:list={["article-row", { "has-thumb": post.data.cover && !compact }]}
+      data-category={post.data.category}
+    >
       <div class="article-row-body">
         <h2><a href={`/posts/${getPostSlug(post)}/`}>{post.data.title}</a></h2>
         <p>{post.data.description}</p>

@@ -213,6 +213,56 @@ test("keeps homepage side rails pinned while the desktop feed scrolls", async ({
   expect(Math.abs(after.rightTop - before.rightTop)).toBeLessThanOrEqual(2);
 });
 
+test("filters the homepage feed from the category rail", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const categoryLink = page.locator('[data-home-category="DevOps"]');
+  const categoryCount = Number.parseInt(
+    (await categoryLink.locator("b").textContent()) ?? "0",
+    10,
+  );
+
+  await expect(categoryLink).toHaveAttribute("href", "/categories/DevOps/");
+  await categoryLink.click();
+
+  await expect(page).toHaveURL(/\/?category=DevOps$/);
+  await expect(categoryLink).toHaveAttribute("aria-current", "page");
+  await expect(page.locator("[data-home-feed-title]")).toHaveText("DevOps");
+  await expect(page.locator("[data-home-feed-count]")).toHaveText(
+    `共 ${categoryCount} 篇公开记录`,
+  );
+
+  const visibleRows = page.locator(".home-feed .article-row:visible");
+  await expect(visibleRows).toHaveCount(categoryCount);
+  expect(
+    await visibleRows.evaluateAll((rows) =>
+      rows.every((row) => row.getAttribute("data-category") === "DevOps"),
+    ),
+  ).toBe(true);
+});
+
+test("restores the homepage category filter from the URL and browser history", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/?category=GIS");
+
+  await expect(page.locator('[data-home-category="GIS"]')).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(page.locator("[data-home-feed-title]")).toHaveText("GIS");
+
+  await page.locator("[data-home-category-all]").click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator("[data-home-feed-title]")).toHaveText("最新文章");
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/?category=GIS$/);
+  await expect(page.locator("[data-home-feed-title]")).toHaveText("GIS");
+});
+
 test("pins the active desktop nav indicator to the header bottom", async ({
   page,
 }) => {
