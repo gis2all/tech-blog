@@ -17,7 +17,7 @@ const allSeries = await getAllSeries();
         <h1 data-home-feed-title>最新文章</h1>
         <small data-home-feed-count>共 {posts.length} 篇公开记录</small>
       </div>
-      <ArticleList posts={posts} showCategory={false} tagLimit={2} />
+      <ArticleList posts={posts} tagLimit={2} />
       <p class="article-filter-empty" data-home-filter-empty hidden>该筛选下暂无文章</p>
     </section>
     <FeaturedTagRail posts={posts} />
