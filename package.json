@@ -10,8 +10,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
-    "test:e2e": "playwright test",
-    "migrate:csdn": "tsx scripts/migrate-csdn/cli.ts"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
@@ -26,12 +25,7 @@
   "devDependencies": {
     "@playwright/test": "^1.62.0",
     "@types/node": "^26.1.2",
-    "@types/turndown": "^5.0.6",
-    "cheerio": "^1.2.0",
     "pinyin-pro": "^3.28.2",
-    "tsx": "^4.23.1",
-    "turndown": "^7.2.4",
-    "turndown-plugin-gfm": "^1.0.2",
     "vitest": "^4.1.10",
     "yaml": "^2.9.0"
   }

@@ -569,12 +569,8 @@ public/images/posts/
 ## 19. CSDN 迁移状态
 
 - 来源账号是 `DynastyRumble` / `gis2all`。
-- 2026-07-29 重新确认真实全量来源不是账号页首屏 20 篇，而是 CSDN 接口 `community/home-api/v1/get-business-list` 返回的 `total: 105`。
-- 当前本地已覆盖 105 / 105 篇：其中 20 篇为前序迁移已存在/跳过，85 篇由本轮批量迁移成功补齐；剩余未迁移文章为 0。
-- 全量迁移后曾有 10 篇补迁文章因单篇迁移脚本默认 `draft: true` 而未进入首页统计，表现为首页只显示 95 篇；2026-07-29 已统一恢复为 `draft: false`，当前公开文章数为 105。
-- 后半段 43 篇不是文章不存在，而是 Node/普通浏览器新会话抓取详情页时被 CSDN WAF 拦截。最终使用已登录的 `csdn-pilot` Playwright 会话逐篇缓存详情页 HTML，再用 `.migration/csdn/migrate-all-remaining.ts` 从缓存生成 Markdown 和本地图片。`.migration/` 已被 `.gitignore` 排除，不要提交 CSDN 登录态、原始 HTML 缓存或临时批量脚本。
-- 已修正迁移工具的全量迁移问题：详情页 `upDate` 作为 `updatedAt` 来源；短正文允许直接生成短摘要；栏目为空时按关键词兜底分类；CSDN 长 GIF 录屏保留原文件并允许最多 300 帧；profile 页抓取失败不再阻塞详情页已有更新时间的文章；图片型文章允许以标题兜底摘要；误标为 GIF 的 PNG 按真实解码格式处理；详情正文增加截断检测，避免再次把被 WAF 或页面异常截断的正文当作完整文章写入。
-- 每篇迁移文落到 `src/content/posts/<slug>.md` 与 `public/images/posts/<slug>/`，再检查首页、分类、标签、归档和搜索。
-- 迁移时优先保持原文标题、结构、发布时间、更新时间、图片和链接，不擅自改写正文。
-- 迁移脚本仍默认输出草稿；批量脚本会把成功迁移的 CSDN 文章统一改为 `draft: false` 公开，`git-team-workflow.md` 仍是测试草稿。
+- 2026-07-29 已完成 105 / 105 篇公开文章迁移，剩余未迁移文章为 0。
+- 迁移结果保留在 `src/content/posts/` 与 `public/images/posts/`，原文中的有效引用链接继续保留。
+- 2026-07-30 已移除一次性迁移脚本、npm 命令及专用依赖，不再把迁移工具作为项目运行时或维护代码。
+- `.migration/` 仍被 `.gitignore` 排除，不要提交本地原始缓存、登录态或临时迁移资料。
 - 早期 5 篇测试文章已删除，不要再把它们当作正式内容恢复。
