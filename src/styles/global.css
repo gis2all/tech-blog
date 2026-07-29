@@ -111,7 +111,7 @@ img {
   align-items: center;
   gap: 8px;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -217,7 +217,7 @@ img {
   display: inline-grid;
   place-items: center;
   padding: 0 14px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .button.primary,
@@ -320,7 +320,7 @@ img {
 .kicker {
   font-size: 10px;
   color: var(--brand);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
 }
 
@@ -332,7 +332,7 @@ img {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .section-title small {
@@ -342,7 +342,7 @@ img {
 
 .section-title small a.active {
   color: var(--brand);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .home-feed {
@@ -397,7 +397,7 @@ img {
   margin: 5px 0 2px;
   color: var(--brand);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .stats {
@@ -477,7 +477,7 @@ img {
 }
 
 .category-tabs a.active {
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .category-tabs a.active::after {
@@ -542,6 +542,7 @@ img {
 .article-row h2 {
   margin: 0 0 6px;
   font-size: 17px;
+  font-weight: 600;
   line-height: 1.45;
 }
 
@@ -686,15 +687,15 @@ img {
   align-items: baseline;
   gap: 7px;
   margin: 0 0 20px;
-  font-size: 28px;
+  font-size: 22px;
   line-height: 1.2;
   letter-spacing: 0;
 }
 
 .archive-year-heading small {
   color: var(--muted);
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .archive-months {
@@ -722,9 +723,10 @@ img {
 }
 
 .archive-month-label {
-  margin: 8px 0 0;
+  align-self: start;
+  margin: 9px 0 0;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
   text-align: right;
@@ -743,10 +745,10 @@ img {
 .archive-entry i {
   position: absolute;
   top: 15px;
-  left: -8px;
-  width: 16px;
-  height: 16px;
-  border: 3px solid var(--brand);
+  left: -5px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--brand);
   border-radius: 50%;
   background: var(--panel);
 }
@@ -754,13 +756,13 @@ img {
 .archive-entry time {
   color: var(--muted);
   font-family: inherit;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.5;
   white-space: nowrap;
 }
 
 .archive-entry span {
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -795,6 +797,8 @@ img {
 
 .about-page .prose h2 {
   margin: 24px 0 8px;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .about-page .prose > h2:first-child {
@@ -861,7 +865,7 @@ img {
 
 .article-head h1 {
   margin: 7px 0 10px;
-  font-size: 42px;
+  font-size: 36px;
   line-height: 1.22;
   letter-spacing: 0;
 }
@@ -903,16 +907,17 @@ img {
 
 .prose h2,
 .prose h3 {
+  font-weight: 600;
   line-height: 1.35;
   margin: 2em 0 0.65em;
 }
 
 .prose h2 {
-  font-size: 25px;
+  font-size: 22px;
 }
 
 .prose h3 {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .prose p,
@@ -1209,6 +1214,8 @@ img {
 .project-card-title {
   margin: 0 0 8px;
   font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
   overflow-wrap: anywhere;
 }
 
@@ -1285,6 +1292,8 @@ img {
 .series-card-title {
   margin: 0 0 8px;
   font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
   overflow-wrap: anywhere;
 }
 
@@ -1316,7 +1325,7 @@ img {
   gap: 5px;
   color: var(--brand);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .series-card-action:hover {
@@ -1357,6 +1366,7 @@ img {
 .tag-signal strong {
   display: block;
   font-size: 13px;
+  font-weight: 600;
 }
 
 .tag-hot {
@@ -1376,12 +1386,12 @@ img {
   align-items: center;
   gap: 7px;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 500;
 }
 
 .tag-hot a span {
   color: var(--muted);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .tag-hot a:hover {
@@ -1406,7 +1416,7 @@ img {
   border-radius: var(--radius);
   background: var(--panel);
   color: var(--muted);
-  font: 750 12px/1 ui-monospace, Consolas, monospace;
+  font: 600 12px/1 ui-monospace, Consolas, monospace;
   display: grid;
   place-items: center;
 }
@@ -1446,8 +1456,8 @@ img {
   border-radius: 8px;
   background: var(--brand-soft);
   color: var(--brand);
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 700;
   display: grid;
   place-items: center;
 }
@@ -1477,6 +1487,7 @@ img {
 .tag-item h3 {
   margin: 0 0 8px;
   font-size: 15px;
+  font-weight: 600;
   line-height: 1.25;
 }
 
@@ -1492,8 +1503,8 @@ img {
 .tag-count {
   min-width: 56px;
   color: var(--text);
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 17px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   text-align: right;
@@ -1505,7 +1516,7 @@ img {
   margin-top: 4px;
   color: var(--muted);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .search-panel {
@@ -1751,11 +1762,11 @@ img {
 
   .archive-year-heading {
     margin-bottom: 18px;
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .archive-year-heading small {
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .archive-months::before {
@@ -1773,6 +1784,7 @@ img {
   }
 
   .archive-month-label {
+    align-self: auto;
     margin: 0;
     padding-left: 26px;
     text-align: left;
@@ -1787,9 +1799,9 @@ img {
 
   .archive-entry i {
     top: 13px;
-    left: 0;
-    width: 14px;
-    height: 14px;
+    left: 2px;
+    width: 10px;
+    height: 10px;
   }
 
   .archive-entry time,
@@ -1912,7 +1924,7 @@ img {
 
   .tag-count {
     min-width: 42px;
-    font-size: 20px;
+    font-size: 17px;
   }
 
   .article-thumb {
