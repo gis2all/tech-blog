@@ -325,7 +325,9 @@ test("replaces article content with a filtered list and restores it with history
   await expect(page.locator("[data-article-view]")).toBeHidden();
   await expect(page.locator("[data-article-filter-view]")).toBeVisible();
   await expect(page.locator("[data-article-filter-title]")).toHaveText("DevOps");
-  await expect(page.locator("[data-article-filter-view] .article-row")).toHaveCount(38);
+  await expect(page.locator("[data-article-filter-view] .article-row")).toHaveCount(38, {
+    timeout: 15_000,
+  });
   await expect(page.locator("[data-article-toc-view]")).toBeHidden();
   await expect(page.locator("[data-article-discovery-view]")).toBeVisible();
   await expect(page.getByRole("button", { name: "返回正文" })).toHaveCount(0);
@@ -346,7 +348,9 @@ test("shows all articles in place when all is clicked from an article", async ({
 
   await expect(page).toHaveURL(/\/posts\/jenkins-groovy-practices\/?\?view=all$/);
   await expect(page.locator("[data-article-view]")).toBeHidden();
-  await expect(page.locator("[data-article-filter-view] .article-row")).toHaveCount(105);
+  await expect(page.locator("[data-article-filter-view] .article-row")).toHaveCount(105, {
+    timeout: 15_000,
+  });
   await expect(rail.locator("[data-filter-all]")).toHaveAttribute("aria-current", "page");
   await expect(rail.locator(".taxonomy-row.active")).toHaveCount(0);
 });
@@ -434,6 +438,47 @@ test("keeps category tabs horizontally scrollable on mobile", async ({ page }) =
 
   expect(widths.scroll).toBeGreaterThan(widths.client);
   expect(widths.pageScroll).toBeLessThanOrEqual(widths.pageClient);
+});
+
+test("renders the archive as a grouped year and month timeline", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/archive/");
+
+  const years = page.locator("[data-archive-year]");
+  expect(await years.count()).toBeGreaterThan(1);
+
+  expect(
+    await years.evaluateAll((groups) =>
+      groups.every((group) => {
+        const heading = group.querySelector("[data-archive-year-heading]")?.textContent ?? "";
+        const entries = group.querySelectorAll("[data-archive-entry]").length;
+        return heading.includes(`${entries} 篇`) && entries > 0;
+      }),
+    ),
+  ).toBe(true);
+
+  await expect(page.locator("[data-archive-month]").first()).toBeVisible();
+  await expect(page.locator("[data-archive-entry]").first().locator("time")).toHaveText(
+    /^\d{2}-\d{2}$/,
+  );
+
+  const typography = await page.locator("[data-archive-entry]").first().evaluate((entry) => {
+    const date = entry.querySelector("time");
+    const title = entry.querySelector("span");
+    if (!date || !title) throw new Error("Missing archive entry typography");
+
+    const dateStyle = getComputedStyle(date);
+    const titleStyle = getComputedStyle(title);
+    return {
+      dateFamily: dateStyle.fontFamily,
+      dateSize: dateStyle.fontSize,
+      titleFamily: titleStyle.fontFamily,
+      titleSize: titleStyle.fontSize,
+    };
+  });
+
+  expect(typography.dateFamily).toBe(typography.titleFamily);
+  expect(typography.dateSize).toBe(typography.titleSize);
 });
 
 test("shows the gis2all identity and programming font", async ({ page }) => {

@@ -667,6 +667,103 @@ img {
   font: 12px ui-monospace, Consolas, monospace;
 }
 
+.archive-panel {
+  padding: 36px 40px 42px;
+  overflow: hidden;
+}
+
+.archive-year + .archive-year {
+  margin-top: 38px;
+  padding-top: 2px;
+}
+
+.archive-year-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0 0 20px;
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.archive-year-heading small {
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.archive-months {
+  position: relative;
+}
+
+.archive-months::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 114px;
+  width: 1px;
+  background: var(--line);
+}
+
+.archive-month {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.archive-month + .archive-month {
+  margin-top: 18px;
+}
+
+.archive-month-label {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.archive-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 22px;
+  align-items: baseline;
+  min-height: 44px;
+  padding: 9px 0 9px 38px;
+}
+
+.archive-entry i {
+  position: absolute;
+  top: 15px;
+  left: -8px;
+  width: 16px;
+  height: 16px;
+  border: 3px solid var(--brand);
+  border-radius: 50%;
+  background: var(--panel);
+}
+
+.archive-entry time {
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.archive-entry span {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.archive-entry:hover span {
+  color: var(--brand);
+}
+
 .taxonomy-row.active {
   background: var(--brand-soft);
   color: var(--brand);
@@ -1443,6 +1540,58 @@ img {
 
   .article-page {
     padding: 24px 16px;
+  }
+
+  .archive-panel {
+    padding: 24px 18px 30px;
+  }
+
+  .archive-year-heading {
+    margin-bottom: 18px;
+    font-size: 24px;
+  }
+
+  .archive-year-heading small {
+    font-size: 16px;
+  }
+
+  .archive-months::before {
+    top: 38px;
+    left: 7px;
+  }
+
+  .archive-month {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .archive-month + .archive-month {
+    margin-top: 20px;
+  }
+
+  .archive-month-label {
+    margin: 0;
+    padding-left: 26px;
+    text-align: left;
+  }
+
+  .archive-entry {
+    grid-template-columns: 54px minmax(0, 1fr);
+    gap: 12px;
+    min-height: 40px;
+    padding: 8px 0 8px 26px;
+  }
+
+  .archive-entry i {
+    top: 13px;
+    left: 0;
+    width: 14px;
+    height: 14px;
+  }
+
+  .archive-entry time,
+  .archive-entry span {
+    font-size: 14px;
   }
 
   .article-head h1 {
