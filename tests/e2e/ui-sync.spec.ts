@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+const codeArticlePath = `/posts/${encodeURIComponent(
+  "Jenkins Pipeline项目无法在windows子节点中执行cmd命令",
+)}/`;
+const longArticlePath = `/posts/${encodeURIComponent("《工作的意义》读书笔记")}/`;
+
 test.describe("mobile navigation and article controls", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
@@ -120,11 +125,49 @@ test.describe("mobile navigation and article controls", () => {
         },
       });
     });
-    await page.goto("/posts/jenkins-groovy-practices/");
+    await page.goto(codeArticlePath);
 
-    const copyButton = page.getByRole("button", { name: "复制" }).first();
+    const copyButton = page.locator(".copy-button").first();
     await copyButton.click();
-    await expect(copyButton).toHaveText("复制失败");
+    await expect(copyButton).toHaveAttribute("aria-label", "复制失败");
+    await expect(copyButton).toHaveAttribute("title", "复制失败");
+    await expect(copyButton).toHaveText("");
+  });
+});
+
+test.describe("article progress and code controls", () => {
+  test("reaches 100 percent at the real page bottom on a tall viewport", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1782, height: 1374 });
+    await page.goto(longArticlePath);
+    await page.evaluate(() => {
+      window.scrollTo(0, document.documentElement.scrollHeight);
+    });
+
+    await expect(page.locator("[data-read-percent]")).toHaveText("100%");
+  });
+
+  test("uses compact fenced code typography", async ({ page }) => {
+    await page.goto(codeArticlePath);
+
+    const fontSize = await page.locator(".prose pre code").first().evaluate(
+      (code) => getComputedStyle(code).fontSize,
+    );
+
+    expect(fontSize).toBe("14px");
+  });
+
+  test("uses an icon-only copy control with an accessible tooltip", async ({
+    page,
+  }) => {
+    await page.goto(codeArticlePath);
+
+    const copyButton = page.locator(".copy-button").first();
+    await expect(copyButton).toHaveAttribute("aria-label", "复制代码");
+    await expect(copyButton).toHaveAttribute("title", "复制代码");
+    await expect(copyButton).toHaveText("");
+    await expect(copyButton.locator("svg")).toHaveCount(1);
   });
 });
 
