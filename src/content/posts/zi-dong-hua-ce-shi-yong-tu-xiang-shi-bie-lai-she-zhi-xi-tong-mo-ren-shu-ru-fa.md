@@ -72,7 +72,7 @@ public static extern void KeyBoard_Event(byte bVk, byte bScan, int dwFlags, int 
 ![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-05.webp)  
 ![在这里插入图片描述](/images/posts/zi-dong-hua-ce-shi-yong-tu-xiang-shi-bie-lai-she-zhi-xi-tong-mo-ren-shu-ru-fa/image-06.webp)
 
-> 关于如何比较两张图片相似度，参考我的这篇博客 [【OpenCvSharp】使用SSIM指数衡量图片相似度](https://blog.csdn.net/DynastyRumble/article/details/105294175)
+> 关于如何比较两张图片相似度，参考我的这篇博客 [【OpenCvSharp】使用SSIM指数衡量图片相似度](/posts/%E3%80%90OpenCvSharp%E3%80%91%E4%BD%BF%E7%94%A8SSIM%E6%8C%87%E6%95%B0%E8%A1%A1%E9%87%8F%E5%9B%BE%E7%89%87%E7%9B%B8%E4%BC%BC%E5%BA%A6/)
 
 ## 四、完整代码
 

@@ -59,6 +59,7 @@ const monthLabels = [
 ];
 
 const asciiLetterPattern = /^[A-Za-z]$/;
+const reservedPostSlugPattern = /[/?#%]/u;
 
 function compareTagInitials(a: string, b: string): number {
   if (a === b) return 0;
@@ -90,8 +91,36 @@ export function compareTagNames(a: string, b: string): number {
   );
 }
 
-export function getPostSlug(post: Pick<PostLike, "id">): string {
-  return post.id.replace(/\.mdx?$/i, "").replace(/\/index$/i, "");
+export function getPostSlug(post: Pick<PostLike, "id" | "data">): string {
+  const slug = post.data.title.trim();
+
+  if (!slug) {
+    throw new Error(`Article title cannot be empty: ${post.id}`);
+  }
+
+  if (reservedPostSlugPattern.test(slug)) {
+    throw new Error(
+      `Article title cannot contain URL-reserved characters: ${post.id}`
+    );
+  }
+
+  return slug;
+}
+
+export function validateUniquePostSlugs<TPost extends PostLike>(
+  posts: TPost[]
+): void {
+  const seen = new Set<string>();
+
+  for (const post of posts) {
+    const slug = getPostSlug(post);
+
+    if (seen.has(slug)) {
+      throw new Error(`Duplicate article slug: ${slug}`);
+    }
+
+    seen.add(slug);
+  }
 }
 
 export function sortPostsByDate<TPost extends PostLike>(posts: TPost[]): TPost[] {

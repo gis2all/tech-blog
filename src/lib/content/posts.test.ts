@@ -10,7 +10,8 @@ import {
   groupPostsByTag,
   groupTagsByInitial,
   getTagInitial,
-  sortPostsByDate
+  sortPostsByDate,
+  validateUniquePostSlugs
 } from "./posts";
 
 const posts = [
@@ -97,8 +98,42 @@ const directoryPosts = [
 ];
 
 describe("post helpers", () => {
-  test("getPostSlug removes the markdown extension", () => {
-    expect(getPostSlug(posts[0])).toBe("old-post");
+  test("getPostSlug uses the trimmed article title", () => {
+    expect(getPostSlug(posts[0])).toBe("Old Post");
+    expect(
+      getPostSlug({
+        ...posts[0],
+        data: { ...posts[0].data, title: "  中文文章标题  " }
+      })
+    ).toBe("中文文章标题");
+  });
+
+  test.each(["标题/分段", "标题?查询", "标题#锚点", "标题%编码"])(
+    "getPostSlug rejects reserved path characters in %s",
+    (title) => {
+      expect(() =>
+        getPostSlug({
+          ...posts[0],
+          data: { ...posts[0].data, title }
+        })
+      ).toThrow("Article title cannot contain URL-reserved characters");
+    }
+  );
+
+  test("validateUniquePostSlugs accepts distinct article titles", () => {
+    expect(() => validateUniquePostSlugs(posts)).not.toThrow();
+  });
+
+  test("validateUniquePostSlugs rejects duplicate article titles", () => {
+    const duplicate = {
+      ...posts[1],
+      id: "duplicate-title.md",
+      data: { ...posts[1].data, title: posts[0].data.title }
+    };
+
+    expect(() => validateUniquePostSlugs([...posts, duplicate])).toThrow(
+      "Duplicate article slug: Old Post"
+    );
   });
 
   test("getPublicPosts filters drafts and sorts newest first", () => {
@@ -182,7 +217,7 @@ describe("post helpers", () => {
   });
 
   test("getAdjacentPosts follows public chronological order and skips drafts", () => {
-    const adjacent = getAdjacentPosts(posts, "new-post");
+    const adjacent = getAdjacentPosts(posts, "New Post");
 
     expect(adjacent.previous?.data.title).toBe("Old Post");
     expect(adjacent.next).toBeUndefined();

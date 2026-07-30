@@ -141,6 +141,30 @@ window.matchMedia("(min-width: 901px)").addEventListener("change", (event) => {
   }
 });
 
+const copyButtonStates = {
+  idle: {
+    label: "复制代码",
+    icon: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>',
+  },
+  success: {
+    label: "已复制",
+    icon: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"></path></svg>',
+  },
+  error: {
+    label: "复制失败",
+    icon: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>',
+  },
+} as const;
+
+type CopyButtonState = keyof typeof copyButtonStates;
+
+function setCopyButtonState(button: HTMLButtonElement, state: CopyButtonState) {
+  const { label, icon } = copyButtonStates[state];
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  button.innerHTML = icon;
+}
+
 document.querySelectorAll<HTMLPreElement>(".prose pre").forEach((pre) => {
   const code = pre.querySelector("code");
   if (!code) return;
@@ -149,7 +173,7 @@ document.querySelectorAll<HTMLPreElement>(".prose pre").forEach((pre) => {
   button.type = "button";
   button.className = "copy-button";
   button.setAttribute("aria-live", "polite");
-  button.textContent = "复制";
+  setCopyButtonState(button, "idle");
   let resetTimer: number | undefined;
   button.addEventListener("click", async () => {
     window.clearTimeout(resetTimer);
@@ -157,13 +181,13 @@ document.querySelectorAll<HTMLPreElement>(".prose pre").forEach((pre) => {
     try {
       if (!navigator.clipboard?.writeText) throw new Error("Clipboard API unavailable");
       await navigator.clipboard.writeText(code.textContent ?? "");
-      button.textContent = "已复制";
+      setCopyButtonState(button, "success");
     } catch {
-      button.textContent = "复制失败";
+      setCopyButtonState(button, "error");
     }
 
     resetTimer = window.setTimeout(() => {
-      button.textContent = "复制";
+      setCopyButtonState(button, "idle");
     }, 1200);
   });
   pre.append(button);
@@ -176,9 +200,15 @@ const article = document.querySelector<HTMLElement>(".prose");
 function updateReadProgress() {
   if (!readBar || !readPercent || !article) return;
   const rect = article.getBoundingClientRect();
-  const total = Math.max(1, rect.height - window.innerHeight * 0.4);
-  const read = Math.min(total, Math.max(0, -rect.top + window.innerHeight * 0.15));
-  const percent = Math.round((read / total) * 100);
+  const viewportHeight = window.innerHeight;
+  const maxScroll = Math.max(0, document.documentElement.scrollHeight - viewportHeight);
+  const articleTop = window.scrollY + rect.top;
+  const start = Math.min(maxScroll, Math.max(0, articleTop - viewportHeight * 0.15));
+  const nominalEnd = articleTop + rect.height - viewportHeight * 0.55;
+  const end = Math.min(maxScroll, Math.max(start, nominalEnd));
+  const percent = end <= start
+    ? window.scrollY >= end ? 100 : 0
+    : Math.round(((Math.min(end, Math.max(start, window.scrollY)) - start) / (end - start)) * 100);
   readBar.style.width = `${percent}%`;
   readPercent.textContent = `${percent}%`;
 }

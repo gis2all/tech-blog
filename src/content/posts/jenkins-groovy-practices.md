@@ -21,7 +21,7 @@ seriesOrder: 11
 
 ## 一、IntelliJ IDEA中配置Groovy
 
-我们写在Jenkinsfile中写脚本的模式是， 先在IDE中验证脚本， 然后复制代码至Jenkinsfile, 关于在 IntelliJ IDEA 中写Groovy脚本参考这篇文章[IntelliJ IDEA配置Groovy教程](https://blog.csdn.net/DynastyRumble/article/details/119060100)
+我们写在Jenkinsfile中写脚本的模式是， 先在IDE中验证脚本， 然后复制代码至Jenkinsfile, 关于在 IntelliJ IDEA 中写Groovy脚本参考这篇文章[IntelliJ IDEA配置Groovy教程](/posts/IntelliJ%20IDEA%E9%85%8D%E7%BD%AEGroovy%E6%95%99%E7%A8%8B/)
 
 ## 二、Pipeline中使用Groovy脚本
 

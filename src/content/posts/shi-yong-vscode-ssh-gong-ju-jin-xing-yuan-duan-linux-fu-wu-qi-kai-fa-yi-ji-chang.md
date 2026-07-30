@@ -142,11 +142,11 @@ Host your_host_alias
 -   **可以在编辑界面直接打开保存文本**
 
 显示远程机器目录树，我们直接打开文件夹，这时默认在远程机器的用户根目录，换到系统根目录，确定后需要再输入一次用户密码，之后就看到远程机器的根目录  
-![在这里插入图片描述](/images/posts/shi-yong-vscode-ssh-gong-ju-jin-xing-yuan-duan-linux-fu-wu-qi-kai-fa-yi-ji-chang/image-08.gif)  
+![在这里插入图片描述](/images/posts/shi-yong-vscode-ssh-gong-ju-jin-xing-yuan-duan-linux-fu-wu-qi-kai-fa-yi-ji-chang/image-08.mp4)
 打开/etc/ssh/sshd\_config 测试，可以直接在右侧编辑器修改保存，多方便！😁  
 ![在这里插入图片描述](/images/posts/shi-yong-vscode-ssh-gong-ju-jin-xing-yuan-duan-linux-fu-wu-qi-kai-fa-yi-ji-chang/image-09.webp)  
 复制路径，在终端使用，再也不用来回切换了！😎  
-![在这里插入图片描述](/images/posts/shi-yong-vscode-ssh-gong-ju-jin-xing-yuan-duan-linux-fu-wu-qi-kai-fa-yi-ji-chang/image-10.gif)  
+![在这里插入图片描述](/images/posts/shi-yong-vscode-ssh-gong-ju-jin-xing-yuan-duan-linux-fu-wu-qi-kai-fa-yi-ji-chang/image-10.mp4)
 当然还有许多其他方便功能，这里不一一赘述！
 
 ## 五、免密登录和端口修改
@@ -212,7 +212,7 @@ Host your_host_alias
 ```
 
 之后就可以直接登录，无需输入密码！相当的快捷方便！😎，看看效果  
-![在这里插入图片描述](/images/posts/shi-yong-vscode-ssh-gong-ju-jin-xing-yuan-duan-linux-fu-wu-qi-kai-fa-yi-ji-chang/image-13.gif)
+![在这里插入图片描述](/images/posts/shi-yong-vscode-ssh-gong-ju-jin-xing-yuan-duan-linux-fu-wu-qi-kai-fa-yi-ji-chang/image-13.mp4)
 
 ## 六、常见问题
 

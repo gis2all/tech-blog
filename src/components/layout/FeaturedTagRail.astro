@@ -36,7 +36,7 @@ const hotTags = groupPostsByTag(posts)
     <div class="section-title">热门标签 <small><a href="/tags/">全部</a></small></div>
     <div class="tag-cloud">
       {hotTags.map((tag) => (
-        <a class="tag" href={`/tags/${encodeURIComponent(tag.name)}/`}>{tag.name} · {tag.count}</a>
+        <a class="tag ghost" href={`/tags/${encodeURIComponent(tag.name)}/`}>{tag.name} · {tag.count}</a>
       ))}
     </div>
   </section>

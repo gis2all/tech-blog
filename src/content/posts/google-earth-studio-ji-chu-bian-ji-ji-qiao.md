@@ -18,10 +18,10 @@ seriesOrder: 2
 
 **Google Earth Studio教程专栏**
 
-1.  [【Google Earth Studio】初步探索](https://blog.csdn.net/DynastyRumble/article/details/103974798)
-2.  [【Google Earth Studio】基础编辑技巧](https://blog.csdn.net/DynastyRumble/article/details/103990446)
-3.  [【Google Earth Studio】进阶编辑技巧](https://blog.csdn.net/DynastyRumble/article/details/104042224)
-4.  [【Google Earth Studio】高级编辑技巧](https://blog.csdn.net/DynastyRumble/article/details/104283992)
+1.  [【Google Earth Studio】初步探索](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%B4%A2/)
+2.  [【Google Earth Studio】基础编辑技巧](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E5%9F%BA%E7%A1%80%E7%BC%96%E8%BE%91%E6%8A%80%E5%B7%A7/)
+3.  [【Google Earth Studio】进阶编辑技巧](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E8%BF%9B%E9%98%B6%E7%BC%96%E8%BE%91%E6%8A%80%E5%B7%A7/)
+4.  [【Google Earth Studio】高级编辑技巧](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E9%AB%98%E7%BA%A7%E7%BC%96%E8%BE%91%E6%8A%80%E5%B7%A7/)
 
 * * *
 
@@ -38,14 +38,14 @@ seriesOrder: 2
 ```
 
 默认编辑区域是总帧数刻度，但我们也可以更改为总时间刻度，点击`Toggle Time Format`  
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-01.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-01.mp4)
 
 ### 2\. 时间区间
 
 默认的时间区间是总时间，但很多情况下我们需要在较短的时间间隔内编辑，这样可以拖动编辑区域的时间区间工具条选择合适的时间区间  
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-02.gif)  
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-02.mp4)
 还可以放大区间，更容易编辑  
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-03.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-03.mp4)
 
 ## 二、关键帧
 
@@ -62,12 +62,12 @@ seriesOrder: 2
 已删除关键帧的属性：          菱形图案会被镂空
 ```
 
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-04.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-04.mp4)
 
 ### 2\. 不同时刻的关键帧
 
 首先固定Camera在某一视角，我们在00帧时刻记录当前Camera状态  
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-05.gif)  
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-05.mp4)
 然后把时间线拖至90帧时刻，轻微转动Camera至另一视角，记录当前Camera状态  
 Note:
 
@@ -75,22 +75,22 @@ Note:
 一定要注意的是先拖动设置时间线，然后再设置新的Camera，不然无法播放
 ```
 
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-06.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-06.mp4)
 
 ### 3\. 播放动画
 
 已经在开始和结束设置了不同的关键帧，开始和结束的Camera不一致，所以GES会自动填补两个关键帧中间的动画  
 点击播放按钮，查看动画  
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-07.gif)  
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-07.mp4)
 也可以鼠标按住时间线拖动，查看每一帧的情况  
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-08.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-08.mp4)
 
 ### 4\. 回到起始帧的Camera
 
 细心的读者在会发现菱形属性图案在这个过程变成黄色的了，这是因为在GES会自动检测到当前关键帧Camera发生了改变  
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-09.gif)  
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-09.mp4)
 如果想回到起始的Camera，来回拖动时间线即可  
-![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-10.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-ji-chu-bian-ji-ji-qiao/image-10.mp4)
 
 ## 三、播放菜单
 

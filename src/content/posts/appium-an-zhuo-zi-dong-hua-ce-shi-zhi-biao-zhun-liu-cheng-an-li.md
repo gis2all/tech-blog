@@ -54,7 +54,7 @@ adb install D:\Work\Android\ArcGIS_Earth.apk
 
 启动Session前需要设置Desired Capabilities，关于Desired Capabilities属性含义以及获取方式请参考我之前的博文，这里不多赘述
 
-> [【Appium学习笔记】从零搭建Android自动化测试环境](https://blog.csdn.net/DynastyRumble/article/details/105029055)
+> [【Appium】从零搭建Android自动化测试环境](/posts/%E3%80%90Appium%E3%80%91%E4%BB%8E%E9%9B%B6%E6%90%AD%E5%BB%BAAndroid%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83/)
 
 设置待测试App的Desired Capabilities
 
@@ -133,7 +133,7 @@ public class Samples : ArcGISEarthAndroidSession
 ```
 
 测试效果  
-![在这里插入图片描述](/images/posts/appium-an-zhuo-zi-dong-hua-ce-shi-zhi-biao-zhun-liu-cheng-an-li/image-05.gif)
+![在这里插入图片描述](/images/posts/appium-an-zhuo-zi-dong-hua-ce-shi-zhi-biao-zhun-liu-cheng-an-li/image-05.mp4)
 
 ## 四、步骤总结
 

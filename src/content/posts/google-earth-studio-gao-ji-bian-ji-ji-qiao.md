@@ -17,10 +17,10 @@ seriesOrder: 4
 
 **Google Earth Studio教程专栏**
 
-1.  [【Google Earth Studio】初步探索](https://blog.csdn.net/DynastyRumble/article/details/103974798)
-2.  [【Google Earth Studio】基础编辑技巧](https://blog.csdn.net/DynastyRumble/article/details/103990446)
-3.  [【Google Earth Studio】进阶编辑技巧](https://blog.csdn.net/DynastyRumble/article/details/104042224)
-4.  [【Google Earth Studio】高级编辑技巧](https://blog.csdn.net/DynastyRumble/article/details/104283992)
+1.  [【Google Earth Studio】初步探索](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%B4%A2/)
+2.  [【Google Earth Studio】基础编辑技巧](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E5%9F%BA%E7%A1%80%E7%BC%96%E8%BE%91%E6%8A%80%E5%B7%A7/)
+3.  [【Google Earth Studio】进阶编辑技巧](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E8%BF%9B%E9%98%B6%E7%BC%96%E8%BE%91%E6%8A%80%E5%B7%A7/)
+4.  [【Google Earth Studio】高级编辑技巧](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E9%AB%98%E7%BA%A7%E7%BC%96%E8%BE%91%E6%8A%80%E5%B7%A7/)
 
 * * *
 
@@ -33,32 +33,32 @@ seriesOrder: 4
 ### 1\. 添加相机目标
 
 点击`Add Attributes`，勾选`Camera Taget`，然后在编辑区域就会出现`Camera Taget`属性  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-01.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-01.mp4)
 
 ### 2\. 单相机目标
 
 进入双视图模式，找到一个标志性建筑，以埃菲尔铁塔为例，在`Camera`视图中右键`Set Camera Target` ,这意味着在`00`帧时相机目标就是埃菲尔铁塔  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-02.gif)  
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-02.mp4)
 在`00`帧和`90`帧之间分别改变`Camera Position`的值，这时我们看到`Camera Position`在`Top`视图里其实一条直线  
 ![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-03.webp)  
 如何理解`Top`视图：  
 ![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-04.webp)  
 从`Top`视图可以清晰的看到`Camera`的运动轨迹，`Camera Position` 始终朝向`Camera Target`的位置  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-05.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-05.mp4)
 
 ### 3\. 修改路径
 
 在`00`帧和`90`帧中间添加一个关键帧，然后就可以在`Top`视图中修改路径，可以制作特殊曲线  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-06.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-06.mp4)
 
 ### 4\. 多相机目标
 
 上面我们只设定了一个相机目标，那么如何设定多个相机目标呢？
 
 同样的先将时间线移到你想要设定的关键帧，然后在`Camera`视图中右键`Set Camera Target`选择特定的目标，将靶心图标移到别的位置，然后你在Top视图就看到有2个小红点，这就是`00`帧和`90`帧时设定的`Camera Target`，两个`Camera Target`同样连成一条线段  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-07.gif)  
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-07.mp4)
 播放发现`Camera Position`和`Camera Target`是同时运动的，而`Camera Position`始终朝向`Camera Target`  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-08.gif)  
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-08.mp4)
 同样的Camera Target的路径也可以像Camera Position一样进行修改，方法与之类似
 
 ## 二、仿真效果
@@ -66,34 +66,34 @@ seriesOrder: 4
 ### 1\. 真实太阳光照效果
 
 `Add Attributes` -&gt; `Time of Day`  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-09.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-09.mp4)
 
 ### 2\. 云层效果
 
 `Add Attributes` -&gt; `Clouds`  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-10.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-10.mp4)
 
 ### 3\. 海洋叠加层
 
 `Add Attributes` -&gt; `Ocean Overlay`  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-11.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-11.mp4)
 
 ## 三、其他效果
 
 ### 1\. 视野范围
 
 `Add Attributes` -&gt; `Field of View`  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-12.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-12.mp4)
 
 ### 2\. 3D建筑模型效果
 
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-13.gif)  
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-13.mp4)
 `Add Attributes` -&gt; `Field of View`
 
 ### 3\. 查看可用3D建筑模型的区域
 
 `View` -&gt; `Available 3D Cities`, 如果该地区有3D建筑模型则在地图上显示为黄色不规则多边形  
-![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-14.gif)
+![在这里插入图片描述](/images/posts/google-earth-studio-gao-ji-bian-ji-ji-qiao/image-14.mp4)
 
 ### 4\. 查看带有标签的地图
 
