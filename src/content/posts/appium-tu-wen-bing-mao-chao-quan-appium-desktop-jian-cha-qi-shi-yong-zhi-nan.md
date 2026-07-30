@@ -29,7 +29,7 @@ seriesOrder: 3
 
 和这篇博文[【Appium】安卓自动化测试之标准流程案例](/posts/%E3%80%90Appium%E3%80%91%E5%AE%89%E5%8D%93%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95%E4%B9%8B%E6%A0%87%E5%87%86%E6%B5%81%E7%A8%8B%E6%A1%88%E4%BE%8B/) 不同，我们不需要在代码中做任何操作，而需要手动地对App进行剖析
 请保持虚拟设备运行中，手动启动App，如果成功则如下；如果失败，请检查Desired Capabilities参数是否正确  
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-01.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-01.mp4)
 
 ## 二、检查器界面
 
@@ -59,31 +59,31 @@ seriesOrder: 3
 
 ![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-03.webp)  
 获取控件属性信息。这应该是测试过程中用到最多的功能，当该功能启用后，点击左侧某个元素，相应的在右侧选定的元素里面就会出现该元素的众多属性，我们获取这些属性后就能正确的识别该控件，从而进行相应的操作(会在步骤12进行解释)  
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-04.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-04.mp4)
 
 ### 2\. 滑动鼠标
 
 ![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-05.webp)  
 模拟手指划过屏幕的操作。这时比较特殊的操作，但在移动App中很常见的手势，使用方式是首先点击设置起始点，然后再点击设置终点，中间的路径就是手指划过的路径  
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-06.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-06.mp4)
 
 ### 3\. 点击坐标点
 
 ![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-07.webp)  
 模拟手指点击屏幕操作。起始点是左上角(0,0)，假设屏幕分辨率是1080x1920，那么右下角则是终止点(1080,1920)，超出该范围点击则失效  
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-08.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-08.mp4)
 
 ### 4\. 返回
 
 ![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-09.webp)  
 返回部分操作。由于在检查器里App的操作都是被识别的，如果这时假设打开了系统通知栏，但是之后又想回到测试的App中，这时就需要用到返回功能  
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-10.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-10.mp4)
 
 ### 5\. 刷新源和屏幕截图
 
 ![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-11.webp)  
 刷新操作。注意，这里仅仅指的是刷新操作。这坑人的翻译，正确的理解应该是 “刷新源和刷新当前屏幕显示”，并没有屏幕截图功能  
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-12.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-12.mp4)
 
 ### 6\. 开始录制
 
@@ -97,13 +97,13 @@ seriesOrder: 3
 -   滑动鼠标
 -   点击坐标点
 
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-14.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-14.mp4)
 
 ### 7\. 搜索元素
 
 ![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-15.webp)  
 搜索控件元素。可以根据控件元素的相关属性进行搜索，当找到这部分元素后，可以获取ElementID(是元素属性ID+1，因为元素属性ID从0开始，这里从1开始)进行点击，或输入文本操作  
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-16.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-16.mp4)
 
 ### 8\. 将XML源复制到剪切板
 
@@ -178,12 +178,12 @@ seriesOrder: 3
 | Text类 | ![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-25.webp) |
 
 这里演示向一个文本框输入`12345678`，注意输入字符目前不支持中文  
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-26.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-26.mp4)
 
 ### 13\. 待测试App
 
 这里有一个小技巧，待测试App一般用于寻找元素但是却很难去操作，可以先在虚拟设备上操作至某一部分，然后刷新，待测试App就可以很方便设置为我们想要的环境  
-![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-27.gif)
+![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-27.mp4)
 
 * * *
 

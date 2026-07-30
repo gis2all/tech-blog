@@ -133,7 +133,7 @@ public class Samples : ArcGISEarthAndroidSession
 ```
 
 测试效果  
-![在这里插入图片描述](/images/posts/appium-an-zhuo-zi-dong-hua-ce-shi-zhi-biao-zhun-liu-cheng-an-li/image-05.gif)
+![在这里插入图片描述](/images/posts/appium-an-zhuo-zi-dong-hua-ce-shi-zhi-biao-zhun-liu-cheng-an-li/image-05.mp4)
 
 ## 四、步骤总结
 

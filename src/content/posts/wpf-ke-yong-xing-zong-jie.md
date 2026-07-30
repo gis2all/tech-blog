@@ -154,7 +154,7 @@ private void ListViewItem_KeyDown(object sender, KeyEventArgs e)
 </Style>
 ```
 
-![在这里插入图片描述](/images/posts/wpf-ke-yong-xing-zong-jie/image-02.gif)
+![在这里插入图片描述](/images/posts/wpf-ke-yong-xing-zong-jie/image-02.mp4)
 
 当然也有例外，对弈UserControl而言，似乎xaml页面的定义不起作用，需要在代码里实现  
 ![在这里插入图片描述](/images/posts/wpf-ke-yong-xing-zong-jie/image-03.webp)

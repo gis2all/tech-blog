@@ -80,9 +80,9 @@ if __name__ == "__main__":
 ```
 
 测试下结果，首先运行看有无错误  
-![在这里插入图片描述](/images/posts/python-vs-code-dao-ru-ben-di-gong-ju-bao-he-xiao-chu-import-module-could-not-be/image-02.gif)  
+![在这里插入图片描述](/images/posts/python-vs-code-dao-ru-ben-di-gong-ju-bao-he-xiao-chu-import-module-could-not-be/image-02.mp4)
 然后智能提示和转到定义  
-![在这里插入图片描述](/images/posts/python-vs-code-dao-ru-ben-di-gong-ju-bao-he-xiao-chu-import-module-could-not-be/image-03.gif)  
+![在这里插入图片描述](/images/posts/python-vs-code-dao-ru-ben-di-gong-ju-bao-he-xiao-chu-import-module-could-not-be/image-03.mp4)
 这样就解决了自定义模块的导入以及智能提示的设置😎
 
 参考资料：

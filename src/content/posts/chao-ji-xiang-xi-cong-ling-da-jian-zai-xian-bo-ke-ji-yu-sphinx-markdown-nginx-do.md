@@ -242,7 +242,7 @@ D:\Temp\blog>make html
 ```
 
 查看刚刚生成的文档，可以看到目录结构没有错误  
-![在这里插入图片描述](/images/posts/chao-ji-xiang-xi-cong-ling-da-jian-zai-xian-bo-ke-ji-yu-sphinx-markdown-nginx-do/image-03.gif)
+![在这里插入图片描述](/images/posts/chao-ji-xiang-xi-cong-ling-da-jian-zai-xian-bo-ke-ji-yu-sphinx-markdown-nginx-do/image-03.mp4)
 
 ## 四、集成markdown文档
 
@@ -352,7 +352,7 @@ D:\Temp\blog>make clean
 D:\Temp\blog>make html
 ```
 
-![在这里插入图片描述](/images/posts/chao-ji-xiang-xi-cong-ling-da-jian-zai-xian-bo-ke-ji-yu-sphinx-markdown-nginx-do/image-04.gif)
+![在这里插入图片描述](/images/posts/chao-ji-xiang-xi-cong-ling-da-jian-zai-xian-bo-ke-ji-yu-sphinx-markdown-nginx-do/image-04.mp4)
 
 ## 五、用Nginx部署文档
 

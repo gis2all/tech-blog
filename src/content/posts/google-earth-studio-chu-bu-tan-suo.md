@@ -62,7 +62,7 @@ Fly-To and Orbit:  由远及近再螺旋
 ```
 
 ![在这里插入图片描述](/images/posts/google-earth-studio-chu-bu-tan-suo/image-05.webp)  
-![在这里插入图片描述](/images/posts/google-earth-studio-chu-bu-tan-suo/image-06.gif)  
+![在这里插入图片描述](/images/posts/google-earth-studio-chu-bu-tan-suo/image-06.mp4)
 打开项目，也有两种方式 `Open project` 和 `Import .esp file`
 
 ```text
