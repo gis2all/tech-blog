@@ -1,24 +1,115 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllPosts } from "../../lib/content/queries";
-import { groupPostsByTag } from "../../lib/content/posts";
+import {
+  compareTagNames,
+  groupPostsByTag,
+  groupTagsByInitial
+} from "../../lib/content/posts";
 
 const posts = await getAllPosts();
 const tags = groupPostsByTag(posts);
+const tagGroups = groupTagsByInitial(posts);
+
+const hotTags = [...tags]
+  .sort((a, b) => b.count - a.count || compareTagNames(a.name, b.name))
+  .slice(0, 6);
+
+const formatDate = (date: Date) => date.toISOString().slice(0, 10);
+
+const getLatestDate = (tagPosts: typeof tags[number]["posts"]) => {
+  let latest = tagPosts[0]?.data.updatedAt ?? tagPosts[0]?.data.publishedAt;
+
+  for (const post of tagPosts) {
+    const candidate = post.data.updatedAt ?? post.data.publishedAt;
+    if (!latest || candidate.getTime() > latest.getTime()) {
+      latest = candidate;
+    }
+  }
+
+  return latest;
+};
+
+const getGroupId = (initial: string) =>
+  initial === "#" ? "tag-group-other" : `tag-group-${initial}`;
+
+const latestTagDate = tags.reduce<Date | undefined>((latest, tag) => {
+  const candidate = getLatestDate(tag.posts);
+  if (!candidate) return latest;
+  if (!latest || candidate.getTime() > latest.getTime()) return candidate;
+  return latest;
+}, undefined);
 ---
 
-<BaseLayout title="标签" description="按标签浏览知行录文章">
+<BaseLayout title="标签" description="按标签目录浏览知行文章">
   <main class="wrap">
-    <div class="page-head">
+    <div class="page-head tag-head">
       <div>
-        <span class="kicker">TAGS</span>
         <h1>标签</h1>
-        <p>从更细的关键词进入文章。</p>
+        <p>
+          共 {tags.length} 个标签
+          {latestTagDate && <> · 最近更新于 {formatDate(latestTagDate)}</>}
+        </p>
       </div>
     </div>
-    <section class="panel">
-      <div class="tag-cloud">
-        {tags.map((tag) => <a class="tag" href={`/tags/${encodeURIComponent(tag.name)}/`}>{tag.name} · {tag.count}</a>)}
+
+    <section class="panel tag-shell" aria-labelledby="hot-tags-title">
+      <div class="tag-signal">
+        <strong id="hot-tags-title">热门标签</strong>
+        <div class="tag-hot">
+          {hotTags.map((tag) => (
+            <a href={`/tags/${encodeURIComponent(tag.name)}/`}>
+              {tag.name}
+              <span>{tag.count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <nav class="tag-alpha" aria-label="标签首字母索引">
+        {tagGroups.map((group) => (
+          <a href={`#${getGroupId(group.initial)}`}>
+            {group.initial}
+          </a>
+        ))}
+      </nav>
+
+      <div class="tag-directory">
+        {tagGroups.map((group) => (
+          <section class="tag-section" id={getGroupId(group.initial)}>
+            <div class="tag-section-head">
+              <div class="tag-badge">{group.initial}</div>
+              <div>
+                <p>{group.count} 个标签 · {group.postsCount} 篇文章</p>
+              </div>
+            </div>
+            <div class="tag-list">
+              {group.tags.map((tag) => {
+                const latest = getLatestDate(tag.posts);
+
+                return (
+                  <a
+                    class="tag-item"
+                    href={`/tags/${encodeURIComponent(tag.name)}/`}
+                    aria-label={`${tag.name}，${tag.count} 篇文章`}
+                  >
+                    <div>
+                      <h3>{tag.name}</h3>
+                      <div class="tag-meta">
+                        <span>{tag.count} 篇文章</span>
+                        {latest && <span>最近更新 {formatDate(latest)}</span>}
+                      </div>
+                    </div>
+                    <div class="tag-count">
+                      {tag.count}
+                      <small>篇</small>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </div>
     </section>
   </main>

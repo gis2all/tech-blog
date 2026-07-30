@@ -1,0 +1,12 @@
+{
+  "title": "focus-flow",
+  "description": "桌面端专注管理工具，将任务绑定、番茄计时与专注统计整合在一个工作流中。",
+  "repoUrl": "https://github.com/gis2all/focus-flow",
+  "tech": ["TypeScript", "Electron", "React"],
+  "image": "/images/projects/focus-flow.webp",
+  "imageAlt": "focus-flow 番茄钟与专注统计界面",
+  "order": 2,
+  "featured": true,
+  "publishedAt": "2026-07-29",
+  "draft": false
+}

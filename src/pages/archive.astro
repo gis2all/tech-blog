@@ -7,32 +7,49 @@ const posts = await getAllPosts();
 const archive = groupPostsByArchive(posts);
 ---
 
-<BaseLayout title="归档" description="按发布时间回看知行录文章">
+<BaseLayout title="归档" description="按发布时间回看知行文章">
   <main class="wrap">
     <div class="page-head">
       <div>
-        <span class="kicker">ARCHIVE</span>
-        <h1>文章归档</h1>
-        <p>按年月回看持续记录的轨迹。</p>
+        <h1>归档</h1>
+        <p>按年月回看持续记录的轨迹</p>
       </div>
     </div>
-    <section class="panel pad">
-      {archive.map((year) => (
-        <div>
-          <h2>{year.year}</h2>
-          {year.months.map((month) => (
-            <div>
-              <h3>{month.label}</h3>
-              {month.posts.map((post) => (
-                <a class="archive-row" href={`/posts/${getPostSlug(post)}/`}>
-                  <span>{post.data.title}</span>
-                  <b>{post.data.publishedAt.toISOString().slice(5, 10)}</b>
-                </a>
+    <section class="panel archive-panel">
+      {archive.map((year) => {
+        const yearCount = year.months.reduce((total, month) => total + month.posts.length, 0);
+        return (
+          <section class="archive-year" data-archive-year>
+            <h2 class="archive-year-heading" data-archive-year-heading>
+              <span>{year.year}</span>
+              <small>· {yearCount} 篇</small>
+            </h2>
+            <div class="archive-months">
+              {year.months.map((month) => (
+                <section class="archive-month" data-archive-month>
+                  <h3 class="archive-month-label">{month.label}</h3>
+                  <div class="archive-timeline">
+                    {month.posts.map((post) => {
+                      const published = post.data.publishedAt.toISOString();
+                      return (
+                        <a
+                          class="archive-entry"
+                          href={`/posts/${getPostSlug(post)}/`}
+                          data-archive-entry
+                        >
+                          <i aria-hidden="true"></i>
+                          <time datetime={published}>{published.slice(5, 10)}</time>
+                          <span>{post.data.title}</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                </section>
               ))}
             </div>
-          ))}
-        </div>
-      ))}
+          </section>
+        );
+      })}
     </section>
   </main>
 </BaseLayout>

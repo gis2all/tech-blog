@@ -1,0 +1,12 @@
+{
+  "title": "xdata-collector",
+  "description": "跨平台的 X 数据采集工作台，支持任务调度、规则筛选与结果浏览。",
+  "repoUrl": "https://github.com/gis2all/xdata-collector",
+  "tech": ["TypeScript", "Python", "Electron"],
+  "image": "/images/projects/xdata-collector.webp",
+  "imageAlt": "xdata-collector 数据采集工作台界面",
+  "order": 1,
+  "featured": true,
+  "publishedAt": "2026-07-30",
+  "draft": false
+}

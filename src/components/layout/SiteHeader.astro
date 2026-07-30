@@ -17,7 +17,7 @@ function isActive(href: string) {
 
 <header class="site-header">
   <nav class="nav" aria-label="主导航">
-    <a class="brand" href="/" aria-label="知行录首页"><span>知</span>知行<i>录</i></a>
+    <a class="brand" href="/" aria-label={`${site.title}首页`}><span>{site.title.slice(0, 1)}</span>{site.title.slice(1)}</a>
     <div class="nav-links" data-menu id="site-menu">
       {site.nav.map((item) => (
         <a class:list={{ active: isActive(item.href) }} href={item.href}>{item.label}</a>
@@ -33,7 +33,7 @@ function isActive(href: string) {
         </button>
         <a class="mobile-nav-action" href="/admin/">
           <LogIn size={18} aria-hidden="true" />
-          <span>进入后台</span>
+          <span>后台</span>
         </a>
       </div>
     </div>
@@ -48,7 +48,7 @@ function isActive(href: string) {
       <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式">
         <Moon size={18} aria-hidden="true" />
       </button>
-      <a class="admin-link" href="/admin/">进入后台</a>
+      <a class="admin-link" href="/admin/">后台</a>
     </div>
     <slot name="header-actions" />
     <button class="icon-button menu-button" type="button" data-menu-toggle aria-label="打开菜单" aria-expanded="false" aria-controls="site-menu">

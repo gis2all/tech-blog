@@ -15,10 +15,9 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const allPosts = await getAllPosts();
 const allSeries = await getAllSeries();
-const series = allSeries.find((entry) => entry.data.slug === post.data.series);
 const { Content, headings } = await render(post);
 ---
 
-<ArticleLayout post={post} allPosts={allPosts} headings={headings} series={series}>
+<ArticleLayout post={post} allPosts={allPosts} allSeries={allSeries} headings={headings}>
   <Content />
 </ArticleLayout>

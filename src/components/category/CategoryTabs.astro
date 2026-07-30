@@ -1,0 +1,34 @@
+---
+import type { TaxonomyGroup } from "../../lib/content/posts";
+
+type Props = {
+  categories: Pick<TaxonomyGroup, "name" | "count">[];
+  totalCount: number;
+  activeCategory?: string;
+};
+
+const { categories, totalCount, activeCategory } = Astro.props;
+---
+
+<nav class="category-tabs" aria-label="文章分类">
+  <a
+    class:list={{ active: activeCategory === undefined }}
+    href="/categories/"
+    aria-label={`全部 ${totalCount}`}
+    aria-current={activeCategory === undefined ? "page" : undefined}
+  >
+    <span>全部</span>
+    <b>{totalCount}</b>
+  </a>
+  {categories.map((category) => (
+    <a
+      class:list={{ active: activeCategory === category.name }}
+      href={`/categories/${encodeURIComponent(category.name)}/`}
+      aria-label={`${category.name} ${category.count}`}
+      aria-current={activeCategory === category.name ? "page" : undefined}
+    >
+      <span>{category.name}</span>
+      <b>{category.count}</b>
+    </a>
+  ))}
+</nav>

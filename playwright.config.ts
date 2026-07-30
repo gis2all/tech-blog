@@ -5,13 +5,13 @@ export default defineConfig({
   fullyParallel: true,
   reporter: "list",
   use: {
-    baseURL: "http://127.0.0.1:4323",
+    baseURL: "http://127.0.0.1:4321",
     channel: "chromium",
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1 --port 4323",
-    url: "http://127.0.0.1:4323",
+    command: "npm run dev -- --host 127.0.0.1 --port 4321",
+    url: "http://127.0.0.1:4321",
     reuseExistingServer: true,
   },
 });

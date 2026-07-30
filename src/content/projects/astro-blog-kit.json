@@ -1,9 +1,0 @@
-{
-  "title": "Astro 技术博客骨架",
-  "description": "基于 Astro Content Collections、Decap CMS 和 Pagefind 的静态博客模板。",
-  "repoUrl": "https://github.com/example/astro-blog-kit",
-  "tech": ["Astro", "Decap CMS", "Pagefind"],
-  "featured": true,
-  "publishedAt": "2026-07-27",
-  "draft": false
-}

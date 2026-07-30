@@ -8,6 +8,9 @@ dist/
 # Local planning and agent handoff docs
 docs/
 
+# Local one-time migration artifacts and raw source data
+.migration/
+
 # Local environment
 .env
 .env.*
@@ -24,6 +27,7 @@ test-results/
 playwright-report/
 output/playwright/
 .superpowers/
+.worktrees/
 
 # OS and editor
 .DS_Store

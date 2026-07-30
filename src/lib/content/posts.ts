@@ -1,3 +1,5 @@
+import { pinyin } from "pinyin-pro";
+
 export type PostLike = {
   id: string;
   body?: string;
@@ -5,6 +7,7 @@ export type PostLike = {
     title: string;
     description?: string;
     publishedAt: Date;
+    updatedAt?: Date;
     category: string;
     tags?: string[];
     cover?: string;
@@ -20,6 +23,13 @@ export type TaxonomyGroup<TPost extends PostLike = PostLike> = {
   name: string;
   count: number;
   posts: TPost[];
+};
+
+export type TagDirectoryGroup<TPost extends PostLike = PostLike> = {
+  initial: string;
+  count: number;
+  postsCount: number;
+  tags: TaxonomyGroup<TPost>[];
 };
 
 export type ArchiveMonth<TPost extends PostLike = PostLike> = {
@@ -47,6 +57,38 @@ const monthLabels = [
   "十一月",
   "十二月"
 ];
+
+const asciiLetterPattern = /^[A-Za-z]$/;
+
+function compareTagInitials(a: string, b: string): number {
+  if (a === b) return 0;
+  if (a === "#") return 1;
+  if (b === "#") return -1;
+  return a.localeCompare(b, "en", { sensitivity: "base" });
+}
+
+function getTagSortKey(name: string): string {
+  return Array.from(name.trim())
+    .map((char) => {
+      if (asciiLetterPattern.test(char)) return char.toLowerCase();
+
+      const [charPinyin] = pinyin(char, {
+        toneType: "none",
+        type: "array"
+      });
+
+      return (charPinyin ?? char).toLowerCase();
+    })
+    .join("");
+}
+
+export function compareTagNames(a: string, b: string): number {
+  return (
+    getTagSortKey(a).localeCompare(getTagSortKey(b), "en", {
+      sensitivity: "base"
+    }) || a.localeCompare(b, "zh-CN")
+  );
+}
 
 export function getPostSlug(post: Pick<PostLike, "id">): string {
   return post.id.replace(/\.mdx?$/i, "").replace(/\/index$/i, "");
@@ -127,12 +169,57 @@ export function groupPostsByTag<TPost extends PostLike>(
   }
 
   return [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b, "zh-CN"))
+    .sort(([a], [b]) => compareTagNames(a, b))
     .map(([name, groupedPosts]) => ({
       name,
       count: groupedPosts.length,
       posts: groupedPosts
     }));
+}
+
+export function getTagInitial(name: string): string {
+  const firstChar = Array.from(name.trim())[0];
+
+  if (!firstChar) return "#";
+  if (asciiLetterPattern.test(firstChar)) return firstChar.toUpperCase();
+
+  const [firstPinyin] = pinyin(firstChar, {
+    pattern: "first",
+    toneType: "none",
+    type: "array"
+  });
+
+  if (firstPinyin && asciiLetterPattern.test(firstPinyin)) {
+    return firstPinyin.toUpperCase();
+  }
+
+  return "#";
+}
+
+export function groupTagsByInitial<TPost extends PostLike>(
+  posts: TPost[]
+): TagDirectoryGroup<TPost>[] {
+  const groups = new Map<string, TaxonomyGroup<TPost>[]>();
+
+  for (const tag of groupPostsByTag(posts)) {
+    const initial = getTagInitial(tag.name);
+    const list = groups.get(initial) ?? [];
+    list.push(tag);
+    groups.set(initial, list);
+  }
+
+  return [...groups.entries()]
+    .sort(([a], [b]) => compareTagInitials(a, b))
+    .map(([initial, tags]) => {
+      const sortedTags = [...tags].sort((a, b) => compareTagNames(a.name, b.name));
+
+      return {
+        initial,
+        count: sortedTags.length,
+        postsCount: sortedTags.reduce((sum, tag) => sum + tag.count, 0),
+        tags: sortedTags
+      };
+    });
 }
 
 export function groupPostsByArchive<TPost extends PostLike>(

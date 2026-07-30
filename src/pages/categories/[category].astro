@@ -1,31 +1,41 @@
 ---
 import ArticleList from "../../components/article/ArticleList.astro";
+import CategoryTabs from "../../components/category/CategoryTabs.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllPosts } from "../../lib/content/queries";
 import { groupPostsByCategory } from "../../lib/content/posts";
 
 export async function getStaticPaths() {
   const posts = await getAllPosts();
-  return groupPostsByCategory(posts).map((category) => ({
+  const categories = groupPostsByCategory(posts);
+  const totalCount = categories.reduce((total, category) => total + category.count, 0);
+
+  return categories.map((category) => ({
     params: { category: category.name },
-    props: { category }
+    props: { category, categories, totalCount }
   }));
 }
 
-const { category } = Astro.props;
+const { category, categories, totalCount } = Astro.props;
 ---
 
 <BaseLayout title={category.name} description={`浏览 ${category.name} 分类下的文章`}>
   <main class="wrap">
     <div class="page-head">
       <div>
-        <span class="kicker">CATEGORY</span>
         <h1>{category.name}</h1>
-        <p>{category.count} 篇公开文章</p>
+        <p>{totalCount} 篇学习记录，按技术领域整理</p>
       </div>
     </div>
-    <section class="panel">
-      <ArticleList posts={category.posts} />
+    <section class="panel category-browser">
+      <CategoryTabs
+        categories={categories}
+        totalCount={totalCount}
+        activeCategory={category.name}
+      />
+      <div class="category-articles">
+        <ArticleList posts={category.posts} />
+      </div>
     </section>
   </main>
 </BaseLayout>

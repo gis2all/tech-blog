@@ -5,25 +5,27 @@ import { getPostSlug, type PostLike } from "../../lib/content/posts";
 type Props = {
   posts: PostLike[];
   compact?: boolean;
-  showCategory?: boolean;
   tagLimit?: number;
 };
 
 const {
   posts,
   compact = false,
-  showCategory = true,
   tagLimit
 } = Astro.props;
 ---
 
 <div class:list={["article-list", { compact }]}>
   {posts.map((post) => (
-    <article class:list={["article-row", { "has-thumb": post.data.cover && !compact }]}>
+    <article
+      class:list={["article-row", { "has-thumb": post.data.cover && !compact }]}
+      data-category={post.data.category}
+      data-series={post.data.series}
+    >
       <div class="article-row-body">
         <h2><a href={`/posts/${getPostSlug(post)}/`}>{post.data.title}</a></h2>
         <p>{post.data.description}</p>
-        <ArticleMeta post={post} showCategory={showCategory} tagLimit={tagLimit} />
+        <ArticleMeta post={post} showCategory={false} tagLimit={tagLimit} />
       </div>
       {post.data.cover && !compact && (
         <a class="article-thumb" href={`/posts/${getPostSlug(post)}/`} aria-label={`阅读：${post.data.title}`}>

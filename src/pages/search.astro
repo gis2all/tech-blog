@@ -2,14 +2,13 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<BaseLayout title="搜索" description="搜索知行录文章">
+<BaseLayout title="搜索" description="搜索知行文章">
   <main class="wrap listing-grid">
     <section class="panel search-panel">
       <div class="page-head">
         <div>
-          <span class="kicker">SEARCH</span>
-          <h1>搜索文章</h1>
-          <p id="search-summary">输入关键词后搜索文章、标签和正文。</p>
+          <h1>搜索</h1>
+          <p id="search-summary">输入关键词后搜索文章、标签和正文</p>
         </div>
       </div>
       <form class="search-form" id="page-search-form">
@@ -38,7 +37,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     async function runSearch(query) {
       if (!query.trim()) {
         results.innerHTML = "";
-        summary.textContent = "输入关键词后搜索文章、标签和正文。";
+        summary.textContent = "输入关键词后搜索文章、标签和正文";
         return;
       }
 

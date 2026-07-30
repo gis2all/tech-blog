@@ -1,0 +1,9 @@
+{
+  "title": "Jenkins 节点与运维排障",
+  "description": "覆盖多平台节点接入、权限与依赖问题，以及 Jenkins 升级和日常运维排障。",
+  "slug": "jenkins-operations",
+  "image": "/images/series/jenkins-operations.webp",
+  "imageAlt": "Jenkins Windows 节点配置与运维界面",
+  "order": 5,
+  "draft": false
+}

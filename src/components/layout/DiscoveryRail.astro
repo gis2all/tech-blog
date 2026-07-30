@@ -1,0 +1,104 @@
+---
+import AuthorAvatar from "../common/AuthorAvatar.astro";
+import type { SeriesEntry } from "../../lib/content/queries";
+import {
+  getSeriesPosts,
+  groupPostsByCategory,
+  groupPostsByTag,
+  type PostLike
+} from "../../lib/content/posts";
+import { site } from "../../lib/site";
+
+type Props = {
+  posts: PostLike[];
+  allSeries: SeriesEntry[];
+  mode: "home" | "article";
+  currentCategory?: string;
+  currentSeries?: string;
+};
+
+const {
+  posts,
+  allSeries,
+  mode,
+  currentCategory,
+  currentSeries
+} = Astro.props;
+const categories = groupPostsByCategory(posts);
+const tagCount = groupPostsByTag(posts).length;
+const showAllActive = mode === "home" && !currentCategory && !currentSeries;
+---
+
+<aside
+  class="left-rail stack discovery-rail"
+  aria-label="作者、分类与专题"
+  data-discovery-mode={mode}
+  data-current-category={currentCategory}
+  data-current-series={currentSeries}
+>
+  <section class="panel profile discovery-profile">
+    <AuthorAvatar />
+    <h2>{site.author}</h2>
+    <p class="brand-note">知行合一 · 持续积累</p>
+    <div class="stats">
+      <div class="stat"><strong>{posts.length}</strong><span>文章</span></div>
+      <div class="stat"><strong>{categories.length}</strong><span>分类</span></div>
+      <div class="stat"><strong>{tagCount}</strong><span>标签</span></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-title">
+      <span>技术分类</span>
+      <small>
+        <a
+          class:list={{ active: showAllActive }}
+          href="/"
+          data-filter-all
+          data-home-category-all={mode === "home" ? "" : undefined}
+          aria-current={showAllActive ? "page" : undefined}
+        >全部</a>
+      </small>
+    </div>
+    <div class="taxonomy-list">
+      {categories.map((category) => {
+        const active = currentCategory === category.name;
+        return (
+          <a
+            class:list={["taxonomy-row", { active }]}
+            href={`/categories/${encodeURIComponent(category.name)}/`}
+            data-filter-category={category.name}
+            data-filter-title={category.name}
+            data-home-category={mode === "home" ? category.name : undefined}
+            aria-current={active ? "page" : undefined}
+          >
+            <span>{category.name}</span>
+            <b>{category.count}</b>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-title"><span>专题列表</span></div>
+    <div class="taxonomy-list">
+      {allSeries.map((series) => {
+        const count = getSeriesPosts(posts, series.data.slug).length;
+        const active = currentSeries === series.data.slug;
+        return (
+          <a
+            class:list={["taxonomy-row", { active }]}
+            href={`/series/${series.data.slug}/`}
+            data-filter-series={series.data.slug}
+            data-filter-title={series.data.title}
+            aria-current={active ? "page" : undefined}
+          >
+            <span>{series.data.title}</span>
+            <b>{count}</b>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+</aside>

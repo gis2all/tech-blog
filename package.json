@@ -1,5 +1,5 @@
 {
-  "name": "zhixinglu-tech-blog",
+  "name": "zhixing-tech-blog",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -24,6 +24,9 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.62.0",
-    "vitest": "^4.1.10"
+    "@types/node": "^26.1.2",
+    "pinyin-pro": "^3.28.2",
+    "vitest": "^4.1.10",
+    "yaml": "^2.9.0"
   }
 }

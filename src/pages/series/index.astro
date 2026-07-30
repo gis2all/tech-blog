@@ -1,4 +1,5 @@
 ---
+import { ArrowRight } from "@lucide/astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllPosts, getAllSeries } from "../../lib/content/queries";
 import { getSeriesPosts } from "../../lib/content/posts";
@@ -7,23 +8,48 @@ const posts = await getAllPosts();
 const allSeries = await getAllSeries();
 ---
 
-<BaseLayout title="专题" description="按系列专题阅读知行录文章">
+<BaseLayout title="专题" description="按主题整理的系列文章与实践路径。">
   <main class="wrap">
     <div class="page-head">
       <div>
-        <span class="kicker">SERIES</span>
         <h1>专题</h1>
-        <p>围绕一个工程问题连续记录。</p>
+        <p>按主题整理的系列文章与实践路径</p>
       </div>
     </div>
-    <section class="panel taxonomy-list">
+    <section class="series-grid">
       {allSeries.map((series) => {
         const count = getSeriesPosts(posts, series.data.slug).length;
+        const seriesHref = `/series/${series.data.slug}/`;
+
         return (
-          <a class="taxonomy-row" href={`/series/${series.data.slug}/`}>
-            <span>{series.data.title}</span>
-            <b>{count}</b>
-          </a>
+          <article class="panel series-card">
+            <a
+              class="series-card-media"
+              href={seriesHref}
+              aria-label={`查看专题：${series.data.title}`}
+            >
+              <img
+                src={series.data.image}
+                alt={series.data.imageAlt}
+                width="1440"
+                height="810"
+                loading="lazy"
+              />
+            </a>
+            <div class="series-card-body">
+              <h2 class="series-card-title">
+                <a href={seriesHref}>{series.data.title}</a>
+              </h2>
+              <p class="series-card-description">{series.data.description}</p>
+              <div class="series-card-footer">
+                <span class="series-card-count">{`${count} 篇文章`}</span>
+                <a class="series-card-action" href={seriesHref}>
+                  <span>查看专题</span>
+                  <ArrowRight size={15} aria-hidden="true" />
+                </a>
+              </div>
+            </div>
+          </article>
         );
       })}
     </section>

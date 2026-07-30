@@ -39,6 +39,8 @@ const series = defineCollection({
     title: z.string(),
     description: z.string(),
     slug: z.string(),
+    image: z.string(),
+    imageAlt: z.string(),
     order: z.number().int().positive().optional(),
     draft: z.boolean().default(false)
   })
@@ -52,6 +54,9 @@ const projects = defineCollection({
     url: z.url().optional(),
     repoUrl: z.url().optional(),
     tech: z.array(z.string()),
+    image: z.string(),
+    imageAlt: z.string(),
+    order: z.number().int().positive(),
     featured: z.boolean().default(false),
     publishedAt: z.coerce.date(),
     draft: z.boolean().default(false)

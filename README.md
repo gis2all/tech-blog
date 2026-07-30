@@ -1,6 +1,6 @@
-# 知行录
+# 知行
 
-知行录是我的个人技术博客，用来记录学习、调试、工程实践和复盘。
+知行是我的个人技术博客，用来记录学习、调试、工程实践和复盘。
 
 线上地址：
 
@@ -18,11 +18,17 @@ https://gis2all-blog.netlify.app
 
 文章和图片都保存在仓库中，不依赖数据库。
 
-## 本地开发
+## 本地运行
+
+本地统一使用 `http://127.0.0.1:4321/`。同一时间只运行一种服务；从开发态切到生产预览态前，先停止当前占用 4321 的服务。
+
+### 开发态
+
+用于页面、样式和内容开发，启动快，支持热更新：
 
 ```powershell
 npm install
-npm run dev
+npm run dev -- --host 127.0.0.1 --port 4321
 ```
 
 本地访问：
@@ -30,6 +36,19 @@ npm run dev
 ```text
 http://127.0.0.1:4321/
 ```
+
+开发态不会服务 `dist/pagefind/`，因此搜索页提示“搜索索引尚未生成”是正常现象。
+
+### 生产预览态
+
+用于验证生产构建产物，包括 Pagefind 搜索、RSS、站点地图和静态资源：
+
+```powershell
+npm run build
+npm run preview -- --host 127.0.0.1 --port 4321
+```
+
+生产预览态使用 `dist/`，搜索功能应在这个模式下验证。
 
 ## 常用命令
 
@@ -82,7 +101,7 @@ pages / layouts / components 渲染
 npm run build
 ```
 
-不要手动编辑 `dist/` 或 `dist/pagefind/`，它们都是构建产物。
+`astro dev` 不会挂载 `dist/pagefind/`，所以本地开发态不能完整验证搜索。需要验证搜索时，请先构建并使用生产预览态。不要手动编辑 `dist/` 或 `dist/pagefind/`，它们都是构建产物。
 
 后台使用 Decap CMS：
 
