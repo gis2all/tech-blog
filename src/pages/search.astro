@@ -1,5 +1,18 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPostSlug } from "../lib/content/posts";
+import { getAllPosts } from "../lib/content/queries";
+
+const posts = await getAllPosts();
+const searchDocumentsJson = JSON.stringify(
+  posts.map((post) => ({
+    title: post.data.title,
+    url: `/posts/${getPostSlug(post)}/`,
+    description: post.data.description,
+    category: post.data.category,
+    tags: post.data.tags,
+  })),
+).replace(/</g, "\\u003c");
 ---
 
 <BaseLayout title="搜索" description="搜索知行文章">
@@ -16,6 +29,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <button class="button primary" type="submit">搜索</button>
       </form>
       <div id="search-results"></div>
+      <script id="search-documents" type="application/json" is:inline set:html={searchDocumentsJson}></script>
     </section>
     <aside class="right-rail stack">
       <section class="panel">
@@ -26,42 +40,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </section>
     </aside>
   </main>
-  <script type="module" is:inline>
-    const form = document.querySelector("#page-search-form");
-    const input = document.querySelector("#page-search-input");
-    const results = document.querySelector("#search-results");
-    const summary = document.querySelector("#search-summary");
-    const params = new URLSearchParams(location.search);
-    input.value = params.get("q") ?? "";
-
-    async function runSearch(query) {
-      if (!query.trim()) {
-        results.innerHTML = "";
-        summary.textContent = "输入关键词后搜索文章、标签和正文";
-        return;
-      }
-
-      try {
-        const pagefind = await import("/pagefind/pagefind.js");
-        const search = await pagefind.search(query);
-        const data = await Promise.all(search.results.slice(0, 12).map((item) => item.data()));
-        summary.textContent = data.length ? `找到 ${data.length} 条结果` : "没有匹配结果";
-        results.innerHTML = data.length
-          ? data.map((item) => `<article class="article-row"><div class="article-row-body"><h2><a href="${item.url}">${item.meta.title}</a></h2><p>${item.excerpt}</p></div></article>`).join("")
-          : `<div class="empty-state"><strong>没有找到相关文章</strong><p>尝试缩短关键词，或浏览分类与归档。</p></div>`;
-      } catch {
-        summary.textContent = "本地开发时需要先运行构建生成 Pagefind 索引。";
-        results.innerHTML = `<div class="empty-state"><strong>搜索索引尚未生成</strong><p>运行 npm run build 后即可使用静态搜索。</p></div>`;
-      }
-    }
-
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const query = input.value;
-      history.replaceState(null, "", `/search/?q=${encodeURIComponent(query)}`);
-      runSearch(query);
-    });
-
-    runSearch(input.value);
+  <script>
+    import "../scripts/search-page";
   </script>
 </BaseLayout>

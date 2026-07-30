@@ -1589,6 +1589,12 @@ img {
   margin-top: 16px;
 }
 
+#search-results mark {
+  background: #ffeb3b;
+  color: inherit;
+  padding: 0 1px;
+}
+
 .empty-state {
   text-align: center;
   padding: 58px 20px;
