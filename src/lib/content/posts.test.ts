@@ -97,9 +97,27 @@ const directoryPosts = [
 ];
 
 describe("post helpers", () => {
-  test("getPostSlug removes the markdown extension", () => {
-    expect(getPostSlug(posts[0])).toBe("old-post");
+  test("getPostSlug uses the trimmed article title", () => {
+    expect(getPostSlug(posts[0])).toBe("Old Post");
+    expect(
+      getPostSlug({
+        ...posts[0],
+        data: { ...posts[0].data, title: "  中文文章标题  " }
+      })
+    ).toBe("中文文章标题");
   });
+
+  test.each(["标题/分段", "标题?查询", "标题#锚点", "标题%编码"])(
+    "getPostSlug rejects reserved path characters in %s",
+    (title) => {
+      expect(() =>
+        getPostSlug({
+          ...posts[0],
+          data: { ...posts[0].data, title }
+        })
+      ).toThrow("Article title cannot contain URL-reserved characters");
+    }
+  );
 
   test("getPublicPosts filters drafts and sorts newest first", () => {
     expect(getPublicPosts(posts).map((post) => post.data.title)).toEqual([
@@ -182,7 +200,7 @@ describe("post helpers", () => {
   });
 
   test("getAdjacentPosts follows public chronological order and skips drafts", () => {
-    const adjacent = getAdjacentPosts(posts, "new-post");
+    const adjacent = getAdjacentPosts(posts, "New Post");
 
     expect(adjacent.previous?.data.title).toBe("Old Post");
     expect(adjacent.next).toBeUndefined();
