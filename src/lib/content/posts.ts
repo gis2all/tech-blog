@@ -107,6 +107,22 @@ export function getPostSlug(post: Pick<PostLike, "id" | "data">): string {
   return slug;
 }
 
+export function validateUniquePostSlugs<TPost extends PostLike>(
+  posts: TPost[]
+): void {
+  const seen = new Set<string>();
+
+  for (const post of posts) {
+    const slug = getPostSlug(post);
+
+    if (seen.has(slug)) {
+      throw new Error(`Duplicate article slug: ${slug}`);
+    }
+
+    seen.add(slug);
+  }
+}
+
 export function sortPostsByDate<TPost extends PostLike>(posts: TPost[]): TPost[] {
   return [...posts].sort(
     (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime()

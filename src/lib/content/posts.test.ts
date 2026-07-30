@@ -10,7 +10,8 @@ import {
   groupPostsByTag,
   groupTagsByInitial,
   getTagInitial,
-  sortPostsByDate
+  sortPostsByDate,
+  validateUniquePostSlugs
 } from "./posts";
 
 const posts = [
@@ -118,6 +119,22 @@ describe("post helpers", () => {
       ).toThrow("Article title cannot contain URL-reserved characters");
     }
   );
+
+  test("validateUniquePostSlugs accepts distinct article titles", () => {
+    expect(() => validateUniquePostSlugs(posts)).not.toThrow();
+  });
+
+  test("validateUniquePostSlugs rejects duplicate article titles", () => {
+    const duplicate = {
+      ...posts[1],
+      id: "duplicate-title.md",
+      data: { ...posts[1].data, title: posts[0].data.title }
+    };
+
+    expect(() => validateUniquePostSlugs([...posts, duplicate])).toThrow(
+      "Duplicate article slug: Old Post"
+    );
+  });
 
   test("getPublicPosts filters drafts and sorts newest first", () => {
     expect(getPublicPosts(posts).map((post) => post.data.title)).toEqual([
