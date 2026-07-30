@@ -36,9 +36,10 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 
 ## 3. 当前实际状态
 
-截至 2026-07-30，当前开发分支为 `enhance`，`main` 在合并前仍是生产基线：
+截至 2026-07-30，当前开发分支为 `feat`，`main` 已合并此前的 `enhance` 页面与内容更新：
 
-- `enhance` 包含近期页面重构、真实专题与项目数据、样式统一和迁移工具清理。
+- `main` 已包含页面重构、真实专题与项目数据、样式统一和迁移工具清理。
+- `feat` 在最新 `main` 基础上完成标题直出文章 URL、文章阅读控件优化和迁移文章内链治理。
 - 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
 - 本地共有 106 篇 Markdown 文章：105 篇公开文章和 `git-team-workflow.md` 这一篇草稿。
@@ -46,20 +47,23 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - 专题页展示 5 个真实专题；项目页展示 `xdata-collector`、`focus-flow`、`tech-blog` 3 个真实 GitHub 项目及截图。
 - 已实现 Decap CMS 最小后台：`public/admin/index.html` 和 `public/admin/config.yml`。
 - 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
+- Netlify 使用 `npm run build` 进行生产构建，随后由 `postbuild` 自动生成 Pagefind 索引并发布 `dist/`。
 - OpenDesign 原型目录在本机保留为参考，并通过 `.gitignore` 排除，不作为生产运行时代码。
 - `docs/` 目录只作为本地规划、草稿和 Agent 交接资料，通过 `.gitignore` 排除，不进入 GitHub 仓库。
 - 首页和文章页共用左侧发现栏，包括紧凑作者卡片、技术分类和专题列表，并支持分类或专题即时筛选。
 - 文章正文模式右侧显示固定目录；筛选结果模式右侧恢复精选文章和标签。
 - 标签页采用热门标签、字母导航和分组目录；归档页采用年份/月度时间线；关于页使用当前紧凑版布局。
 - 已完成 105 / 105 篇 CSDN 公开文章迁移；一次性迁移脚本、npm 命令和专用依赖已移除。
+- 文章公开 URL 直接使用编码后的文章标题，不维护独立 `slug`，也不保留旧拼音 URL 兼容路由。
+- 已将 25 个指向本人旧 CSDN 文章的链接替换为本站文章链接；8 个外部作者的 CSDN 引用继续保留。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
-最近验证结果（2026-07-30 移除 CSDN 迁移工具后）：
+最近验证结果（2026-07-30 标题 URL、文章控件和站内链接更新后）：
 
 ```text
-npm test       → 10 test files passed, 36 tests passed
-npm run check  → 52 files checked, 0 errors, 0 warnings, 0 hints
+npm test       → 11 test files passed, 46 tests passed
+npm run check  → 53 files checked, 0 errors, 0 warnings, 0 hints
 npm run build  → 435 pages built
 Pagefind       → indexed 104 pages
 ```
@@ -74,9 +78,12 @@ Pagefind       → indexed 104 pages
 - 之前 UI 回归覆盖过首页和文章页；后续迁移内容或调整 UI 时，应以当前保留文章重新跑桌面/移动、浅色/深色浏览器验收。
 - 首页只有一个 H1，左右侧栏具名，移动菜单包含 GitHub、主题和后台入口，无横向溢出。
 - 文章页标题为桌面 36px、移动 27px；移动标题无孤立单字尾行，分类、发布、更新和阅读时长各出现一次。
-- 文章前后篇、作者说明、代码复制和移动目录均可操作；菜单和目录的 ARIA 展开状态、焦点循环/归还以及 `Esc` 关闭行为已验证。
+- 文章前后篇、作者说明、图标式代码复制和移动目录均可操作；代码块字号为 14px，复制按钮通过 `aria-label` 和 `title` 提供状态提示。
+- 阅读进度按正文和页面实际可滚动范围计算，滚动至页面底部时显示 100%。
+- 菜单和目录的 ARIA 展开状态、焦点循环/归还以及 `Esc` 关闭行为已验证。
 - 移动文章目录入口真实位于 Header DOM 中、处于菜单按钮之前，不靠 fixed 定位伪装顺序，也不覆盖正文。
 - 文章列表卡片只展示标签，不再混入分类标签。
+- 首页和文章页右侧热门标签使用与左侧一致的轻量标签样式；作者卡片标题、说明和纵向间距已统一。
 - 本轮页面严重/致命 Axe 问题为 0，浏览器控制台错误为 0。
 - `/search/?q=Agent` 可加载 Pagefind 并返回文章结果。
 - `/admin/` GitHub OAuth 登录已验证，可进入 Decap CMS 后台。
@@ -84,6 +91,7 @@ Pagefind       → indexed 104 pages
 - Decap CMS 媒体上传闭环已验证：后台上传图片会写入 `public/images/uploads/`，并可通过 Netlify 静态 URL 访问。
 - 2026-07-28 的测试文章和测试图片仅用于验证链路，验证后已从生产内容和线上站点中清理。
 - `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
+- 从迁移文章正文点击本站文章引用后，地址保持在 `/posts/<编码后的文章标题>/`，不会再跳转到本人旧 CSDN 页面。
 - GitHub 远程仓库：`gis2all/tech-blog`。
 - Netlify 站点 URL：`https://gis2all-blog.netlify.app`。
 
@@ -346,7 +354,7 @@ seriesOrder: 1
 约束：
 
 - `title`、`description`、`publishedAt`、`category`、`tags` 和 `draft` 必填。
-- URL Slug 默认由文件名决定，也可在 Schema 中显式提供，但必须唯一且稳定。
+- 文章 URL 标识由去除首尾空白后的标题生成，不接受独立 `slug` frontmatter。
 - `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 可选；有封面时 `coverAlt` 必填。
 - 生产构建排除 `draft: true`。
 - 日期统一使用 `YYYY-MM-DD`，构建失败时给出具体文件和字段。
@@ -460,13 +468,12 @@ public/images/posts/
 
 ## 15. 当前路线图
 
-1. 合并并发布当前 `enhance` 分支中的页面与内容更新。
+1. 审核并合并当前 `feat` 分支中的标题 URL、阅读控件和文章内链更新。
 2. 确定正式域名并更新站点 URL、canonical 和部署配置。
 3. 补齐 Twitter Card、文章 JSON-LD 和公开 `robots.txt`。
-4. 整理文章内部链接和迁移后遗留的内容引用。
-5. 在生产环境完成桌面/移动、浅色/深色验收。
-6. 决定是否引入评论和隐私友好的分析工具。
-7. 仅在默认 Decap CMS 确实无法满足写作需求时，再评估高级 CMS 功能。
+4. 在生产环境完成桌面/移动、浅色/深色验收。
+5. 决定是否引入评论和隐私友好的分析工具。
+6. 仅在默认 Decap CMS 确实无法满足写作需求时，再评估高级 CMS 功能。
 
 ## 16. 开发与验证约定
 
@@ -523,7 +530,9 @@ public/images/posts/
 
 - 来源账号是 `DynastyRumble` / `gis2all`。
 - 2026-07-29 已完成 105 / 105 篇公开文章迁移，剩余未迁移文章为 0。
-- 迁移结果保留在 `src/content/posts/` 与 `public/images/posts/`，原文中的有效引用链接继续保留。
+- 迁移结果保留在 `src/content/posts/` 与 `public/images/posts/`。
 - 2026-07-30 已移除一次性迁移脚本、npm 命令及专用依赖，不再把迁移工具作为项目运行时或维护代码。
+- 2026-07-30 已扫描全部 Markdown：25 个指向本人 `DynastyRumble` 旧文章的 CSDN 链接已替换为本站标题 URL，8 个外部作者引用按原地址保留。
+- `tests/internal-post-links.test.ts` 会阻止本人旧 CSDN 链接重新进入内容，并验证所有本站文章链接都能匹配现有文章标题。
 - `.migration/` 仍被 `.gitignore` 排除，不要提交本地原始缓存、登录态或临时迁移资料。
 - 早期 5 篇测试文章已删除，不要再把它们当作正式内容恢复。
