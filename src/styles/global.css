@@ -1642,6 +1642,14 @@ img {
     max-height: calc(100vh - var(--nav) - 36px);
     overflow-y: auto;
     overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .home-grid > .left-rail::-webkit-scrollbar,
+  .home-grid > .right-rail::-webkit-scrollbar,
+  .article-shell > .left-rail::-webkit-scrollbar,
+  .article-shell > .article-right::-webkit-scrollbar {
+    display: none;
   }
 
   .article-right .toc-wrap {

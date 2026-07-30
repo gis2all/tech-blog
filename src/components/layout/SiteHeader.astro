@@ -1,5 +1,5 @@
 ---
-import { LogIn, Menu, Moon, Search, X } from "@lucide/astro";
+import { Menu, Moon, Search, SquarePen, X } from "@lucide/astro";
 import GithubIcon from "../common/GithubIcon.astro";
 import { site } from "../../lib/site";
 
@@ -32,7 +32,7 @@ function isActive(href: string) {
           <span data-theme-label>深色模式</span>
         </button>
         <a class="mobile-nav-action" href="/admin/">
-          <LogIn size={18} aria-hidden="true" />
+          <SquarePen size={18} aria-hidden="true" />
           <span>后台</span>
         </a>
       </div>
