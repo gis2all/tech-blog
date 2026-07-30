@@ -29,7 +29,14 @@ const {
       </div>
       {post.data.cover && !compact && (
         <a class="article-thumb" href={`/posts/${getPostSlug(post)}/`} aria-label={`阅读：${post.data.title}`}>
-          <img src={post.data.cover} alt={post.data.coverAlt ?? ""} loading="lazy" />
+          <img
+            src={post.data.cover}
+            alt={post.data.coverAlt ?? ""}
+            width="120"
+            height="80"
+            loading="lazy"
+            decoding="async"
+          />
         </a>
       )}
     </article>

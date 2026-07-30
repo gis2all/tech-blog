@@ -84,6 +84,15 @@ select:focus-visible,
 img {
   display: block;
   max-width: 100%;
+  height: auto;
+}
+
+.article-animation {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 1.1em;
+  background: var(--soft);
 }
 
 .site-header {
