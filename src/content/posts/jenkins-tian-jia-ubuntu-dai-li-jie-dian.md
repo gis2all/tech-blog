@@ -37,7 +37,7 @@ Ubuntu设置包括两个方面的内容
 -   SSH连接访问
 -   Java安装
 
-**SSH访问设置参考我的这篇文章，我们只需要在Ubuntu上配置好SSH Server即可，[使用SSH访问Ubuntu服务器](https://blog.csdn.net/DynastyRumble/article/details/118673938)**
+**SSH访问设置参考我的这篇文章，我们只需要在Ubuntu上配置好SSH Server即可，[使用SSH访问Ubuntu服务器](/posts/%E4%BD%BF%E7%94%A8SSH%E8%AE%BF%E9%97%AEUbuntu%E6%9C%8D%E5%8A%A1%E5%99%A8/)**
 
 Java安装过程也很简单，直接下载安装openjdk即可，不需要配置JAVA\_HOME变量和加到PATH变量中
 

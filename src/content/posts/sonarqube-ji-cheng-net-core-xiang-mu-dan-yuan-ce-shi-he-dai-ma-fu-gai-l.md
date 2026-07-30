@@ -30,7 +30,7 @@ seriesOrder: 6
 
 这里我们需要理解`SonarQube`是怎么样显示单元测试和代码覆盖率的，这对我们配置这俩指标有很大影响，对于源码检测而言，只需转到源码目录在编译源码前后记录编译源码的过程就可以，具体实现可参考我的这篇文章
 
-> [【SonarQube】从零搭建.Net Core代码质量检查框架](https://blog.csdn.net/DynastyRumble/article/details/106771096)
+> [【SonarQube】从零搭建.Net Core代码质量检查平台](/posts/%E3%80%90SonarQube%E3%80%91%E4%BB%8E%E9%9B%B6%E6%90%AD%E5%BB%BA.Net%20Core%E4%BB%A3%E7%A0%81%E8%B4%A8%E9%87%8F%E6%A3%80%E6%9F%A5%E5%B9%B3%E5%8F%B0/)
 
 对于单元测试和代码覆盖率而言，它同样有着相对应的关系，这里我们用一张图理解一下  
 ![在这里插入图片描述](/images/posts/sonarqube-ji-cheng-net-core-xiang-mu-dan-yuan-ce-shi-he-dai-ma-fu-gai-l/image-01.webp)  

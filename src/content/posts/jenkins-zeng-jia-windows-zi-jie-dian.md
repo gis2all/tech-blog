@@ -20,7 +20,7 @@ seriesOrder: 1
 
 * * *
 
-在Jenkins上增加 Linux 系统(Mac，Ubantu)的子节点比较容易，可以参考我的这篇文章[【增加Mac子节点】](https://blog.csdn.net/DynastyRumble/article/details/108493410)，而增加 Windows 子节点就有些麻烦，不过尝试很多次之后总算成功了，这里写下配置的过程💪
+在Jenkins上增加 Linux 系统(Mac，Ubantu)的子节点比较容易，可以参考我的这篇文章[【Jenkins】增加Mac子节点](/posts/%E3%80%90Jenkins%E3%80%91%E5%A2%9E%E5%8A%A0Mac%E5%AD%90%E8%8A%82%E7%82%B9/)，而增加 Windows 子节点就有些麻烦，不过尝试很多次之后总算成功了，这里写下配置的过程💪
 
 ## 一、主节点配置
 

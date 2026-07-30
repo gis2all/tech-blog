@@ -113,7 +113,7 @@ ping client-ip
     
 ### 2\. 配置SSH私钥和公钥
 
-关于如何生成公钥和私钥这里不做赘述，可以参考这篇文章[https://blog.csdn.net/DynastyRumble/article/details/118409367](https://blog.csdn.net/DynastyRumble/article/details/118409367)
+关于如何生成公钥和私钥这里不做赘述，可以参考这篇文章[【git】使用ssh密钥访问Github](/posts/%E3%80%90git%E3%80%91%E4%BD%BF%E7%94%A8ssh%E5%AF%86%E9%92%A5%E8%AE%BF%E9%97%AEGithub/)
 
 在Win10机器上假设我们已经配好了公钥私钥，目录位于 C:\\Users\\chao9441.ssh\\，这时直接拷贝公钥id\_rsa.pub到Ubuntu上，**目录位于 /home/&lt;username&gt;/.ssh/， 如果没有.ssh目录则新建，这里把&lt;username&gt;替换成你自己机器的名字，这点很重要因为我们连接时需要输入用户名，默认Ubuntu就会相应地到这个的.ssh目录下找认证文件进行验证，如果位置错误的话则会失败**
 

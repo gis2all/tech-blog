@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
 这项属于增强选项， 在找到每个控件的时候对控件进行高亮截图，方便后续调试
 
--   [实现GUI控件高亮测试报告](https://blog.csdn.net/DynastyRumble/article/details/108100761)
+-   [【Selenium】实现GUI控件高亮测试报告](/posts/%E3%80%90Selenium%E3%80%91%E5%AE%9E%E7%8E%B0GUI%E6%8E%A7%E4%BB%B6%E9%AB%98%E4%BA%AE%E6%B5%8B%E8%AF%95%E6%8A%A5%E5%91%8A/)
 
 ### 5\. 项目架构
 

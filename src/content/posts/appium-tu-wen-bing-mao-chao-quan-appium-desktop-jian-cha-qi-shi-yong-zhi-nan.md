@@ -27,7 +27,7 @@ seriesOrder: 3
 
 那么如何使用呢？
 
-和这篇博文[【Appium】安卓自动化测试之标准流程案例](https://blog.csdn.net/DynastyRumble/article/details/105799050) 不同，我们不需要在代码中做任何操作，而需要手动地对App进行剖析  
+和这篇博文[【Appium】安卓自动化测试之标准流程案例](/posts/%E3%80%90Appium%E3%80%91%E5%AE%89%E5%8D%93%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95%E4%B9%8B%E6%A0%87%E5%87%86%E6%B5%81%E7%A8%8B%E6%A1%88%E4%BE%8B/) 不同，我们不需要在代码中做任何操作，而需要手动地对App进行剖析
 请保持虚拟设备运行中，手动启动App，如果成功则如下；如果失败，请检查Desired Capabilities参数是否正确  
 ![在这里插入图片描述](/images/posts/appium-tu-wen-bing-mao-chao-quan-appium-desktop-jian-cha-qi-shi-yong-zhi-nan/image-01.gif)
 

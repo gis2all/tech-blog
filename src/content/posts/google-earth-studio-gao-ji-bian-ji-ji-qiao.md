@@ -17,10 +17,10 @@ seriesOrder: 4
 
 **Google Earth Studio教程专栏**
 
-1.  [【Google Earth Studio】初步探索](https://blog.csdn.net/DynastyRumble/article/details/103974798)
-2.  [【Google Earth Studio】基础编辑技巧](https://blog.csdn.net/DynastyRumble/article/details/103990446)
-3.  [【Google Earth Studio】进阶编辑技巧](https://blog.csdn.net/DynastyRumble/article/details/104042224)
-4.  [【Google Earth Studio】高级编辑技巧](https://blog.csdn.net/DynastyRumble/article/details/104283992)
+1.  [【Google Earth Studio】初步探索](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%B4%A2/)
+2.  [【Google Earth Studio】基础编辑技巧](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E5%9F%BA%E7%A1%80%E7%BC%96%E8%BE%91%E6%8A%80%E5%B7%A7/)
+3.  [【Google Earth Studio】进阶编辑技巧](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E8%BF%9B%E9%98%B6%E7%BC%96%E8%BE%91%E6%8A%80%E5%B7%A7/)
+4.  [【Google Earth Studio】高级编辑技巧](/posts/%E3%80%90Google%20Earth%20Studio%E3%80%91%E9%AB%98%E7%BA%A7%E7%BC%96%E8%BE%91%E6%8A%80%E5%B7%A7/)
 
 * * *
 
