@@ -50,6 +50,17 @@ describe("desktop side rail layout", () => {
     );
   });
 
+  test("hides desktop side rail scrollbars while preserving overflow scrolling", async () => {
+    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+
+    expect(css).toMatch(
+      /@media\s*\(min-width:\s*901px\)[\s\S]*?\.home-grid > \.left-rail,\s*\.home-grid > \.right-rail,\s*\.article-shell > \.left-rail,\s*\.article-shell > \.article-right\s*\{[^}]*overflow-y:\s*auto[^}]*scrollbar-width:\s*none/s,
+    );
+    expect(css).toMatch(
+      /@media\s*\(min-width:\s*901px\)[\s\S]*?\.home-grid > \.left-rail::-webkit-scrollbar,\s*\.home-grid > \.right-rail::-webkit-scrollbar,\s*\.article-shell > \.left-rail::-webkit-scrollbar,\s*\.article-shell > \.article-right::-webkit-scrollbar\s*\{[^}]*display:\s*none/s,
+    );
+  });
+
   test("balances profile typography against the feed heading and category rows", async () => {
     const css = await readFile(`${root}src/styles/global.css`, "utf8");
 

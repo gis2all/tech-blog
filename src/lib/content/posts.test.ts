@@ -5,6 +5,7 @@ import {
   getFeaturedPosts,
   getPostSlug,
   getPublicPosts,
+  getSeriesPosts,
   groupPostsByArchive,
   groupPostsByCategory,
   groupPostsByTag,
@@ -136,6 +137,15 @@ describe("post helpers", () => {
     );
   });
 
+  test("getPostSlug rejects empty article titles", () => {
+    expect(() =>
+      getPostSlug({
+        ...posts[0],
+        data: { ...posts[0].data, title: "   " }
+      })
+    ).toThrow("Article title cannot be empty");
+  });
+
   test("getPublicPosts filters drafts and sorts newest first", () => {
     expect(getPublicPosts(posts).map((post) => post.data.title)).toEqual([
       "New Post",
@@ -174,9 +184,23 @@ describe("post helpers", () => {
     ]);
   });
 
+  test("groupPostsByTag skips empty tag arrays without failing", () => {
+    expect(
+      groupPostsByTag([
+        {
+          ...posts[0],
+          data: { ...posts[0].data, tags: undefined }
+        }
+      ])
+    ).toEqual([]);
+  });
+
   test("groupTagsByInitial groups Chinese tags by pinyin initials", () => {
     expect(getTagInitial("读书笔记")).toBe("D");
     expect(getTagInitial("自动化测试")).toBe("Z");
+    expect(getTagInitial("  ")).toBe("#");
+    expect(getTagInitial("9to5")).toBe("#");
+    expect(getTagInitial("astro")).toBe("A");
 
     const grouped = groupTagsByInitial(directoryPosts);
 
@@ -187,6 +211,107 @@ describe("post helpers", () => {
     ]);
     expect(grouped.find((group) => group.initial === "D")?.postsCount).toBe(2);
     expect(grouped.some((group) => group.initial === "G")).toBe(false);
+  });
+
+  test("groupPostsByArchive groups public posts across multiple years and months", () => {
+    const archivePosts = [
+      {
+        ...posts[0],
+        data: { ...posts[0].data, publishedAt: new Date("2026-07-01") }
+      },
+      {
+        ...posts[1],
+        data: { ...posts[1].data, publishedAt: new Date("2026-06-20") }
+      },
+      {
+        ...posts[0],
+        id: "archive-2025-post.md",
+        data: {
+          ...posts[0].data,
+          title: "Archived Post",
+          publishedAt: new Date("2025-12-31")
+        }
+      }
+    ];
+
+    expect(groupPostsByArchive(archivePosts)).toEqual([
+      {
+        year: 2026,
+        months: [
+          {
+            month: 7,
+            label: "七月",
+            posts: [archivePosts[0]]
+          },
+          {
+            month: 6,
+            label: "六月",
+            posts: [archivePosts[1]]
+          }
+        ]
+      },
+      {
+        year: 2025,
+        months: [
+          {
+            month: 12,
+            label: "十二月",
+            posts: [archivePosts[2]]
+          }
+        ]
+      }
+    ]);
+  });
+
+  test("getSeriesPosts filters public posts and sorts by series order", () => {
+    const seriesPosts = [
+      {
+        ...posts[0],
+        data: {
+          ...posts[0].data,
+          series: "jenkins-pipeline-engineering",
+          seriesOrder: 2
+        }
+      },
+      {
+        ...posts[1],
+        data: {
+          ...posts[1].data,
+          series: "jenkins-pipeline-engineering",
+          seriesOrder: 1
+        }
+      },
+      {
+        ...posts[2],
+        data: {
+          ...posts[2].data,
+          series: "other-series",
+          seriesOrder: 1
+        }
+      }
+    ];
+
+    expect(
+      getSeriesPosts(seriesPosts, "jenkins-pipeline-engineering").map((post) => post.data.title)
+    ).toEqual(["New Post", "Old Post"]);
+  });
+
+  test("groupPostsByArchive keeps draft posts out of the timeline", () => {
+    expect(
+      groupPostsByArchive([
+        ...posts,
+        {
+          ...posts[0],
+          id: "second-year-post.md",
+          data: {
+            ...posts[0].data,
+            title: "Second Year Post",
+            publishedAt: new Date("2025-01-01"),
+            draft: false
+          }
+        }
+      ]).map((group) => group.year)
+    ).toEqual([2026, 2025]);
   });
 
   test("groupPostsByArchive groups public posts by year and month", () => {
@@ -221,5 +346,9 @@ describe("post helpers", () => {
 
     expect(adjacent.previous?.data.title).toBe("Old Post");
     expect(adjacent.next).toBeUndefined();
+  });
+
+  test("getAdjacentPosts returns nothing when the slug is missing", () => {
+    expect(getAdjacentPosts(posts, "missing-slug")).toEqual({});
   });
 });
