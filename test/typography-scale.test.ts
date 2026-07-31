@@ -47,10 +47,10 @@ describe("typography scale", () => {
       /\.tag-badge\s*\{[^}]*font-size:\s*16px[^}]*font-weight:\s*700/s,
     );
     expect(css).toMatch(
-      /\.tag-item h3\s*\{[^}]*font-size:\s*15px[^}]*font-weight:\s*600/s,
+      /\.tag-item h3\s*\{[^}]*font-size:\s*15px[^}]*font-weight:\s*400/s,
     );
     expect(css).toMatch(
-      /\.tag-count\s*\{[^}]*font-size:\s*17px[^}]*font-weight:\s*600/s,
+      /\.tag-count\s*\{[^}]*font-size:\s*17px[^}]*font-weight:\s*400/s,
     );
   });
 
