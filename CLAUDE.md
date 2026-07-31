@@ -533,6 +533,6 @@ public/images/posts/
 - 迁移结果保留在 `src/content/posts/` 与 `public/images/posts/`。
 - 2026-07-30 已移除一次性迁移脚本、npm 命令及专用依赖，不再把迁移工具作为项目运行时或维护代码。
 - 2026-07-30 已扫描全部 Markdown：25 个指向本人 `DynastyRumble` 旧文章的 CSDN 链接已替换为本站标题 URL，8 个外部作者引用按原地址保留。
-- `tests/internal-post-links.test.ts` 会阻止本人旧 CSDN 链接重新进入内容，并验证所有本站文章链接都能匹配现有文章标题。
+- `test/internal-post-links.test.ts` 会阻止本人旧 CSDN 链接重新进入内容，并验证所有本站文章链接都能匹配现有文章标题。
 - `.migration/` 仍被 `.gitignore` 排除，不要提交本地原始缓存、登录态或临时迁移资料。
 - 早期 5 篇测试文章已删除，不要再把它们当作正式内容恢复。

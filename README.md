@@ -96,7 +96,7 @@ src/scripts/          前端交互脚本
 src/styles/           全局样式和设计变量
 public/images/        头像、文章、专题和项目图片
 public/admin/         Decap CMS 入口与配置
-tests/                Vitest 和 Playwright 测试
+test/                 Vitest 和 Playwright 测试
 ```
 
 ## 内容模型
