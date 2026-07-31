@@ -10,6 +10,7 @@ describe("site identity", () => {
     expect(site.title).toBe("知行");
     expect(site.author).toBe("gis2all");
     expect(site.authorAvatar).toBe("/images/avatar-gis2all.png");
+    expect(site.githubUrl).toBe("https://github.com/gis2all");
     await expect(
       access(`${root}public/images/avatar-gis2all.png`),
     ).resolves.toBeUndefined();

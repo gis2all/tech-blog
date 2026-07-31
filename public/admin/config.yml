@@ -115,6 +115,12 @@ collections:
       - label: Slug
         name: slug
         widget: string
+      - label: 封面
+        name: image
+        widget: image
+      - label: 封面替代文本
+        name: imageAlt
+        widget: string
       - label: 排序
         name: order
         widget: number
@@ -150,6 +156,12 @@ collections:
       - label: 技术栈
         name: tech
         widget: list
+      - label: 封面
+        name: image
+        widget: image
+      - label: 封面替代文本
+        name: imageAlt
+        widget: string
       - label: 精选
         name: featured
         widget: boolean

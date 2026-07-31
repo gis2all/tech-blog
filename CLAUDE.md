@@ -36,17 +36,19 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 
 ## 3. 当前实际状态
 
-截至 2026-07-30，当前开发分支为 `feat`，`main` 已合并此前的 `enhance` 页面与内容更新：
+截至 2026-08-01，当前开发分支为 `feat`，`main` 已合并此前的 `enhance` 页面与内容更新：
 
 - `main` 已包含页面重构、真实专题与项目数据、样式统一和迁移工具清理。
-- `feat` 在最新 `main` 基础上完成标题直出文章 URL、文章阅读控件优化和迁移文章内链治理。
+- `feat` 在最新 `main` 基础上完成标题直出文章 URL、文章阅读控件优化、迁移文章内链治理、CI/覆盖率门禁、README/许可证、正式域名与 SEO 收口。
 - 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
 - 本地共有 106 篇 Markdown 文章：105 篇公开文章和 `git-team-workflow.md` 这一篇草稿。
 - 已实现首页、文章详情、分类、标签、归档、专题、项目、关于、搜索、RSS、站点地图和 404。
 - 专题页展示 5 个真实专题；项目页展示 `xdata-collector`、`focus-flow`、`tech-blog` 3 个真实 GitHub 项目及截图。
 - 已实现 Decap CMS 最小后台：`public/admin/index.html` 和 `public/admin/config.yml`。
+- Decap CMS 的文章、专题和项目字段已与 Content Collections 必填字段对齐。
 - 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
+- 正式站点 URL 已统一为 `https://blog.gis2all.top`，Astro `site`、站内 canonical、RSS、站点地图和 `robots.txt` 均以该域名为准。
 - Netlify 使用 `npm run build` 进行生产构建，随后由 `postbuild` 自动生成 Pagefind 索引并发布 `dist/`。
 - OpenDesign 原型目录在本机保留为参考，并通过 `.gitignore` 排除，不作为生产运行时代码。
 - `docs/` 目录只作为本地规划、草稿和 Agent 交接资料，通过 `.gitignore` 排除，不进入 GitHub 仓库。
@@ -56,16 +58,19 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - 已完成 105 / 105 篇 CSDN 公开文章迁移；一次性迁移脚本、npm 命令和专用依赖已移除。
 - 文章公开 URL 直接使用编码后的文章标题，不维护独立 `slug`，也不保留旧拼音 URL 兼容路由。
 - 已将 25 个指向本人旧 CSDN 文章的链接替换为本站文章链接；8 个外部作者的 CSDN 引用继续保留。
+- 已补齐 Twitter Card、Open Graph URL、文章页 `BlogPosting` JSON-LD 和公开 `robots.txt`。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
-最近验证结果（2026-07-30 标题 URL、文章控件和站内链接更新后）：
+最近验证结果（2026-08-01 正式域名、SEO、CMS 字段和测试门禁更新后）：
 
 ```text
-npm test       → 11 test files passed, 46 tests passed
-npm run check  → 53 files checked, 0 errors, 0 warnings, 0 hints
-npm run build  → 435 pages built
-Pagefind       → indexed 104 pages
+npm run check         → 65 files checked, 0 errors, 0 warnings, 0 hints
+npm test              → 16 test files passed, 78 tests passed
+npm run test:coverage → statements 96%, branches 83.33%, functions 100%, lines 99.33%
+npm run test:e2e      → 25 tests passed
+npm run build         → 435 pages built
+Pagefind              → indexed 104 pages
 ```
 
 以上结果是最近一次完整代码验证基线；后续修改应按风险重跑相关命令。
@@ -93,7 +98,7 @@ Pagefind       → indexed 104 pages
 - `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
 - 从迁移文章正文点击本站文章引用后，地址保持在 `/posts/<编码后的文章标题>/`，不会再跳转到本人旧 CSDN 页面。
 - GitHub 远程仓库：`gis2all/tech-blog`。
-- Netlify 站点 URL：`https://gis2all-blog.netlify.app`。
+- 正式站点 URL：`https://blog.gis2all.top`；Netlify 默认预览域名保留为平台入口，不作为 canonical。
 
 ## 4. 产品原则
 
@@ -451,29 +456,26 @@ public/images/posts/
 当前已实现：
 
 - 每页唯一的 `<title>` 和 description。
-- canonical URL。
-- 基础 Open Graph `title`、`description` 和 `type`。
-- RSS、站点地图和自定义 404。
+- canonical URL，正式域名为 `https://blog.gis2all.top`。
+- Open Graph `title`、`description`、`type`、`url`，文章封面可作为分享图。
+- Twitter Card 元数据。
+- 文章页 `BlogPosting` JSON-LD 结构化数据。
+- RSS、站点地图、公开 `robots.txt` 和自定义 404。
 - 草稿排除、内容 Schema 构建校验和静态 Pagefind 搜索。
 - 静态输出到 `dist/`。
 
 仍待完成：
 
-- Twitter Card 元数据。
-- 文章页 JSON-LD 结构化数据。
-- 公开的 `robots.txt`。
-- 正式独立域名确定后的 canonical 和站点 URL 迁移。
+- 在 Netlify 生产环境完成正式域名、搜索、RSS、站点地图和 robots 的线上验收。
 
 评论、登录用户系统和浏览量统计不属于第一版基础能力。需要时采用外部服务或独立方案，并先确认隐私、成本和数据所有权。
 
 ## 15. 当前路线图
 
-1. 审核并合并当前 `feat` 分支中的标题 URL、阅读控件和文章内链更新。
-2. 确定正式域名并更新站点 URL、canonical 和部署配置。
-3. 补齐 Twitter Card、文章 JSON-LD 和公开 `robots.txt`。
-4. 在生产环境完成桌面/移动、浅色/深色验收。
-5. 决定是否引入评论和隐私友好的分析工具。
-6. 仅在默认 Decap CMS 确实无法满足写作需求时，再评估高级 CMS 功能。
+1. 推送并审核当前 `feat` 分支中的标题 URL、阅读控件、文章内链、CI/覆盖率门禁、README/许可证、正式域名和 SEO 更新。
+2. 在 Netlify 生产环境完成正式域名、搜索、RSS、站点地图、robots、桌面/移动和浅色/深色验收。
+3. 决定是否引入评论和隐私友好的分析工具。
+4. 仅在默认 Decap CMS 确实无法满足写作需求时，再评估高级 CMS 功能。
 
 ## 16. 开发与验证约定
 
@@ -496,7 +498,6 @@ public/images/posts/
 
 以下事项尚未由代码或正式配置锁定，开始相关工作前应向项目所有者确认，或在最小验证后记录决策：
 
-- 正式独立域名。
 - 是否需要评论、浏览量或隐私友好的分析工具。
 - 是否有必要扩展 Decap CMS 默认后台；定时发布、离线同步和自定义媒体处理暂不纳入当前范围。
 
@@ -505,6 +506,7 @@ public/images/posts/
 - 无数据库。
 - 单作者。
 - 作者身份已确认为 `gis2all`，头像为 `public/images/avatar-gis2all.png`，GitHub 主页为 `https://github.com/gis2all`，仓库为 `https://github.com/gis2all/tech-blog`。
+- 正式独立域名已确认为 `https://blog.gis2all.top`。
 - 第一版部署平台使用 Netlify。
 - 第一版 CMS 使用 Decap CMS 的 `github` backend。
 - Decap CMS 直接提交 `main`。
