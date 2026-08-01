@@ -102,6 +102,22 @@ test("keeps all article tags outside the homepage", async ({ page }) => {
   ]);
 });
 
+test("shows the comment area without loading Giscus in development", async ({
+  page,
+}) => {
+  await page.goto(codeArticlePath);
+
+  await expect(
+    page.getByRole("heading", { name: "评论与讨论" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("评论区会在生产构建中加载，开发态不请求外部评论脚本。"),
+  ).toBeVisible();
+  await expect(
+    page.locator('script[src="https://giscus.app/client.js"]'),
+  ).toHaveCount(0);
+});
+
 test("uses the same author category and series rail on article pages", async ({
   page,
 }) => {

@@ -2,6 +2,7 @@
 import ArticleMeta from "../components/article/ArticleMeta.astro";
 import ArticleReadProgress from "../components/article/ArticleReadProgress.astro";
 import RelatedPosts from "../components/article/RelatedPosts.astro";
+import GiscusComments from "../components/article/GiscusComments.astro";
 import ArticleToc from "../components/article/ArticleToc.astro";
 import ArticleTocButton from "../components/article/ArticleTocButton.astro";
 import AuthorAvatar from "../components/common/AuthorAvatar.astro";
@@ -159,6 +160,7 @@ const articleJsonLd = {
             <p>记录编程、AI 与工程实践，保留问题、判断与复盘过程。</p>
           </div>
         </section>
+        <GiscusComments />
       </footer>
     </article>
     <section class="panel article-filter-page" data-article-filter-view hidden aria-live="polite">
