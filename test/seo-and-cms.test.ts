@@ -98,6 +98,31 @@ describe("production metadata", () => {
     expect(articleLayout).toContain("jsonLd={articleJsonLd}");
     expect(baseLayout).toContain('type="application/ld+json"');
   });
+
+  test("configures Giscus comments through GitHub Discussions", async () => {
+    const [articleLayout, commentsComponent, commentsScript] = await Promise.all([
+      readFile(`${root}src/layouts/ArticleLayout.astro`, "utf8"),
+      readFile(`${root}src/components/article/GiscusComments.astro`, "utf8"),
+      readFile(`${root}src/scripts/giscus-comments.ts`, "utf8"),
+    ]);
+
+    expect(articleLayout).toContain("import GiscusComments");
+    expect(articleLayout).toContain("<GiscusComments />");
+    expect(commentsComponent).toContain("import.meta.env.PROD");
+    expect(commentsComponent).toContain("https://giscus.app/client.js");
+    expect(commentsComponent).toContain('data-repo="gis2all/tech-blog"');
+    expect(commentsComponent).toContain('data-repo-id="R_kgDOTk6_FA"');
+    expect(commentsComponent).toContain('data-category="Announcements"');
+    expect(commentsComponent).toContain(
+      'data-category-id="DIC_kwDOTk6_FM4DCd-z"',
+    );
+    expect(commentsComponent).toContain('data-mapping="pathname"');
+    expect(commentsComponent).toContain('data-lang="zh-CN"');
+    expect(commentsScript).toContain('addEventListener("load"');
+    expect(commentsScript).toContain("giscusLoaded");
+    expect(commentsScript).toContain("postMessage");
+    expect(commentsScript).toContain("https://giscus.app");
+  });
 });
 
 describe("Decap CMS schema", () => {

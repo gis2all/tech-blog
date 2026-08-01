@@ -36,7 +36,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 
 ## 3. 当前实际状态
 
-截至 2026-08-01，当前开发分支为 `feat`，`main` 已合并此前的 `enhance` 页面与内容更新：
+截至 2026-08-02，当前开发分支为 `feat`，`main` 已合并此前的 `enhance` 页面与内容更新：
 
 - `main` 已包含页面重构、真实专题与项目数据、样式统一和迁移工具清理。
 - `feat` 在最新 `main` 基础上完成标题直出文章 URL、文章阅读控件优化、迁移文章内链治理、CI/覆盖率门禁与 GitHub Pages 动态覆盖率徽章、README/许可证、正式域名与 SEO 收口。
@@ -63,6 +63,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - Vitest 覆盖率任务生成 HTML 报告和 `coverage/coverage-summary.json`；本地 Node.js 脚本读取真实行覆盖率并生成 `coverage/badge.svg`，GitHub Actions 在 `main` 验证通过后将徽章和报告发布到 GitHub Pages，不依赖第三方覆盖率服务。
 - 文章页显示 4 篇相关文章，优先级依次为同专题、共同标签、同分类和发布时间。
 - 阅读历史保存在浏览器 `localStorage`，记录最近 20 篇及阅读进度；首页桌面右栏、移动端文章列表前和正文桌面右栏均最多显示 3 篇并使用 `01` 至 `03` 编号，正文排除当前文章，最近阅读卡片不展示进度或清空操作。
+- 已开启 GitHub Discussions，并在文章详情页通过 Giscus 接入评论；当前使用 `gis2all/tech-blog` 仓库、`Announcements` 分类、`pathname` 映射，开发态显示占位提示，生产构建加载 Giscus 外部脚本；GitHub App 仍需在网页安装设置中确认授权到该仓库。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
@@ -203,7 +204,7 @@ Astro 读取内容集合并输出 dist/
 - 文章草稿通过 frontmatter 的 `draft: true` 控制，生产构建默认排除草稿。
 - 部署层只接收 GitHub Commit，执行 `npm run build`，发布 Astro 输出的 `dist/`。
 - 搜索优先采用 Pagefind 这类静态索引方案，随构建产物一起发布。
-- 评论、浏览量、用户登录、邮件订阅、定时发布和离线同步不进入第一版核心架构。
+- 浏览量、用户登录、邮件订阅、定时发布和离线同步不进入第一版核心架构；文章评论使用 Giscus 托管到 GitHub Discussions，不引入数据库。
 
 这些决策可以降低第一版复杂度。未来如果要支持多人审核、数据库动态能力或更复杂 CMS 权限，应先更新本文，再改代码。
 
@@ -255,7 +256,7 @@ Decap CMS 第一版发布闭环已经完成验证：
 | 页面 | 路由 | 主要职责 |
 | --- | --- | --- |
 | 首页 | `/` | 作者信息、分类/专题筛选、文章流、最近阅读、精选文章和热门标签 |
-| 文章详情 | `/posts/[slug]/` | Markdown 正文、共享发现栏、目录或独立阅读进度、最近阅读、相关文章、代码块和前后篇 |
+| 文章详情 | `/posts/[slug]/` | Markdown 正文、共享发现栏、目录或独立阅读进度、最近阅读、相关文章、代码块、前后篇和 Giscus 评论 |
 | 搜索 | `/search/` | 关键词搜索、排序、结果列表和空状态 |
 | 分类 | `/categories/`、`/categories/[slug]/` | 分类目录、分类统计和文章列表 |
 | 标签 | `/tags/`、`/tags/[slug]/` | 热门标签、字母导航、分组目录和相关文章 |
@@ -323,7 +324,7 @@ Decap CMS 第一版发布闭环已经完成验证：
 - 行内代码、代码块横向滚动和复制按钮。
 - Markdown 引用、列表、表格、链接和图片。
 - Frontmatter 中存在数据时展示参考资料和更新记录。
-- 4 篇相关文章、上一篇、下一篇和作者说明。
+- 4 篇相关文章、上一篇、下一篇、作者说明和 Giscus 评论区。
 
 ### 8.4 内容目录页
 
@@ -453,6 +454,7 @@ public/images/posts/
 - 前台：无搜索结果、无筛选结果、文章不存在、草稿不公开和 404。
 - 内容构建：Frontmatter 字段错误应由 Content Collections Schema 阻止构建，并定位到具体文件和字段。
 - 搜索：开发态未生成 Pagefind 索引时显示明确提示；生产构建后加载真实索引。
+- 评论：开发态显示占位提示且不请求外部 Giscus 脚本；生产构建加载 Giscus，并由 GitHub Discussions 负责登录、发布和审核状态。若 Giscus GitHub App 未授权到 `gis2all/tech-blog`，生产页会显示未安装提示。
 - CMS：登录、保存、上传和发布状态由 Decap CMS 默认界面负责，不在前台重复模拟。
 - 部署：Netlify 构建结果以平台状态和日志为准，不在站内展示未经接入的虚假进度。
 
@@ -470,19 +472,20 @@ public/images/posts/
 - RSS、站点地图、公开 `robots.txt` 和自定义 404。
 - 草稿排除、内容 Schema 构建校验和静态 Pagefind 搜索。
 - Astro 生产构建按 `PUBLIC_UMAMI_WEBSITE_ID` 配置加载 Umami Cloud；未设置网站 ID 时不加载外部脚本，开发态始终不加载。
+- 文章页生产构建加载 Giscus 评论脚本，评论数据保存在 GitHub Discussions，不进入 Astro 内容集合。
 - 静态输出到 `dist/`。
 
 仍待完成：
 
 - 在 Netlify 生产环境完成正式域名、搜索、RSS、站点地图和 robots 的线上验收。
 
-评论和登录用户系统不属于第一版基础能力。访问统计使用 Umami Cloud，仅在生产环境配置后启用；站内不展示未经接入的阅读量数字。
+评论已选择 Giscus + GitHub Discussions；独立登录用户系统不属于第一版基础能力。访问统计使用 Umami Cloud，仅在生产环境配置后启用；站内不展示未经接入的阅读量数字。
 
 ## 15. 当前路线图
 
 1. 推送并审核当前 `feat` 分支中的标题 URL、阅读控件、文章内链、CI/覆盖率门禁、README/许可证、正式域名、SEO、访问统计、相关文章和阅读历史更新。
 2. 在 Netlify 生产环境配置 `PUBLIC_UMAMI_WEBSITE_ID`，并完成正式域名、统计、搜索、RSS、站点地图、robots、桌面/移动和浅色/深色验收。
-3. 决定是否引入评论功能。
+3. 在 GitHub App 安装设置中授权 Giscus 访问 `gis2all/tech-blog`，再在线上验证文章评论加载、GitHub 登录评论闭环和浅色/深色主题同步。
 4. 仅在默认 Decap CMS 确实无法满足写作需求时，再评估高级 CMS 功能。
 
 ## 16. 开发与验证约定
@@ -507,7 +510,6 @@ public/images/posts/
 
 以下事项尚未由代码或正式配置锁定，开始相关工作前应向项目所有者确认，或在最小验证后记录决策：
 
-- 是否需要评论功能。
 - 是否有必要扩展 Decap CMS 默认后台；定时发布、离线同步和自定义媒体处理暂不纳入当前范围。
 
 已确认的第一版约束：
@@ -518,6 +520,7 @@ public/images/posts/
 - 正式独立域名已确认为 `https://blog.gis2all.top`。
 - 访问统计使用 Umami Cloud，通过 Netlify 生产环境变量 `PUBLIC_UMAMI_WEBSITE_ID` 启用；本地 `.env` 只用于生产预览验证，不作为部署配置来源。
 - 阅读历史只保存在访问者浏览器本地，不引入账号或数据库。
+- 文章评论使用 Giscus + GitHub Discussions，当前仓库已开启 Discussions；评论分类为 `Announcements`，Giscus 映射策略为 `pathname`；Giscus GitHub App 仓库授权仍需网页确认。
 - 第一版部署平台使用 Netlify。
 - 第一版 CMS 使用 Decap CMS 的 `github` backend。
 - Decap CMS 直接提交 `main`。

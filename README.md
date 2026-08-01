@@ -15,6 +15,7 @@
 - 使用 Pagefind 生成静态全文搜索索引
 - 使用 Decap CMS 在网页中编辑文章和上传图片
 - 使用 Umami Cloud 统计生产站点访问，文章页提供相关文章和阅读进度记录
+- 使用 Giscus 和 GitHub Discussions 提供文章评论，不引入数据库
 - 使用浏览器本地存储在首页和正文侧栏展示最近阅读，不保存到服务端
 - 生成 RSS、站点地图、canonical URL 和静态 404 页面
 - 支持浅色/深色主题、桌面端和移动端布局
@@ -30,6 +31,7 @@
 | Pagefind | 生产构建后的静态全文搜索 |
 | Decap CMS | 网页写作和媒体上传后台 |
 | Umami Cloud | 生产环境隐私友好访问统计 |
+| Giscus | 基于 GitHub Discussions 的文章评论 |
 | Netlify | 生产构建和静态托管 |
 | Vitest | 内容规则和组件约定测试 |
 | Playwright | 关键页面与交互回归测试 |
@@ -180,6 +182,14 @@ Decap CMS
 
 后台创建文章或上传图片后，内容写入 GitHub 仓库，并触发 Netlify 自动部署。
 
+## 评论
+
+文章详情页使用 Giscus 接入 GitHub Discussions。评论数据保存在 `gis2all/tech-blog` 仓库的 Discussions 中，当前使用 `Announcements` 分类和 `pathname` 映射；读者需要登录 GitHub 后参与讨论。
+
+开发态不会加载 Giscus 外部脚本，只显示评论区占位提示；生产构建会加载 `https://giscus.app/client.js`，并随站点浅色/深色主题同步切换。
+
+上线前需要在 GitHub App 安装设置中确认 Giscus 已授权访问 `gis2all/tech-blog` 仓库，否则生产页面会显示 Giscus 未安装到仓库的提示。
+
 ## Netlify 部署
 
 部署配置位于 `netlify.toml`：
@@ -227,6 +237,7 @@ GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Ast
 - 正式图片放在 `public/images/`，文章图片建议按文章目录管理
 - 不手动修改或提交 `dist/` 和 Pagefind 索引
 - 不公开 `draft: true` 的文章
+- 评论依赖 GitHub Discussions 和 Giscus App 仓库授权，不在项目中保存评论数据
 - `docs/` 用于本地规划和交接，不进入 GitHub 仓库
 - 修改页面和交互后，按风险运行检查、测试、构建和浏览器验证
 

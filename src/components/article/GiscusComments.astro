@@ -1,0 +1,40 @@
+---
+const commentsEnabled = import.meta.env.PROD;
+---
+
+<section class="comments" aria-labelledby="comments-title" data-giscus-comments>
+  <div class="comments-head">
+    <h2 id="comments-title">评论与讨论</h2>
+    <p>评论使用 GitHub Discussions 托管，需要登录 GitHub 后参与。</p>
+  </div>
+  {
+    commentsEnabled ? (
+      <script
+        is:inline
+        src="https://giscus.app/client.js"
+        data-repo="gis2all/tech-blog"
+        data-repo-id="R_kgDOTk6_FA"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOTk6_FM4DCd-z"
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="zh-CN"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+      ></script>
+    ) : (
+      <p class="comments-placeholder">
+        评论区会在生产构建中加载，开发态不请求外部评论脚本。
+      </p>
+    )
+  }
+</section>
+
+<script>
+  import "../../scripts/giscus-comments";
+</script>
