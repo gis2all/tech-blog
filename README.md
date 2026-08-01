@@ -188,7 +188,7 @@ Decap CMS
 
 开发态不会加载 Giscus 外部脚本，只显示评论区占位提示；生产构建会加载 `https://giscus.app/client.js`，并随站点浅色/深色主题同步切换。
 
-上线前需要在 GitHub App 安装设置中确认 Giscus 已授权访问 `gis2all/tech-blog` 仓库，否则生产页面会显示 Giscus 未安装到仓库的提示。
+Giscus GitHub App 已授权访问 `gis2all/tech-blog` 仓库，本地生产预览已验证评论区可加载；首次评论或 reaction 会自动创建对应的 GitHub Discussion。
 
 ## Netlify 部署
 
@@ -237,7 +237,7 @@ GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Ast
 - 正式图片放在 `public/images/`，文章图片建议按文章目录管理
 - 不手动修改或提交 `dist/` 和 Pagefind 索引
 - 不公开 `draft: true` 的文章
-- 评论依赖 GitHub Discussions 和 Giscus App 仓库授权，不在项目中保存评论数据
+- 评论依赖 GitHub Discussions 和 Giscus App，不在项目中保存评论数据
 - `docs/` 用于本地规划和交接，不进入 GitHub 仓库
 - 修改页面和交互后，按风险运行检查、测试、构建和浏览器验证
 
