@@ -48,6 +48,36 @@ describe("production metadata", () => {
     expect(layout).toContain('name="twitter:description"');
   });
 
+  test("loads Umami Cloud only through the production environment setting", async () => {
+    const [layout, environmentExample] = await Promise.all([
+      readFile(`${root}src/layouts/BaseLayout.astro`, "utf8"),
+      readFile(`${root}.env.example`, "utf8"),
+    ]);
+
+    expect(layout).toContain("import.meta.env.PROD");
+    expect(layout).toContain("PUBLIC_UMAMI_WEBSITE_ID");
+    expect(layout).toContain("https://cloud.umami.is/script.js");
+    expect(layout).toContain("data-website-id");
+    expect(environmentExample).toContain("PUBLIC_UMAMI_WEBSITE_ID=");
+  });
+
+  test("publishes real coverage results through Codecov", async () => {
+    const [readme, workflow, vitestConfig] = await Promise.all([
+      readFile(`${root}README.md`, "utf8"),
+      readFile(`${root}.github/workflows/ci.yml`, "utf8"),
+      readFile(`${root}vitest.config.ts`, "utf8"),
+    ]);
+
+    expect(readme).toContain(
+      "https://codecov.io/gh/gis2all/tech-blog/graph/badge.svg",
+    );
+    expect(readme).not.toContain("img.shields.io/badge/coverage");
+    expect(workflow).toContain("codecov/codecov-action@v5");
+    expect(workflow).toContain("use_oidc: true");
+    expect(workflow).toContain("./coverage/lcov.info");
+    expect(vitestConfig).toContain('"lcov"');
+  });
+
   test("adds JSON-LD structured data to article pages", async () => {
     const [articleLayout, baseLayout] = await Promise.all([
       readFile(
@@ -65,7 +95,7 @@ describe("production metadata", () => {
 });
 
 describe("Decap CMS schema", () => {
-  test("exposes all required media fields for series and projects", async () => {
+  test("exposes all required fields for series and projects", async () => {
     const config = parse(
       await readFile(`${root}public/admin/config.yml`, "utf8"),
     );
@@ -74,7 +104,7 @@ describe("Decap CMS schema", () => {
       expect.arrayContaining(["image", "imageAlt"]),
     );
     expect(getFieldNames(getCollection(config, "projects"))).toEqual(
-      expect.arrayContaining(["image", "imageAlt"]),
+      expect.arrayContaining(["image", "imageAlt", "order"]),
     );
   });
 });

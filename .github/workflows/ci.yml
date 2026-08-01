@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -32,6 +36,13 @@ jobs:
 
       - name: Run Vitest coverage
         run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: ./coverage/lcov.info
+          disable_search: true
 
       - name: Run Playwright Chromium tests
         run: npm run test:e2e

@@ -162,6 +162,11 @@ collections:
       - label: 封面替代文本
         name: imageAlt
         widget: string
+      - label: 排序
+        name: order
+        widget: number
+        value_type: int
+        min: 1
       - label: 精选
         name: featured
         widget: boolean
