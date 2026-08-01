@@ -11,6 +11,7 @@
     "check": "astro check",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "coverage:badge": "node scripts/generate-coverage-badge.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

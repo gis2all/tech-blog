@@ -61,21 +61,27 @@ describe("production metadata", () => {
     expect(environmentExample).toContain("PUBLIC_UMAMI_WEBSITE_ID=");
   });
 
-  test("publishes real coverage results through Codecov", async () => {
-    const [readme, workflow, vitestConfig] = await Promise.all([
+  test("publishes real coverage results through GitHub Pages", async () => {
+    const [readme, workflow, vitestConfig, packageJson] = await Promise.all([
       readFile(`${root}README.md`, "utf8"),
       readFile(`${root}.github/workflows/ci.yml`, "utf8"),
       readFile(`${root}vitest.config.ts`, "utf8"),
+      readFile(`${root}package.json`, "utf8"),
     ]);
 
     expect(readme).toContain(
-      "https://codecov.io/gh/gis2all/tech-blog/graph/badge.svg",
+      "https://gis2all.github.io/tech-blog/badge.svg",
     );
-    expect(readme).not.toContain("img.shields.io/badge/coverage");
-    expect(workflow).toContain("codecov/codecov-action@v5");
-    expect(workflow).toContain("use_oidc: true");
-    expect(workflow).toContain("./coverage/lcov.info");
-    expect(vitestConfig).toContain('"lcov"');
+    expect(readme).toContain("https://gis2all.github.io/tech-blog/");
+    expect(readme).not.toContain("codecov.io");
+    expect(workflow).not.toContain("codecov/codecov-action");
+    expect(workflow).toContain("actions/upload-pages-artifact@v5");
+    expect(workflow).toContain("actions/deploy-pages@v5");
+    expect(workflow).toContain("github-pages");
+    expect(workflow).toContain("github.ref == 'refs/heads/main'");
+    expect(vitestConfig).toContain('"json-summary"');
+    expect(vitestConfig).not.toContain('"lcov"');
+    expect(packageJson).toContain('"coverage:badge"');
   });
 
   test("adds JSON-LD structured data to article pages", async () => {

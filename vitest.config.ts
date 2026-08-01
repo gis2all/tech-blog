@@ -5,7 +5,7 @@ export default defineConfig({
     exclude: [...configDefaults.exclude, "test/e2e/**", ".worktrees/**"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "html", "json-summary", "lcov"],
+      reporter: ["text", "html", "json-summary"],
       include: ["src/lib/**/*.{ts,tsx}"],
       exclude: [
         "src/lib/content/queries.ts",

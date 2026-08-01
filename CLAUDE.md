@@ -39,7 +39,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 截至 2026-08-01，当前开发分支为 `feat`，`main` 已合并此前的 `enhance` 页面与内容更新：
 
 - `main` 已包含页面重构、真实专题与项目数据、样式统一和迁移工具清理。
-- `feat` 在最新 `main` 基础上完成标题直出文章 URL、文章阅读控件优化、迁移文章内链治理、CI/覆盖率门禁与 Codecov 动态徽章、README/许可证、正式域名与 SEO 收口。
+- `feat` 在最新 `main` 基础上完成标题直出文章 URL、文章阅读控件优化、迁移文章内链治理、CI/覆盖率门禁与 GitHub Pages 动态覆盖率徽章、README/许可证、正式域名与 SEO 收口。
 - 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
 - 本地共有 106 篇 Markdown 文章：105 篇公开文章和 `git-team-workflow.md` 这一篇草稿。
@@ -60,17 +60,17 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - 已将 25 个指向本人旧 CSDN 文章的链接替换为本站文章链接；8 个外部作者的 CSDN 引用继续保留。
 - 已补齐 Twitter Card、Open Graph URL、文章页 `BlogPosting` JSON-LD 和公开 `robots.txt`。
 - 已接入 Umami Cloud 访问统计，仅在 Astro 生产构建模式且配置 `PUBLIC_UMAMI_WEBSITE_ID` 时加载；`npm run dev` 和未配置环境不加载，本地生产预览或 Netlify Deploy Preview 若提供同一变量也会产生统计数据。
-- Vitest 覆盖率任务生成 `coverage/lcov.info`，GitHub Actions 使用 Codecov Action 和 OIDC 上传，无需 `CODECOV_TOKEN`；README 动态徽章显示默认分支最近一次成功上传的真实覆盖率。
+- Vitest 覆盖率任务生成 HTML 报告和 `coverage/coverage-summary.json`；本地 Node.js 脚本读取真实行覆盖率并生成 `coverage/badge.svg`，GitHub Actions 在 `main` 验证通过后将徽章和报告发布到 GitHub Pages，不依赖第三方覆盖率服务。
 - 文章页显示 4 篇相关文章，优先级依次为同专题、共同标签、同分类和发布时间。
 - 阅读历史保存在浏览器 `localStorage`，记录最近 20 篇及阅读进度；首页桌面右栏、移动端文章列表前和正文桌面右栏均最多显示 3 篇并使用 `01` 至 `03` 编号，正文排除当前文章，最近阅读卡片不展示进度或清空操作。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
-最近验证结果（2026-08-01 访问统计、相关文章和阅读历史更新后）：
+最近验证结果（2026-08-01）：
 
 ```text
-npm run check         → 74 files checked, 0 errors, 0 warnings, 0 hints
-npm test              → 18 test files passed, 89 tests passed
+npm run check         → 76 files checked, 0 errors, 0 warnings, 0 hints
+npm test              → 19 test files passed, 91 tests passed
 npm run test:coverage → statements 96.36%, branches 83.33%, functions 100%, lines 99.47%
 npm run test:e2e      → 33 tests passed
 npm run build         → 435 pages built
