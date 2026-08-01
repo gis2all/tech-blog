@@ -1,0 +1,27 @@
+---
+type Props = {
+  variant: "desktop" | "mobile" | "article";
+  excludeSlug?: string;
+};
+
+const { variant, excludeSlug } = Astro.props;
+const headingId = `recent-reading-${variant}-title`;
+---
+
+<section
+  class:list={[
+    "recent-reading",
+    `recent-reading-${variant}`,
+    { panel: variant !== "mobile" }
+  ]}
+  data-recent-reading={variant}
+  data-history-limit="3"
+  data-history-exclude-slug={excludeSlug}
+  aria-labelledby={headingId}
+  hidden
+>
+  <div class="section-title recent-reading-head">
+    <span id={headingId}>最近阅读</span>
+  </div>
+  <ol class="recent-reading-list" data-reading-history-list></ol>
+</section>

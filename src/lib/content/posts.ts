@@ -144,6 +144,41 @@ export function getFeaturedPosts<TPost extends PostLike>(
   return [...preferred, ...fallback].slice(0, limit);
 }
 
+export function getRelatedPosts<TPost extends PostLike>(
+  posts: TPost[],
+  currentPost: TPost,
+  limit = 4
+): TPost[] {
+  const currentSlug = getPostSlug(currentPost);
+  const currentTags = new Set(currentPost.data.tags ?? []);
+  const seenSlugs = new Set<string>();
+
+  return getPublicPosts(posts)
+    .filter((post) => {
+      const slug = getPostSlug(post);
+      if (slug === currentSlug || seenSlugs.has(slug)) return false;
+      seenSlugs.add(slug);
+      return true;
+    })
+    .map((post) => ({
+      post,
+      sameSeries: Boolean(
+        currentPost.data.series && post.data.series === currentPost.data.series
+      ),
+      sharedTags: new Set(post.data.tags ?? []).intersection(currentTags).size,
+      sameCategory: post.data.category === currentPost.data.category
+    }))
+    .sort(
+      (a, b) =>
+        Number(b.sameSeries) - Number(a.sameSeries) ||
+        b.sharedTags - a.sharedTags ||
+        Number(b.sameCategory) - Number(a.sameCategory) ||
+        b.post.data.publishedAt.getTime() - a.post.data.publishedAt.getTime()
+    )
+    .slice(0, Math.max(0, limit))
+    .map(({ post }) => post);
+}
+
 export function getAdjacentPosts<TPost extends PostLike>(
   posts: TPost[],
   currentSlug: string

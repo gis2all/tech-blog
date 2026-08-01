@@ -5,6 +5,7 @@ import {
   getFeaturedPosts,
   getPostSlug,
   getPublicPosts,
+  getRelatedPosts,
   getSeriesPosts,
   groupPostsByArchive,
   groupPostsByCategory,
@@ -339,6 +340,112 @@ describe("post helpers", () => {
       "Old Post",
       "New Post"
     ]);
+  });
+
+  test("getRelatedPosts ranks series tags category and fallback posts in order", () => {
+    const relatedPosts = [
+      {
+        id: "current.md",
+        data: {
+          title: "Current",
+          publishedAt: new Date("2026-07-01"),
+          category: "DevOps",
+          tags: ["Jenkins", "Groovy"],
+          series: "pipeline",
+          draft: false
+        }
+      },
+      {
+        id: "same-series.md",
+        data: {
+          title: "Same Series",
+          publishedAt: new Date("2025-01-01"),
+          category: "其他",
+          tags: [],
+          series: "pipeline",
+          draft: false
+        }
+      },
+      {
+        id: "shared-tags.md",
+        data: {
+          title: "Shared Tags",
+          publishedAt: new Date("2026-06-01"),
+          category: "其他",
+          tags: ["Jenkins", "Groovy"],
+          draft: false
+        }
+      },
+      {
+        id: "same-category.md",
+        data: {
+          title: "Same Category",
+          publishedAt: new Date("2026-07-20"),
+          category: "DevOps",
+          tags: [],
+          draft: false
+        }
+      },
+      {
+        id: "newest-fallback.md",
+        data: {
+          title: "Newest Fallback",
+          publishedAt: new Date("2026-07-25"),
+          category: "其他",
+          tags: [],
+          draft: false
+        }
+      },
+      {
+        id: "draft-series.md",
+        data: {
+          title: "Draft Series",
+          publishedAt: new Date("2026-07-30"),
+          category: "DevOps",
+          tags: ["Jenkins"],
+          series: "pipeline",
+          draft: true
+        }
+      }
+    ];
+
+    expect(
+      getRelatedPosts(relatedPosts, relatedPosts[0], 4).map((post) => post.id)
+    ).toEqual([
+      "same-series.md",
+      "shared-tags.md",
+      "same-category.md",
+      "newest-fallback.md"
+    ]);
+  });
+
+  test("getRelatedPosts removes duplicate candidate slugs", () => {
+    const current = {
+      id: "current.md",
+      data: {
+        title: "Current",
+        publishedAt: new Date("2026-07-01"),
+        category: "DevOps",
+        tags: ["Jenkins"],
+        draft: false
+      }
+    };
+    const duplicate = {
+      id: "duplicate.md",
+      data: {
+        title: "Duplicate",
+        publishedAt: new Date("2026-06-01"),
+        category: "DevOps",
+        tags: ["Jenkins"],
+        draft: false
+      }
+    };
+
+    expect(
+      getRelatedPosts([current, duplicate, { ...duplicate }], current, 4).map(
+        (post) => post.id
+      )
+    ).toEqual(["duplicate.md"]);
   });
 
   test("getAdjacentPosts follows public chronological order and skips drafts", () => {

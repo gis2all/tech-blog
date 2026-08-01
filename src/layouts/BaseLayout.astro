@@ -1,6 +1,7 @@
 ---
 import SiteFooter from "../components/layout/SiteFooter.astro";
 import SiteHeader from "../components/layout/SiteHeader.astro";
+import { getUmamiWebsiteId } from "../lib/analytics/umami";
 import { site } from "../lib/site";
 import "../styles/global.css";
 
@@ -28,6 +29,10 @@ const twitterCard = absoluteImage ? "summary_large_image" : "summary";
 const jsonLdText = jsonLd
   ? JSON.stringify(jsonLd).replace(/</g, "\\u003c")
   : undefined;
+const umamiWebsiteId = getUmamiWebsiteId(
+  import.meta.env.PROD,
+  import.meta.env.PUBLIC_UMAMI_WEBSITE_ID
+);
 ---
 
 <!doctype html>
@@ -41,6 +46,14 @@ const jsonLdText = jsonLd
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#18324a" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {umamiWebsiteId && (
+      <script
+        is:inline
+        defer
+        src="https://cloud.umami.is/script.js"
+        data-website-id={umamiWebsiteId}
+      ></script>
+    )}
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={ogType} />

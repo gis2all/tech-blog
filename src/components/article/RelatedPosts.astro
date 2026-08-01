@@ -1,0 +1,33 @@
+---
+import { getPostSlug, type PostLike } from "../../lib/content/posts";
+
+type Props = {
+  posts: PostLike[];
+};
+
+const { posts } = Astro.props;
+---
+
+{posts.length > 0 && (
+  <section class="related-posts" data-related-posts aria-labelledby="related-posts-title">
+    <div class="related-posts-head">
+      <h2 id="related-posts-title">相关文章</h2>
+      <small>{posts.length} 篇</small>
+    </div>
+    <div class="related-post-list">
+      {posts.map((post) => {
+        const published = post.data.publishedAt.toISOString().slice(0, 10);
+
+        return (
+          <article class="related-post-item">
+            <a href={`/posts/${getPostSlug(post)}/`}>{post.data.title}</a>
+            <div>
+              <span>{post.data.category}</span>
+              <time datetime={published}>{published}</time>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+)}

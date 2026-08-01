@@ -1,5 +1,6 @@
 ---
 import { X } from "@lucide/astro";
+import ArticleReadProgress from "./ArticleReadProgress.astro";
 
 type Heading = {
   depth: number;
@@ -25,11 +26,7 @@ const visibleHeadings = headings.filter((heading) => heading.depth <= 3);
           <a class:list={{ sub: heading.depth === 3 }} href={`#${heading.slug}`}>{heading.text}</a>
         ))}
       </nav>
-      <div class="read-progress">
-        <span>阅读进度</span>
-        <b data-read-percent>0%</b>
-        <div class="read-bar"><i data-read-bar></i></div>
-      </div>
+      <ArticleReadProgress />
     </div>
   </aside>
   <div class="mobile-toc-overlay" data-toc-panel hidden>
