@@ -1,8 +1,12 @@
 # 知行
 
-“知行”是使用 Astro 构建的个人技术博客，用于记录编程、AI 和工程实践。本仓库保存网站源码、Markdown 文章、专题、项目数据和图片，也可以作为静态博客工程的实现参考。
+[![CI](https://github.com/gis2all/tech-blog/actions/workflows/ci.yml/badge.svg)](https://github.com/gis2all/tech-blog/actions/workflows/ci.yml)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fblog.gis2all.top&label=site)](https://blog.gis2all.top)
+![Astro](https://img.shields.io/badge/Astro-7-BC52EE?logo=astro&logoColor=white)
+[![Coverage](https://gis2all.github.io/tech-blog/badge.svg)](https://gis2all.github.io/tech-blog/)
+[![License](https://img.shields.io/badge/license-Code%20MIT%20%7C%20Content%20Reserved-blue)](./LICENSE)
 
-线上地址：[https://blog.gis2all.top](https://blog.gis2all.top)
+```知行```是使用 Astro 构建的个人技术博客，用于记录编程、AI 和工程实践。本仓库保存网站源码、Markdown 文章、专题、项目数据和图片，也可以作为静态博客工程的实现参考。线上地址：[https://blog.gis2all.top](https://blog.gis2all.top)
 
 ## 核心能力
 
@@ -10,6 +14,8 @@
 - 支持分类、标签、归档、专题、项目和文章目录
 - 使用 Pagefind 生成静态全文搜索索引
 - 使用 Decap CMS 在网页中编辑文章和上传图片
+- 使用 Umami Cloud 统计生产站点访问，文章页提供相关文章和阅读进度记录
+- 使用浏览器本地存储在首页和正文侧栏展示最近阅读，不保存到服务端
 - 生成 RSS、站点地图、canonical URL 和静态 404 页面
 - 支持浅色/深色主题、桌面端和移动端布局
 - 通过 Vitest 和 Playwright 验证内容规则与关键交互
@@ -23,6 +29,7 @@
 | TypeScript | 内容查询、构建规则和前端交互 |
 | Pagefind | 生产构建后的静态全文搜索 |
 | Decap CMS | 网页写作和媒体上传后台 |
+| Umami Cloud | 生产环境隐私友好访问统计 |
 | Netlify | 生产构建和静态托管 |
 | Vitest | 内容规则和组件约定测试 |
 | Playwright | 关键页面与交互回归测试 |
@@ -71,6 +78,16 @@ npm run preview -- --host 127.0.0.1 --port 4321
 
 `astro dev` 不会提供生产构建生成的 `dist/pagefind/`。开发态下搜索页提示索引尚未生成属于正常现象，完整搜索需要在生产预览态验证。
 
+## 环境变量
+
+复制 `.env.example` 中需要的变量到本地或部署平台环境变量：
+
+```text
+PUBLIC_UMAMI_WEBSITE_ID=
+```
+
+设置 Umami Cloud 网站 ID 后，统计脚本只会在生产构建中加载；开发态不会发送访问数据。最近阅读保存在访问者浏览器的 `localStorage` 中，不需要服务端配置。
+
 ## 架构
 
 ```text
@@ -96,7 +113,8 @@ src/scripts/          前端交互脚本
 src/styles/           全局样式和设计变量
 public/images/        头像、文章、专题和项目图片
 public/admin/         Decap CMS 入口与配置
-tests/                Vitest 和 Playwright 测试
+scripts/              构建与覆盖率辅助脚本
+test/                 Vitest 和 Playwright 测试
 ```
 
 ## 内容模型
@@ -123,8 +141,9 @@ seriesOrder: 1
 
 主要规则：
 
-- `title`、`description`、`publishedAt`、`category`、`tags` 和 `draft` 必填
-- `updatedAt`、`cover`、`coverAlt`、`series` 和 `seriesOrder` 可选
+- `title`、`description`、`publishedAt` 和 `category` 必填
+- `tags` 默认为空数组，`draft` 和 `featured` 默认为 `false`
+- `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 和 `repoUrl` 可选；有封面时应提供准确的 `coverAlt`
 - `draft: true` 的文章不会进入生产页面、RSS 和搜索索引
 - 分类为单值，标签为多值，专题文章通过 `seriesOrder` 排序
 - 有信息含义的图片应提供准确的替代文本
@@ -174,11 +193,14 @@ Node.js: 22
 
 `npm run build` 先生成 Astro 静态页面，随后 npm 自动执行 `postbuild` 创建 Pagefind 索引，最终由 Netlify 发布整个 `dist/` 目录。
 
+在 Netlify 的生产环境变量中设置 `PUBLIC_UMAMI_WEBSITE_ID` 即可启用访问统计。未设置时不会加载 Umami 脚本，也不会影响构建。
+
 ## 验证命令
 
 ```text
 npm run check
 npm run test
+npm run test:coverage
 npm run test:e2e
 npm run build
 ```
@@ -187,8 +209,16 @@ npm run build
 | --- | --- |
 | `npm run check` | 检查 Astro 和 TypeScript |
 | `npm run test` | 运行 Vitest 测试 |
+| `npm run test:coverage` | 运行 Vitest 覆盖率门禁：语句、函数和行不低于 85%，分支不低于 80% |
 | `npm run test:e2e` | 运行 Playwright 浏览器测试 |
 | `npm run build` | 验证生产构建并生成 Pagefind 索引 |
+
+GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Astro/TypeScript 检查、Vitest、覆盖率、Playwright Chromium 和生产构建。`main` 验证通过后，工作流会将真实覆盖率徽章和 HTML 报告发布到 GitHub Pages；博客站点仍由 Netlify 发布。
+
+## 许可证
+
+- 源码采用 [MIT License](./LICENSE)
+- 文章、图片、截图和其他内容资产保留版权，未经许可不作为转载或素材授权
 
 ## 开发约定
 

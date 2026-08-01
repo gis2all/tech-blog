@@ -1,16 +1,20 @@
 ---
 import ArticleMeta from "../components/article/ArticleMeta.astro";
+import ArticleReadProgress from "../components/article/ArticleReadProgress.astro";
+import RelatedPosts from "../components/article/RelatedPosts.astro";
 import ArticleToc from "../components/article/ArticleToc.astro";
 import ArticleTocButton from "../components/article/ArticleTocButton.astro";
 import AuthorAvatar from "../components/common/AuthorAvatar.astro";
 import DiscoveryRail from "../components/layout/DiscoveryRail.astro";
 import FeaturedTagRail from "../components/layout/FeaturedTagRail.astro";
+import RecentReading from "../components/layout/RecentReading.astro";
 import BaseLayout from "./BaseLayout.astro";
 import type { SeriesEntry } from "../lib/content/queries";
 import {
   calculateReadingTime,
   getAdjacentPosts,
   getPostSlug,
+  getRelatedPosts,
   type PostLike
 } from "../lib/content/posts";
 import { site } from "../lib/site";
@@ -30,9 +34,46 @@ const updated = "updatedAt" in post.data && post.data.updatedAt instanceof Date
 const currentSlug = getPostSlug(post);
 const readingTime = calculateReadingTime(post.body);
 const { previous, next } = getAdjacentPosts(allPosts, currentSlug);
+const relatedPosts = getRelatedPosts(allPosts, post, 4);
+const hasVisibleHeadings = headings.some((heading) => heading.depth <= 3);
+const articleUrl = new URL(`/posts/${currentSlug}/`, site.url).toString();
+const articleJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.publishedAt.toISOString(),
+  dateModified: (post.data.updatedAt ?? post.data.publishedAt).toISOString(),
+  url: articleUrl,
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": articleUrl
+  },
+  author: {
+    "@type": "Person",
+    name: site.author,
+    url: site.githubUrl
+  },
+  publisher: {
+    "@type": "Person",
+    name: site.author,
+    url: site.url
+  },
+  articleSection: post.data.category,
+  keywords: post.data.tags?.join(", "),
+  ...(post.data.cover
+    ? { image: new URL(post.data.cover, site.url).toString() }
+    : {})
+};
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description}>
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  ogType="article"
+  image={post.data.cover}
+  jsonLd={articleJsonLd}
+>
   <ArticleTocButton slot="header-actions" headings={headings} />
   <main class="wrap article-shell">
     <DiscoveryRail
@@ -43,7 +84,15 @@ const { previous, next } = getAdjacentPosts(allPosts, currentSlug);
       currentSeries={post.data.series}
     />
     <div class="article-main">
-    <article class="panel article-page" data-article-view>
+    <article
+      class="panel article-page"
+      data-article-view
+      data-reading-article
+      data-reading-slug={currentSlug}
+      data-reading-url={`/posts/${currentSlug}/`}
+      data-reading-title={post.data.title}
+      data-reading-category={post.data.category}
+    >
       <header class="article-head">
         <span class="kicker">{post.data.category}</span>
         <h1>{post.data.title}</h1>
@@ -86,6 +135,7 @@ const { previous, next } = getAdjacentPosts(allPosts, currentSlug);
         </section>
       )}
       <footer class="article-footer">
+        <RelatedPosts posts={relatedPosts} />
         {(previous || next) && (
           <nav class="post-navigation" aria-label="相邻文章">
             {previous && (
@@ -121,8 +171,13 @@ const { previous, next } = getAdjacentPosts(allPosts, currentSlug);
     </section>
     </div>
     <div class="article-right">
-      <div data-article-toc-view>
-        <ArticleToc headings={headings} />
+      <div class="stack" data-article-toc-view>
+        {hasVisibleHeadings ? (
+          <ArticleToc headings={headings} />
+        ) : (
+          <ArticleReadProgress standalone />
+        )}
+        <RecentReading variant="article" excludeSlug={currentSlug} />
       </div>
       <div data-article-discovery-view hidden>
         <FeaturedTagRail posts={allPosts} />

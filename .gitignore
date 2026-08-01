@@ -4,6 +4,7 @@ node_modules/
 # Build output
 dist/
 .astro/
+coverage/
 
 # Local planning and agent handoff docs
 docs/
@@ -22,6 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .astro-preview.*.log
+.codex-temp/
 .playwright-cli/
 test-results/
 playwright-report/

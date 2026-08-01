@@ -36,36 +36,45 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 
 ## 3. 当前实际状态
 
-截至 2026-07-30，当前开发分支为 `feat`，`main` 已合并此前的 `enhance` 页面与内容更新：
+截至 2026-08-01，当前开发分支为 `feat`，`main` 已合并此前的 `enhance` 页面与内容更新：
 
 - `main` 已包含页面重构、真实专题与项目数据、样式统一和迁移工具清理。
-- `feat` 在最新 `main` 基础上完成标题直出文章 URL、文章阅读控件优化和迁移文章内链治理。
+- `feat` 在最新 `main` 基础上完成标题直出文章 URL、文章阅读控件优化、迁移文章内链治理、CI/覆盖率门禁与 GitHub Pages 动态覆盖率徽章、README/许可证、正式域名与 SEO 收口。
 - 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
 - 本地共有 106 篇 Markdown 文章：105 篇公开文章和 `git-team-workflow.md` 这一篇草稿。
 - 已实现首页、文章详情、分类、标签、归档、专题、项目、关于、搜索、RSS、站点地图和 404。
 - 专题页展示 5 个真实专题；项目页展示 `xdata-collector`、`focus-flow`、`tech-blog` 3 个真实 GitHub 项目及截图。
 - 已实现 Decap CMS 最小后台：`public/admin/index.html` 和 `public/admin/config.yml`。
+- Decap CMS 的文章、专题和项目字段已与 Content Collections 必填字段对齐。
 - 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
+- 正式站点 URL 已统一为 `https://blog.gis2all.top`，Astro `site`、站内 canonical、RSS、站点地图和 `robots.txt` 均以该域名为准。
 - Netlify 使用 `npm run build` 进行生产构建，随后由 `postbuild` 自动生成 Pagefind 索引并发布 `dist/`。
 - OpenDesign 原型目录在本机保留为参考，并通过 `.gitignore` 排除，不作为生产运行时代码。
 - `docs/` 目录只作为本地规划、草稿和 Agent 交接资料，通过 `.gitignore` 排除，不进入 GitHub 仓库。
 - 首页和文章页共用左侧发现栏，包括紧凑作者卡片、技术分类和专题列表，并支持分类或专题即时筛选。
-- 文章正文模式右侧显示固定目录；筛选结果模式右侧恢复精选文章和标签。
+- 文章正文模式右侧显示固定目录（无目录时显示独立阅读进度）和最近阅读；筛选结果模式右侧显示最近阅读、精选文章和热门标签。
 - 标签页采用热门标签、字母导航和分组目录；归档页采用年份/月度时间线；关于页使用当前紧凑版布局。
 - 已完成 105 / 105 篇 CSDN 公开文章迁移；一次性迁移脚本、npm 命令和专用依赖已移除。
 - 文章公开 URL 直接使用编码后的文章标题，不维护独立 `slug`，也不保留旧拼音 URL 兼容路由。
 - 已将 25 个指向本人旧 CSDN 文章的链接替换为本站文章链接；8 个外部作者的 CSDN 引用继续保留。
+- 已补齐 Twitter Card、Open Graph URL、文章页 `BlogPosting` JSON-LD 和公开 `robots.txt`。
+- 已接入 Umami Cloud 访问统计，仅在 Astro 生产构建模式且配置 `PUBLIC_UMAMI_WEBSITE_ID` 时加载；`npm run dev` 和未配置环境不加载，本地生产预览或 Netlify Deploy Preview 若提供同一变量也会产生统计数据。
+- Vitest 覆盖率任务生成 HTML 报告和 `coverage/coverage-summary.json`；本地 Node.js 脚本读取真实行覆盖率并生成 `coverage/badge.svg`，GitHub Actions 在 `main` 验证通过后将徽章和报告发布到 GitHub Pages，不依赖第三方覆盖率服务。
+- 文章页显示 4 篇相关文章，优先级依次为同专题、共同标签、同分类和发布时间。
+- 阅读历史保存在浏览器 `localStorage`，记录最近 20 篇及阅读进度；首页桌面右栏、移动端文章列表前和正文桌面右栏均最多显示 3 篇并使用 `01` 至 `03` 编号，正文排除当前文章，最近阅读卡片不展示进度或清空操作。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
-最近验证结果（2026-07-30 标题 URL、文章控件和站内链接更新后）：
+最近验证结果（2026-08-01）：
 
 ```text
-npm test       → 11 test files passed, 46 tests passed
-npm run check  → 53 files checked, 0 errors, 0 warnings, 0 hints
-npm run build  → 435 pages built
-Pagefind       → indexed 104 pages
+npm run check         → 76 files checked, 0 errors, 0 warnings, 0 hints
+npm test              → 19 test files passed, 91 tests passed
+npm run test:coverage → statements 96.36%, branches 83.33%, functions 100%, lines 99.47%
+npm run test:e2e      → 33 tests passed
+npm run build         → 435 pages built
+Pagefind              → indexed 104 pages
 ```
 
 以上结果是最近一次完整代码验证基线；后续修改应按风险重跑相关命令。
@@ -75,15 +84,17 @@ Pagefind       → indexed 104 pages
 - Astro 本地开发固定且仅使用 `http://127.0.0.1:4321/`；不要同时保留多个开发服务，也不要临时切到 4323 等其他端口。若 4321 被占用，先确认并停止/复用该服务，再继续。
 - 本地运行分为开发态和生产预览态：开发态使用 `npm run dev -- --host 127.0.0.1 --port 4321`，用于页面和样式快速开发；生产预览态先运行 `npm run build`，再运行 `npm run preview -- --host 127.0.0.1 --port 4321`，用于验证 `dist/`、Pagefind 搜索、RSS 和站点地图。
 - `astro dev` 不会挂载 `dist/pagefind/`，因此开发态下搜索页提示“搜索索引尚未生成”是正常现象；搜索功能必须在生产预览态验证。
+- `.env.example` 只记录变量名；本地实际值放在被 Git 忽略的 `.env` 中，不写入本文。若本地 `.env` 配置了 `PUBLIC_UMAMI_WEBSITE_ID`，生产预览会向 Umami 发送测试访问，验证后可删除该本地变量。
 - 之前 UI 回归覆盖过首页和文章页；后续迁移内容或调整 UI 时，应以当前保留文章重新跑桌面/移动、浅色/深色浏览器验收。
 - 首页只有一个 H1，左右侧栏具名，移动菜单包含 GitHub、主题和后台入口，无横向溢出。
 - 文章页标题为桌面 36px、移动 27px；移动标题无孤立单字尾行，分类、发布、更新和阅读时长各出现一次。
 - 文章前后篇、作者说明、图标式代码复制和移动目录均可操作；代码块字号为 14px，复制按钮通过 `aria-label` 和 `title` 提供状态提示。
 - 阅读进度按正文和页面实际可滚动范围计算，滚动至页面底部时显示 100%。
+- 文章页相关文章位于上一篇/下一篇之前；正文右栏在目录下显示最近阅读，无目录时显示独立阅读进度和最近阅读；首页最近阅读与正文移动视口均无横向溢出。
 - 菜单和目录的 ARIA 展开状态、焦点循环/归还以及 `Esc` 关闭行为已验证。
 - 移动文章目录入口真实位于 Header DOM 中、处于菜单按钮之前，不靠 fixed 定位伪装顺序，也不覆盖正文。
 - 文章列表卡片只展示标签，不再混入分类标签。
-- 首页和文章页右侧热门标签使用与左侧一致的轻量标签样式；作者卡片标题、说明和纵向间距已统一。
+- 首页和文章页右侧“精选复盘”标题不显示“编辑推荐”；热门标签使用与左侧一致的轻量标签样式，最多显示 11 个并按文章数量降序排列，标题右侧不显示“全部”链接；作者卡片标题、说明和纵向间距已统一。
 - 本轮页面严重/致命 Axe 问题为 0，浏览器控制台错误为 0。
 - `/search/?q=Agent` 可加载 Pagefind 并返回文章结果。
 - `/admin/` GitHub OAuth 登录已验证，可进入 Decap CMS 后台。
@@ -93,7 +104,7 @@ Pagefind       → indexed 104 pages
 - `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
 - 从迁移文章正文点击本站文章引用后，地址保持在 `/posts/<编码后的文章标题>/`，不会再跳转到本人旧 CSDN 页面。
 - GitHub 远程仓库：`gis2all/tech-blog`。
-- Netlify 站点 URL：`https://gis2all-blog.netlify.app`。
+- 正式站点 URL：`https://blog.gis2all.top`；Netlify 默认预览域名保留为平台入口，不作为 canonical。
 
 ## 4. 产品原则
 
@@ -243,8 +254,8 @@ Decap CMS 第一版发布闭环已经完成验证：
 
 | 页面 | 路由 | 主要职责 |
 | --- | --- | --- |
-| 首页 | `/` | 作者信息、分类/专题筛选、文章流、精选文章和标签 |
-| 文章详情 | `/posts/[slug]/` | Markdown 正文、共享发现栏、固定目录、代码块和前后篇 |
+| 首页 | `/` | 作者信息、分类/专题筛选、文章流、最近阅读、精选文章和热门标签 |
+| 文章详情 | `/posts/[slug]/` | Markdown 正文、共享发现栏、目录或独立阅读进度、最近阅读、相关文章、代码块和前后篇 |
 | 搜索 | `/search/` | 关键词搜索、排序、结果列表和空状态 |
 | 分类 | `/categories/`、`/categories/[slug]/` | 分类目录、分类统计和文章列表 |
 | 标签 | `/tags/`、`/tags/[slug]/` | 热门标签、字母导航、分组目录和相关文章 |
@@ -277,13 +288,13 @@ Decap CMS 第一版发布闭环已经完成验证：
 
 - 左栏 280px：紧凑作者卡片、技术分类列表和专题列表。
 - 中栏自适应：全部文章以及分类/专题即时筛选结果。
-- 右栏 220px：精选文章和标签。
+- 右栏 220px：最近阅读、精选文章和热门标签。
 
 文章列表应包含：
 
 - 标题和两行以内摘要。
 - 标签、发布日期、阅读时长；卡片不重复展示分类标签。
-- 可选的 120×80 缩略图；无封面时文字区域自然扩展。
+- 可选的 136×86 缩略图；无封面时文字区域自然扩展。
 - 条目之间使用分割线，不把每篇文章做成浮动大卡片。
 - 轻微 hover 状态。
 
@@ -293,7 +304,7 @@ Decap CMS 第一版发布闭环已经完成验证：
 - 点击左栏“全部”只高亮“全部”并恢复全部文章；点击分类或专题时在中栏即时筛选，不跳转到分类 Tab 页。
 - 无匹配结果时显示清晰空状态。
 - 深色模式持久化。
-- 移动端隐藏左右栏，保留文章主流程。
+- 移动端隐藏左右栏，在文章列表前显示最近阅读并保留文章主流程。
 - 所有统计、精选文章和标签必须由公开内容计算，不展示虚构的阅读量、趋势或进度。
 
 ### 8.3 文章详情
@@ -302,8 +313,8 @@ Decap CMS 第一版发布闭环已经完成验证：
 
 - 正文头部展示分类、标题、摘要、作者、发布日期、可选更新时间、阅读时长和标签。
 - 左侧显示紧凑作者卡片、技术分类和专题列表，并高亮当前文章所属项。
-- 点击分类或专题后，中栏即时切换为筛选文章列表；此时右栏显示精选文章和标签。
-- 显示具体文章正文时，右栏只显示固定目录；目录随滚动高亮，并保持原有文章目录交互。
+- 点击分类或专题后，中栏即时切换为筛选文章列表；此时右栏显示最近阅读、精选文章和热门标签。
+- 显示具体文章正文时，右栏显示固定目录和最近阅读；没有 H2/H3 目录时改为独立阅读进度和最近阅读，目录存在时随滚动高亮并保持原有交互。
 - 移动端隐藏侧栏，目录改为顶部导航图标入口和底部抽屉；入口不得覆盖正文。
 
 正文当前支持：
@@ -312,7 +323,7 @@ Decap CMS 第一版发布闭环已经完成验证：
 - 行内代码、代码块横向滚动和复制按钮。
 - Markdown 引用、列表、表格、链接和图片。
 - Frontmatter 中存在数据时展示参考资料和更新记录。
-- 上一篇、下一篇和作者说明。
+- 4 篇相关文章、上一篇、下一篇和作者说明。
 
 ### 8.4 内容目录页
 
@@ -353,9 +364,10 @@ seriesOrder: 1
 
 约束：
 
-- `title`、`description`、`publishedAt`、`category`、`tags` 和 `draft` 必填。
+- `title`、`description`、`publishedAt` 和 `category` 必填。
 - 文章 URL 标识由去除首尾空白后的标题生成，不接受独立 `slug` frontmatter。
-- `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 可选；有封面时 `coverAlt` 必填。
+- `tags`、`references` 和 `changelog` 默认为空数组；`draft` 和 `featured` 默认为 `false`。
+- `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 和 `repoUrl` 可选；有封面时应提供准确的 `coverAlt`。
 - 生产构建排除 `draft: true`。
 - 日期统一使用 `YYYY-MM-DD`，构建失败时给出具体文件和字段。
 - 分类是单值主分类，标签是多值；专题是有顺序的连续内容。
@@ -451,29 +463,27 @@ public/images/posts/
 当前已实现：
 
 - 每页唯一的 `<title>` 和 description。
-- canonical URL。
-- 基础 Open Graph `title`、`description` 和 `type`。
-- RSS、站点地图和自定义 404。
+- canonical URL，正式域名为 `https://blog.gis2all.top`。
+- Open Graph `title`、`description`、`type`、`url`，文章封面可作为分享图。
+- Twitter Card 元数据。
+- 文章页 `BlogPosting` JSON-LD 结构化数据。
+- RSS、站点地图、公开 `robots.txt` 和自定义 404。
 - 草稿排除、内容 Schema 构建校验和静态 Pagefind 搜索。
+- Astro 生产构建按 `PUBLIC_UMAMI_WEBSITE_ID` 配置加载 Umami Cloud；未设置网站 ID 时不加载外部脚本，开发态始终不加载。
 - 静态输出到 `dist/`。
 
 仍待完成：
 
-- Twitter Card 元数据。
-- 文章页 JSON-LD 结构化数据。
-- 公开的 `robots.txt`。
-- 正式独立域名确定后的 canonical 和站点 URL 迁移。
+- 在 Netlify 生产环境完成正式域名、搜索、RSS、站点地图和 robots 的线上验收。
 
-评论、登录用户系统和浏览量统计不属于第一版基础能力。需要时采用外部服务或独立方案，并先确认隐私、成本和数据所有权。
+评论和登录用户系统不属于第一版基础能力。访问统计使用 Umami Cloud，仅在生产环境配置后启用；站内不展示未经接入的阅读量数字。
 
 ## 15. 当前路线图
 
-1. 审核并合并当前 `feat` 分支中的标题 URL、阅读控件和文章内链更新。
-2. 确定正式域名并更新站点 URL、canonical 和部署配置。
-3. 补齐 Twitter Card、文章 JSON-LD 和公开 `robots.txt`。
-4. 在生产环境完成桌面/移动、浅色/深色验收。
-5. 决定是否引入评论和隐私友好的分析工具。
-6. 仅在默认 Decap CMS 确实无法满足写作需求时，再评估高级 CMS 功能。
+1. 推送并审核当前 `feat` 分支中的标题 URL、阅读控件、文章内链、CI/覆盖率门禁、README/许可证、正式域名、SEO、访问统计、相关文章和阅读历史更新。
+2. 在 Netlify 生产环境配置 `PUBLIC_UMAMI_WEBSITE_ID`，并完成正式域名、统计、搜索、RSS、站点地图、robots、桌面/移动和浅色/深色验收。
+3. 决定是否引入评论功能。
+4. 仅在默认 Decap CMS 确实无法满足写作需求时，再评估高级 CMS 功能。
 
 ## 16. 开发与验证约定
 
@@ -481,6 +491,7 @@ public/images/posts/
 - Astro 本地运行端口固定为 `4321`，标准地址为 `http://127.0.0.1:4321/`。后续会话不要为了测试或预览另起 4323 等其他端口；需要重启或切换运行态时，先停止旧的 4321 服务再启动。
 - 开发态用于快速开发：`npm run dev -- --host 127.0.0.1 --port 4321`。生产预览态用于验证构建产物和搜索：`npm run build` 后运行 `npm run preview -- --host 127.0.0.1 --port 4321`。
 - Pagefind 索引位于 `dist/pagefind/`，只随生产构建生成并由生产预览/部署产物提供；不要在开发态判断搜索是否可用。
+- `.env` 和 `.env.*` 保存本地环境值并保持 Git 忽略，只有 `.env.example` 可以提交；不要在文档、日志或提交中记录实际环境值。
 - 编辑 Markdown、JSON、YAML、HTML、TS/TSX 时优先使用 `apply_patch`，保持 BOM-free UTF-8。
 - 不覆盖用户未提交的修改，不进行无关重构。
 - 页面实现优先复用 Astro 布局和组件，不复制多份导航、文章行、侧栏或状态样式。
@@ -496,8 +507,7 @@ public/images/posts/
 
 以下事项尚未由代码或正式配置锁定，开始相关工作前应向项目所有者确认，或在最小验证后记录决策：
 
-- 正式独立域名。
-- 是否需要评论、浏览量或隐私友好的分析工具。
+- 是否需要评论功能。
 - 是否有必要扩展 Decap CMS 默认后台；定时发布、离线同步和自定义媒体处理暂不纳入当前范围。
 
 已确认的第一版约束：
@@ -505,6 +515,9 @@ public/images/posts/
 - 无数据库。
 - 单作者。
 - 作者身份已确认为 `gis2all`，头像为 `public/images/avatar-gis2all.png`，GitHub 主页为 `https://github.com/gis2all`，仓库为 `https://github.com/gis2all/tech-blog`。
+- 正式独立域名已确认为 `https://blog.gis2all.top`。
+- 访问统计使用 Umami Cloud，通过 Netlify 生产环境变量 `PUBLIC_UMAMI_WEBSITE_ID` 启用；本地 `.env` 只用于生产预览验证，不作为部署配置来源。
+- 阅读历史只保存在访问者浏览器本地，不引入账号或数据库。
 - 第一版部署平台使用 Netlify。
 - 第一版 CMS 使用 Decap CMS 的 `github` backend。
 - Decap CMS 直接提交 `main`。
@@ -533,6 +546,6 @@ public/images/posts/
 - 迁移结果保留在 `src/content/posts/` 与 `public/images/posts/`。
 - 2026-07-30 已移除一次性迁移脚本、npm 命令及专用依赖，不再把迁移工具作为项目运行时或维护代码。
 - 2026-07-30 已扫描全部 Markdown：25 个指向本人 `DynastyRumble` 旧文章的 CSDN 链接已替换为本站标题 URL，8 个外部作者引用按原地址保留。
-- `tests/internal-post-links.test.ts` 会阻止本人旧 CSDN 链接重新进入内容，并验证所有本站文章链接都能匹配现有文章标题。
+- `test/internal-post-links.test.ts` 会阻止本人旧 CSDN 链接重新进入内容，并验证所有本站文章链接都能匹配现有文章标题。
 - `.migration/` 仍被 `.gitignore` 排除，不要提交本地原始缓存、登录态或临时迁移资料。
 - 早期 5 篇测试文章已删除，不要再把它们当作正式内容恢复。

@@ -1,3 +1,5 @@
+import "./reading-history";
+
 const root = document.documentElement;
 const storedTheme = localStorage.getItem("theme");
 
@@ -198,7 +200,7 @@ const readPercent = document.querySelector<HTMLElement>("[data-read-percent]");
 const article = document.querySelector<HTMLElement>(".prose");
 
 function updateReadProgress() {
-  if (!readBar || !readPercent || !article) return;
+  if (!article) return;
   const rect = article.getBoundingClientRect();
   const viewportHeight = window.innerHeight;
   const maxScroll = Math.max(0, document.documentElement.scrollHeight - viewportHeight);
@@ -209,8 +211,11 @@ function updateReadProgress() {
   const percent = end <= start
     ? window.scrollY >= end ? 100 : 0
     : Math.round(((Math.min(end, Math.max(start, window.scrollY)) - start) / (end - start)) * 100);
-  readBar.style.width = `${percent}%`;
-  readPercent.textContent = `${percent}%`;
+  if (readBar) readBar.style.width = `${percent}%`;
+  if (readPercent) readPercent.textContent = `${percent}%`;
+  document.dispatchEvent(
+    new CustomEvent("reading-progress", { detail: { percent } })
+  );
 }
 
 updateReadProgress();

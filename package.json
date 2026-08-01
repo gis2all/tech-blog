@@ -10,6 +10,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "coverage:badge": "node scripts/generate-coverage-badge.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@playwright/test": "^1.62.0",
     "@types/node": "^26.1.2",
+    "@vitest/coverage-v8": "^4.1.10",
     "pinyin-pro": "^3.28.2",
     "vitest": "^4.1.10",
     "yaml": "^2.9.0"

@@ -53,6 +53,54 @@ describe("local search fallback", () => {
     expect(findLocalSearchMatches([splitDocument], "经过")).toEqual([]);
   });
 
+  test("orders exact, prefix, substring, tag, and category matches by relevance", () => {
+    const rankingDocs: LocalSearchDocument[] = [
+      {
+        title: "Jenkins",
+        url: "/posts/exact/",
+        description: "exact title",
+        category: "Tools",
+        tags: ["DevOps"],
+      },
+      {
+        title: "Jenkins Pipeline",
+        url: "/posts/prefix/",
+        description: "prefix title",
+        category: "Tools",
+        tags: ["DevOps"],
+      },
+      {
+        title: "Advanced Jenkins Tips",
+        url: "/posts/substring/",
+        description: "substring title",
+        category: "Tools",
+        tags: ["DevOps"],
+      },
+      {
+        title: "Tag Match",
+        url: "/posts/tag/",
+        description: "tag title",
+        category: "Tools",
+        tags: ["Jenkins"],
+      },
+      {
+        title: "Category Match",
+        url: "/posts/category/",
+        description: "category title",
+        category: "Jenkins",
+        tags: ["DevOps"],
+      },
+    ];
+
+    expect(findLocalSearchMatches(rankingDocs, "Jenkins").map((item) => item.url)).toEqual([
+      "/posts/exact/",
+      "/posts/prefix/",
+      "/posts/substring/",
+      "/posts/tag/",
+      "/posts/category/",
+    ]);
+  });
+
   test("requires a Chinese phrase to appear contiguously", () => {
     expect(hasContiguousSearchMatch("已测试过的软件", "已过")).toBe(false);
     expect(hasContiguousSearchMatch("技术早已过时", "已过")).toBe(false);
@@ -61,8 +109,13 @@ describe("local search fallback", () => {
 
   test("uses Pagefind phrase search for multi-character Chinese queries", () => {
     expect(buildPagefindQuery("已过")).toBe('"已过"');
+    expect(buildPagefindQuery('  "已过"  ')).toBe('"已过"');
     expect(buildPagefindQuery("已")).toBe("已");
     expect(buildPagefindQuery("Jenkins Pipeline")).toBe("Jenkins Pipeline");
+  });
+
+  test("returns null when the query is longer than the available Chinese words", () => {
+    expect(findSearchMatchRange("已过", "已过关")).toBeNull();
   });
 
   test("returns the original text range for normalized title highlighting", () => {

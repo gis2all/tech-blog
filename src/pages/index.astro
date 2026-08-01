@@ -2,6 +2,7 @@
 import ArticleList from "../components/article/ArticleList.astro";
 import DiscoveryRail from "../components/layout/DiscoveryRail.astro";
 import FeaturedTagRail from "../components/layout/FeaturedTagRail.astro";
+import RecentReading from "../components/layout/RecentReading.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getAllPosts, getAllSeries } from "../lib/content/queries";
 
@@ -13,6 +14,7 @@ const allSeries = await getAllSeries();
   <main class="wrap home-grid">
     <DiscoveryRail posts={posts} allSeries={allSeries} mode="home" />
     <section class="panel home-feed">
+      <RecentReading variant="mobile" />
       <div class="section-title home-feed-head">
         <h1 data-home-feed-title>最新文章</h1>
         <small data-home-feed-count>共 {posts.length} 篇公开记录</small>

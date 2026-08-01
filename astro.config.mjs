@@ -4,7 +4,7 @@ import { satteri } from "@astrojs/markdown-satteri";
 import createImagePerformancePlugin from "./src/lib/markdown/satteri-image-performance.mjs";
 
 export default defineConfig({
-  site: "https://gis2all-blog.netlify.app",
+  site: "https://blog.gis2all.top",
   integrations: [sitemap()],
   markdown: {
     processor: satteri({

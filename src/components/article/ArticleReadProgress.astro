@@ -1,0 +1,27 @@
+---
+type Props = {
+  standalone?: boolean;
+};
+
+const { standalone = false } = Astro.props;
+---
+
+{standalone ? (
+  <section
+    class="panel standalone-read-progress"
+    data-standalone-read-progress
+    aria-label="阅读进度"
+  >
+    <div class="read-progress">
+      <span>阅读进度</span>
+      <b data-read-percent>0%</b>
+      <div class="read-bar"><i data-read-bar></i></div>
+    </div>
+  </section>
+) : (
+  <div class="read-progress">
+    <span>阅读进度</span>
+    <b data-read-percent>0%</b>
+    <div class="read-bar"><i data-read-bar></i></div>
+  </div>
+)}
