@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { describe, expect, test } from "vitest";
+import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -154,6 +155,126 @@ async function createTagSelectorHarness(
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   return { changes, instance, queryCalls, stateUpdates };
+}
+
+type TagManagerState = {
+  usage: Record<string, number>;
+  loading: boolean;
+  loadError: boolean;
+  confirmingTag: string | null;
+  checkingTag: string | null;
+  message: string;
+};
+
+type TagManagerInstance = {
+  props: Record<string, unknown>;
+  state: TagManagerState;
+  setState(update: Partial<TagManagerState>): void;
+  getInitialState(): TagManagerState;
+  componentDidMount(): void;
+  componentWillUnmount(): void;
+  requestDelete(tag: string): void;
+  cancelDelete(): void;
+  confirmDelete(tag: string): Promise<void>;
+  retryLoadUsage(): void;
+  render(): VNode;
+};
+
+type TagManagerDefinition = Omit<
+  TagManagerInstance,
+  "props" | "state" | "setState"
+> &
+  Record<string, unknown>;
+
+type TagManagerHarnessOptions = {
+  value?: string[];
+  queryResults?: Array<unknown | (() => unknown)>;
+};
+
+async function createTagManagerHarness(
+  options: TagManagerHarnessOptions = {},
+) {
+  const [domainSource, managerSource] = await Promise.all([
+    readFile(`${root}public/admin/tag-domain.js`, "utf8"),
+    readFile(`${root}public/admin/tag-library-manager.js`, "utf8"),
+  ]);
+  let widgetDefinition: TagManagerDefinition | null = null;
+  const changes: unknown[][] = [];
+  const queryCalls: unknown[][] = [];
+  let queryIndex = 0;
+  const h = (
+    type: string,
+    props: Record<string, unknown> | null,
+    ...children: unknown[]
+  ): VNode => ({ type, props: props || {}, children });
+  const context: Record<string, unknown> = {
+    createClass: (definition: TagManagerDefinition) => {
+      widgetDefinition = definition;
+      return definition;
+    },
+    h,
+    CMS: {
+      registerWidget: (_name: string, definition: TagManagerDefinition) => {
+        widgetDefinition = definition;
+      },
+    },
+  };
+  context.window = context;
+
+  runInNewContext(domainSource, context);
+  runInNewContext(managerSource, context);
+
+  if (!widgetDefinition) throw new Error("Tag manager was not registered");
+  const definition: TagManagerDefinition = widgetDefinition;
+  const queryResults = options.queryResults || [
+    { payload: { hits: [] } },
+  ];
+  const props = {
+    field: {
+      get: (key: string) => {
+        if (key === "posts_collection") return "posts";
+        if (key === "search_fields") return ["tags.*"];
+        return undefined;
+      },
+    },
+    forID: "tag-library",
+    onChange: (value: unknown[]) => changes.push(Array.from(value)),
+    query: (...args: unknown[]) => {
+      queryCalls.push(args);
+      const result = queryResults[Math.min(queryIndex, queryResults.length - 1)];
+      queryIndex += 1;
+      return Promise.resolve().then(() =>
+        typeof result === "function" ? result() : result,
+      );
+    },
+    value: options.value || [],
+  };
+  const instance: TagManagerInstance = Object.assign({}, definition, {
+    props,
+    state: {
+      usage: {},
+      loading: true,
+      loadError: false,
+      confirmingTag: null,
+      checkingTag: null,
+      message: "",
+    },
+    setState: (update: Partial<TagManagerState>) => {
+      instance.state = { ...instance.state, ...update };
+    },
+  });
+
+  Object.keys(definition).forEach((key) => {
+    const member = definition[key];
+    if (typeof member === "function") {
+      Reflect.set(instance, key, member.bind(instance));
+    }
+  });
+  instance.state = instance.getInitialState();
+  instance.componentDidMount();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  return { changes, instance, queryCalls };
 }
 
 function keyEvent(
@@ -635,5 +756,140 @@ describe("Decap tag selector", () => {
     );
     expect(renderedText(rendered)).toContain("创建“新标签”");
     expect(renderedText(rendered)).toContain("保存文章后加入标签库");
+  });
+});
+
+describe("Decap tag library manager", () => {
+  test("registers the manager widget and loads it after the tag domain", async () => {
+    const [configSource, html] = await Promise.all([
+      readFile(`${root}public/admin/config.yml`, "utf8"),
+      readFile(`${root}public/admin/index.html`, "utf8"),
+    ]);
+    const config = parse(configSource) as {
+      collections?: Array<{
+        name?: string;
+        files?: Array<{ fields?: Array<Record<string, unknown>> }>;
+      }>;
+    };
+    const tags = config.collections?.find((collection) => collection.name === "tags");
+    const field = tags?.files?.[0]?.fields?.find((item) => item.name === "tags");
+    const scriptSources = Array.from(
+      html.matchAll(/<script\s+src="([^"]+)"[^>]*><\/script>/g),
+      (match) => match[1],
+    );
+
+    expect(field).toMatchObject({
+      widget: "tag_library_manager",
+      posts_collection: "posts",
+      search_fields: ["tags.*"],
+    });
+    expect(scriptSources.indexOf("/admin/tag-library-manager.js")).toBeGreaterThan(
+      scriptSources.indexOf("/admin/tag-domain.js"),
+    );
+  });
+
+  test("shows article usage and disables deletion for used tags", async () => {
+    const { changes, instance } = await createTagManagerHarness({
+      value: ["Astro", "Unused"],
+      queryResults: [
+        {
+          payload: {
+            hits: [
+              { data: { tags: ["Astro"] } },
+              { data: { tags: ["Astro", "Other"] } },
+            ],
+          },
+        },
+      ],
+    });
+    const rendered = instance.render();
+    const deleteAstro = findNodes(
+      rendered,
+      (node) => node.props["aria-label"] === "删除标签 Astro",
+    )[0];
+
+    expect(instance.state.usage).toMatchObject({ Astro: 2, Other: 1 });
+    expect(renderedText(rendered)).toContain("2 篇文章");
+    expect(deleteAstro.props.disabled).toBe(true);
+    instance.requestDelete("Astro");
+    expect(instance.state.confirmingTag).toBeNull();
+    expect(changes).toEqual([]);
+  });
+
+  test("rechecks usage before confirming deletion of an unused tag", async () => {
+    const { changes, instance, queryCalls } = await createTagManagerHarness({
+      value: ["Astro", "Unused"],
+      queryResults: [
+        { payload: { hits: [{ data: { tags: ["Astro"] } }] } },
+        { payload: { hits: [{ data: { tags: ["Astro"] } }] } },
+      ],
+    });
+
+    instance.requestDelete("Unused");
+    expect(instance.state.confirmingTag).toBe("Unused");
+    expect(changes).toEqual([]);
+
+    await instance.confirmDelete("Unused");
+    expect(queryCalls).toHaveLength(2);
+    expect(changes).toEqual([["Astro"]]);
+  });
+
+  test("blocks deletion when a tag becomes used before confirmation", async () => {
+    const { changes, instance } = await createTagManagerHarness({
+      value: ["Unused"],
+      queryResults: [
+        { payload: { hits: [] } },
+        { payload: { hits: [{ data: { tags: ["Unused"] } }] } },
+      ],
+    });
+
+    instance.requestDelete("Unused");
+    await instance.confirmDelete("Unused");
+
+    expect(changes).toEqual([]);
+    expect(instance.state.usage).toMatchObject({ Unused: 1 });
+    expect(instance.state.confirmingTag).toBeNull();
+    expect(instance.state.message).toContain("已被文章使用");
+  });
+
+  test("keeps deletion disabled when usage loading or recheck fails", async () => {
+    const initialFailure = await createTagManagerHarness({
+      value: ["Unused"],
+      queryResults: [{ payload: { error: "Query failed" } }],
+    });
+    const alert = findNodes(
+      initialFailure.instance.render(),
+      (node) => node.props.role === "alert",
+    )[0];
+
+    expect(initialFailure.instance.state.loadError).toBe(true);
+    expect(alert).toBeDefined();
+    initialFailure.instance.requestDelete("Unused");
+    expect(initialFailure.instance.state.confirmingTag).toBeNull();
+
+    const recheckFailure = await createTagManagerHarness({
+      value: ["Unused"],
+      queryResults: [
+        { payload: { hits: [] } },
+        () => Promise.reject(new Error("Query rejected")),
+      ],
+    });
+    recheckFailure.instance.requestDelete("Unused");
+    await recheckFailure.instance.confirmDelete("Unused");
+
+    expect(recheckFailure.changes).toEqual([]);
+    expect(recheckFailure.instance.state.loadError).toBe(true);
+    expect(recheckFailure.instance.state.message).toContain("无法确认标签使用情况");
+  });
+
+  test("renders an inline second confirmation and cancel action", async () => {
+    const { instance } = await createTagManagerHarness({ value: ["Unused"] });
+    instance.requestDelete("Unused");
+    const rendered = instance.render();
+
+    expect(renderedText(rendered)).toContain("确认删除");
+    expect(renderedText(rendered)).toContain("取消");
+    instance.cancelDelete();
+    expect(instance.state.confirmingTag).toBeNull();
   });
 });
