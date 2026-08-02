@@ -130,8 +130,6 @@
         isPost: collection === "posts",
         tags: DecapTagDomain.uniqueTags(toArray(tags)),
       };
-
-      return entry;
     },
   });
 

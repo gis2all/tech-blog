@@ -552,7 +552,9 @@ describe("Decap tag selector", () => {
       (match) => match[1],
     );
     const domainIndex = scriptSources.indexOf("/admin/tag-domain.js");
-    const syncIndex = scriptSources.indexOf("/admin/tag-sync.js");
+    const syncIndex = scriptSources.findIndex((source) =>
+      source.startsWith("/admin/tag-sync.js"),
+    );
     const selectorIndex = scriptSources.indexOf("/admin/tag-selector.js");
 
     expect(domainIndex).toBeGreaterThan(0);
@@ -989,6 +991,14 @@ describe("Decap tag library manager", () => {
 });
 
 describe("Decap atomic tag synchronization", () => {
+  test("observes preSave without replacing Decap entry data", async () => {
+    const harness = await createTagSyncHarness();
+
+    expect(
+      harness.preSave({ entry: cmsEntry("posts", ["New"]) }),
+    ).toBeUndefined();
+  });
+
   for (const backendName of ["github", "proxy"] as const) {
     test(`${backendName} saves a missing tag with the article in one persist call`, async () => {
       const harness = await createTagSyncHarness({ library: ["Astro"] });
