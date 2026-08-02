@@ -19,7 +19,7 @@ async function loadTagDomain() {
     countUsage(
       entries: Array<{ data?: { tags?: unknown[] } }>,
     ): Record<string, number>;
-    canDelete(tag: string, usage: Record<string, number>): boolean;
+    canDelete(tag: string, usage?: Record<string, number> | null): boolean;
   };
 }
 
@@ -44,22 +44,19 @@ describe("Decap tag domain", () => {
 
   test("keeps case variants distinct when finding and merging tags", async () => {
     const domain = await loadTagDomain();
-    const expected = ["Git", "git"].sort((left, right) =>
-      left.localeCompare(right, "zh-Hans-CN", { sensitivity: "variant" }),
-    );
 
     expect(domain.missingTags(["Git", "git"], ["Git"])).toEqual(["git"]);
-    expect(domain.mergeTags(["Git"], ["git"])).toEqual(expected);
+    expect(domain.mergeTags(["Git"], ["git"])).toEqual(["Git", "git"]);
   });
 
-  test("merges tags using explicit zh-Hans-CN locale ordering", async () => {
+  test("merges tags using deterministic direct string ordering", async () => {
     const domain = await loadTagDomain();
-    const tags = ["中文", "Git", "地理信息", "Astro", "前端"];
-    const expected = [...tags].sort((left, right) =>
-      left.localeCompare(right, "zh-Hans-CN", { sensitivity: "variant" }),
-    );
 
-    expect(domain.mergeTags(tags.slice(0, 2), tags.slice(2))).toEqual(expected);
+    expect(domain.mergeTags([], ["中文", "标签", "文章"])).toEqual([
+      "中文",
+      "文章",
+      "标签",
+    ]);
   });
 
   test("counts each tag once per article", async () => {
@@ -95,9 +92,8 @@ describe("Decap tag domain", () => {
     expect(domain.canDelete("Astro", usage)).toBe(false);
     expect(domain.canDelete("Decap", usage)).toBe(true);
     expect(domain.canDelete("Unused", usage)).toBe(true);
-    expect(domain.canDelete("Unused", undefined as unknown as Record<string, number>)).toBe(
-      true,
-    );
+    expect(domain.canDelete("Unused")).toBe(true);
+    expect(domain.canDelete("Unused", null)).toBe(true);
   });
 
   test("allows deleting prototype-like tags with no own usage count", async () => {
