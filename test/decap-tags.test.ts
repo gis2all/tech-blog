@@ -239,13 +239,11 @@ async function createTagManagerHarness(
     },
     forID: "tag-library",
     onChange: (value: unknown[]) => changes.push(Array.from(value)),
-    query: (...args: unknown[]) => {
+    query: async (...args: unknown[]) => {
       queryCalls.push(args);
       const result = queryResults[Math.min(queryIndex, queryResults.length - 1)];
       queryIndex += 1;
-      return Promise.resolve().then(() =>
-        typeof result === "function" ? result() : result,
-      );
+      return typeof result === "function" ? result() : result;
     },
     value: options.value || [],
   };
