@@ -76,7 +76,7 @@ var TagSelector = createClass({
   },
 
   getSuggestions: function () {
-    if (this.state.loadError) return [];
+    if (this.state.loading || this.state.loadError) return [];
 
     var selectedTags = this.getSelectedTags();
     var normalizedQuery = DecapTagDomain.normalizeTag(this.state.query);
