@@ -275,6 +275,99 @@ async function createTagManagerHarness(
   return { changes, instance, queryCalls };
 }
 
+type DataFile = {
+  path: string;
+  slug: string;
+  raw: string;
+};
+
+type PersistEntry = {
+  dataFiles: DataFile[];
+  assets: unknown[];
+};
+
+type TagSyncHarnessOptions = {
+  library?: string[];
+  libraryData?: string;
+  getEntryError?: Error;
+  persistError?: Error;
+};
+
+async function createTagSyncHarness(options: TagSyncHarnessOptions = {}) {
+  const source = await readFile(`${root}public/admin/tag-sync.js`, "utf8");
+  const listeners: Record<string, (payload: unknown) => unknown> = {};
+  const persistCalls: Array<{ entry: PersistEntry; options: unknown }> = [];
+  const getEntryCalls: string[] = [];
+  const registrations: Record<
+    string,
+    { init: () => Record<string, unknown>; __tagSyncWrapped?: boolean }
+  > = {};
+
+  ["github", "proxy"].forEach((name) => {
+    registrations[name] = {
+      init: () => ({
+        getEntry: async (path: string) => {
+          getEntryCalls.push(path);
+          if (options.getEntryError) throw options.getEntryError;
+          return {
+            data:
+              options.libraryData ??
+              `${JSON.stringify({ tags: options.library || [] }, null, 2)}\n`,
+          };
+        },
+        persistEntry: async (entry: PersistEntry, persistOptions: unknown) => {
+          persistCalls.push({ entry, options: persistOptions });
+          if (options.persistError) throw options.persistError;
+        },
+      }),
+    };
+  });
+
+  const context: Record<string, unknown> = {
+    CMS: {
+      getBackend: (name: string) => registrations[name],
+      registerEventListener: ({
+        name,
+        handler,
+      }: {
+        name: string;
+        handler: (payload: unknown) => unknown;
+      }) => {
+        listeners[name] = handler;
+      },
+    },
+  };
+  context.window = context;
+
+  runInNewContext(await readFile(`${root}public/admin/tag-domain.js`, "utf8"), context);
+  runInNewContext(source, context);
+
+  const preSave = listeners.preSave;
+  if (!preSave) throw new Error("Decap preSave listener was not registered");
+
+  return {
+    getEntryCalls,
+    persistCalls,
+    preSave,
+    initialize: (name: "github" | "proxy") => registrations[name].init(),
+  };
+}
+
+function cmsEntry(collection: string, tags: unknown[]) {
+  return {
+    get: (key: string) => (key === "collection" ? collection : undefined),
+    getIn: (path: string[]) =>
+      path.join(".") === "data.tags" ? tags : undefined,
+  };
+}
+
+function articlePersistEntry(path = "src/content/posts/new.md"): PersistEntry {
+  return {
+    dataFiles: [{ path, slug: "new", raw: "article" }],
+    assets: [],
+  };
+}
+
 function keyEvent(
   key: string,
   composition: Pick<KeyboardEventStub, "isComposing" | "nativeEvent"> = {},
@@ -889,5 +982,155 @@ describe("Decap tag library manager", () => {
     expect(renderedText(rendered)).toContain("取消");
     instance.cancelDelete();
     expect(instance.state.confirmingTag).toBeNull();
+  });
+});
+
+describe("Decap atomic tag synchronization", () => {
+  for (const backendName of ["github", "proxy"] as const) {
+    test(`${backendName} saves a missing tag with the article in one persist call`, async () => {
+      const harness = await createTagSyncHarness({ library: ["Astro"] });
+      harness.preSave({ entry: cmsEntry("posts", ["Astro", "Decap"]) });
+      const implementation = harness.initialize(backendName) as {
+        persistEntry(entry: PersistEntry, options: unknown): Promise<void>;
+      };
+
+      await implementation.persistEntry(articlePersistEntry(), {
+        commitMessage: "Create new",
+      });
+
+      expect(harness.persistCalls).toHaveLength(1);
+      expect(harness.persistCalls[0].entry.dataFiles).toHaveLength(2);
+      expect(harness.persistCalls[0].entry.dataFiles[1]).toMatchObject({
+        path: "src/data/tag-library.json",
+        slug: "library",
+      });
+      expect(JSON.parse(harness.persistCalls[0].entry.dataFiles[1].raw).tags).toEqual([
+        "Astro",
+        "Decap",
+      ]);
+    });
+  }
+
+  test("keeps a normal one-file save when every article tag already exists", async () => {
+    const harness = await createTagSyncHarness({ library: ["Astro"] });
+    harness.preSave({ entry: cmsEntry("posts", ["Astro"]) });
+    const implementation = harness.initialize("github") as {
+      persistEntry(entry: PersistEntry, options: unknown): Promise<void>;
+    };
+
+    await implementation.persistEntry(articlePersistEntry(), {});
+
+    expect(harness.persistCalls).toHaveLength(1);
+    expect(harness.persistCalls[0].entry.dataFiles).toHaveLength(1);
+  });
+
+  test("passes non-post entries through without reading the tag library", async () => {
+    const harness = await createTagSyncHarness();
+    harness.preSave({ entry: cmsEntry("series", []) });
+    const implementation = harness.initialize("proxy") as {
+      persistEntry(entry: PersistEntry, options: unknown): Promise<void>;
+    };
+
+    await implementation.persistEntry(
+      articlePersistEntry("src/content/series/example.json"),
+      {},
+    );
+
+    expect(harness.getEntryCalls).toEqual([]);
+    expect(harness.persistCalls).toHaveLength(1);
+  });
+
+  test("rejects unreadable or invalid tag libraries without persisting", async () => {
+    for (const options of [
+      { getEntryError: new Error("Read failed") },
+      { libraryData: "not-json" },
+      { libraryData: JSON.stringify({ tags: "invalid" }) },
+    ]) {
+      const harness = await createTagSyncHarness(options);
+      harness.preSave({ entry: cmsEntry("posts", ["New"]) });
+      const implementation = harness.initialize("github") as {
+        persistEntry(entry: PersistEntry, persistOptions: unknown): Promise<void>;
+      };
+
+      await expect(
+        implementation.persistEntry(articlePersistEntry(), {}),
+      ).rejects.toThrow("标签库读取失败");
+      expect(harness.persistCalls).toEqual([]);
+    }
+  });
+
+  test("propagates persist failure without attempting a second save", async () => {
+    const harness = await createTagSyncHarness({
+      library: [],
+      persistError: new Error("Persist failed"),
+    });
+    harness.preSave({ entry: cmsEntry("posts", ["New"]) });
+    const implementation = harness.initialize("proxy") as {
+      persistEntry(entry: PersistEntry, options: unknown): Promise<void>;
+    };
+
+    await expect(
+      implementation.persistEntry(articlePersistEntry(), {}),
+    ).rejects.toThrow("Persist failed");
+    expect(harness.persistCalls).toHaveLength(1);
+  });
+
+  test("translates GitHub conflicts into a refresh-and-retry message", async () => {
+    const conflict = Object.assign(new Error("Conflict"), { status: 409 });
+    const harness = await createTagSyncHarness({
+      library: [],
+      persistError: conflict,
+    });
+    harness.preSave({ entry: cmsEntry("posts", ["New"]) });
+    const implementation = harness.initialize("github") as {
+      persistEntry(entry: PersistEntry, options: unknown): Promise<void>;
+    };
+
+    await expect(
+      implementation.persistEntry(articlePersistEntry(), {}),
+    ).rejects.toThrow("请刷新后台后重试");
+    expect(harness.persistCalls).toHaveLength(1);
+  });
+
+  test("removing an article association never removes the global tag", async () => {
+    const harness = await createTagSyncHarness({ library: ["Astro"] });
+    harness.preSave({ entry: cmsEntry("posts", []) });
+    const implementation = harness.initialize("github") as {
+      persistEntry(entry: PersistEntry, options: unknown): Promise<void>;
+    };
+
+    await implementation.persistEntry(articlePersistEntry(), {});
+
+    expect(harness.getEntryCalls).toEqual([]);
+    expect(harness.persistCalls[0].entry.dataFiles).toHaveLength(1);
+  });
+
+  test("consumes each structured preSave context exactly once", async () => {
+    const harness = await createTagSyncHarness({ library: [] });
+    harness.preSave({ entry: cmsEntry("posts", ["New"]) });
+    const implementation = harness.initialize("github") as {
+      persistEntry(entry: PersistEntry, options: unknown): Promise<void>;
+    };
+
+    await implementation.persistEntry(articlePersistEntry(), {});
+    await expect(
+      implementation.persistEntry(articlePersistEntry("src/content/posts/other.md"), {}),
+    ).rejects.toThrow("标签同步上下文缺失");
+    expect(harness.persistCalls).toHaveLength(1);
+  });
+
+  test("manually initializes CMS after the backend wrapper and widgets", async () => {
+    const html = await readFile(`${root}public/admin/index.html`, "utf8");
+    const manualIndex = html.indexOf("window.CMS_MANUAL_INIT = true");
+    const decapIndex = html.indexOf("decap-cms@3.15.1");
+    const syncIndex = html.indexOf('/admin/tag-sync.js');
+    const selectorIndex = html.indexOf('/admin/tag-selector.js');
+    const initIndex = html.lastIndexOf("CMS.init()");
+
+    expect(manualIndex).toBeGreaterThan(-1);
+    expect(manualIndex).toBeLessThan(decapIndex);
+    expect(syncIndex).toBeGreaterThan(decapIndex);
+    expect(syncIndex).toBeLessThan(selectorIndex);
+    expect(initIndex).toBeGreaterThan(selectorIndex);
   });
 });
