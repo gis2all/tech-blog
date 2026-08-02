@@ -42,17 +42,24 @@ describe("Decap tag domain", () => {
     ]);
   });
 
-  test("finds missing tags and merges them in locale order", async () => {
+  test("keeps case variants distinct when finding and merging tags", async () => {
     const domain = await loadTagDomain();
+    const expected = ["Git", "git"].sort((left, right) =>
+      left.localeCompare(right, "zh-Hans-CN", { sensitivity: "variant" }),
+    );
 
-    expect(domain.missingTags(["Astro", " Decap ", "Astro"], ["Astro"])).toEqual([
-      "Decap",
-    ]);
-    expect(domain.mergeTags(["Git", "Astro"], ["Decap", "Git"])).toEqual([
-      "Astro",
-      "Decap",
-      "Git",
-    ]);
+    expect(domain.missingTags(["Git", "git"], ["Git"])).toEqual(["git"]);
+    expect(domain.mergeTags(["Git"], ["git"])).toEqual(expected);
+  });
+
+  test("merges tags using explicit zh-Hans-CN locale ordering", async () => {
+    const domain = await loadTagDomain();
+    const tags = ["中文", "Git", "地理信息", "Astro", "前端"];
+    const expected = [...tags].sort((left, right) =>
+      left.localeCompare(right, "zh-Hans-CN", { sensitivity: "variant" }),
+    );
+
+    expect(domain.mergeTags(tags.slice(0, 2), tags.slice(2))).toEqual(expected);
   });
 
   test("counts each tag once per article", async () => {
@@ -67,6 +74,20 @@ describe("Decap tag domain", () => {
     ).toEqual({ Astro: 2, Decap: 1 });
   });
 
+  test("counts prototype-like tag names once per article", async () => {
+    const domain = await loadTagDomain();
+    const prototypeTags = ["__proto__", "constructor", "toString"];
+    const usage = domain.countUsage([
+      { data: { tags: prototypeTags.flatMap((tag) => [tag, tag]) } },
+      { data: { tags: prototypeTags } },
+    ]);
+
+    prototypeTags.forEach((tag) => {
+      expect(Object.prototype.hasOwnProperty.call(usage, tag)).toBe(true);
+      expect(usage[tag]).toBe(2);
+    });
+  });
+
   test("allows deletion only for unused or missing usage counts", async () => {
     const domain = await loadTagDomain();
     const usage = { Astro: 2, Decap: 0 };
@@ -77,5 +98,14 @@ describe("Decap tag domain", () => {
     expect(domain.canDelete("Unused", undefined as unknown as Record<string, number>)).toBe(
       true,
     );
+  });
+
+  test("allows deleting prototype-like tags with no own usage count", async () => {
+    const domain = await loadTagDomain();
+    const usage = {};
+
+    expect(domain.canDelete("__proto__", usage)).toBe(true);
+    expect(domain.canDelete("constructor", usage)).toBe(true);
+    expect(domain.canDelete("toString", usage)).toBe(true);
   });
 });
