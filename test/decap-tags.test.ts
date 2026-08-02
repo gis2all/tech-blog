@@ -545,16 +545,19 @@ describe("Decap tag domain", () => {
 });
 
 describe("Decap tag selector", () => {
-  test("loads the tag domain immediately before the selector", async () => {
+  test("loads the tag domain and synchronization before the selector", async () => {
     const html = await readFile(`${root}public/admin/index.html`, "utf8");
     const scriptSources = Array.from(
       html.matchAll(/<script\s+src="([^"]+)"[^>]*><\/script>/g),
       (match) => match[1],
     );
+    const domainIndex = scriptSources.indexOf("/admin/tag-domain.js");
+    const syncIndex = scriptSources.indexOf("/admin/tag-sync.js");
     const selectorIndex = scriptSources.indexOf("/admin/tag-selector.js");
 
-    expect(selectorIndex).toBeGreaterThan(0);
-    expect(scriptSources[selectorIndex - 1]).toBe("/admin/tag-domain.js");
+    expect(domainIndex).toBeGreaterThan(0);
+    expect(syncIndex).toBe(domainIndex + 1);
+    expect(selectorIndex).toBe(syncIndex + 1);
   });
 
   test("offers a normalized inline create suggestion", async () => {
