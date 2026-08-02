@@ -62,7 +62,7 @@ type WidgetDefinition = Omit<
 type TagSelectorHarnessOptions = {
   value?: unknown[];
   library?: string[];
-  queryResult?: unknown;
+  queryResult?: unknown | (() => unknown);
 };
 
 async function createTagSelectorHarness(
@@ -101,13 +101,15 @@ async function createTagSelectorHarness(
   if (!widgetDefinition) throw new Error("Tag selector was not registered");
   const definition: WidgetDefinition = widgetDefinition;
 
-  const queryResult =
-    options.queryResult ??
-    Promise.resolve({
-      payload: {
-        hits: [{ data: { tags: options.library || [] } }],
-      },
-    });
+  const getQueryResult =
+    typeof options.queryResult === "function"
+      ? options.queryResult
+      : () =>
+          options.queryResult ?? {
+            payload: {
+              hits: [{ data: { tags: options.library || [] } }],
+            },
+          };
   const props = {
     classNameWidget: "cms-widget-control",
     field: {
@@ -121,7 +123,7 @@ async function createTagSelectorHarness(
     onChange: (value: unknown[]) => changes.push(Array.from(value)),
     query: (...args: unknown[]) => {
       queryCalls.push(args);
-      return Promise.resolve(queryResult);
+      return Promise.resolve().then(getQueryResult);
     },
     value: options.value || [],
   };
@@ -555,7 +557,7 @@ describe("Decap tag selector", () => {
   test("renders retryable load errors for resolved and rejected queries", async () => {
     const queryResults = [
       { payload: { error: "Query failed" } },
-      Promise.reject(new Error("Query rejected")),
+      () => Promise.reject(new Error("Query rejected")),
     ];
 
     for (const queryResult of queryResults) {
