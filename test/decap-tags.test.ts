@@ -23,6 +23,17 @@ type WidgetState = {
   loading: boolean;
   loadError: boolean;
   activeIndex: number;
+  isOpen: boolean;
+};
+
+type KeyboardEventStub = {
+  key: string;
+  isComposing?: boolean;
+  nativeEvent?: { isComposing?: boolean };
+  preventDefaultCalls: number;
+  stopPropagationCalls: number;
+  preventDefault(): void;
+  stopPropagation(): void;
 };
 
 type WidgetInstance = {
@@ -31,11 +42,14 @@ type WidgetInstance = {
   setState(update: Partial<WidgetState>): void;
   getInitialState(): WidgetState;
   componentDidMount(): void;
+  componentWillUnmount(): void;
   getSuggestions(): Suggestion[];
   handleInput(event: { target: { value: string } }): void;
-  handleKeyDown(event: { key: string; preventDefault(): void }): void;
+  handleFocus(): void;
+  handleKeyDown(event: KeyboardEventStub): void;
   activateSuggestion(suggestion: Suggestion): void;
   removeTag(tag: string): void;
+  retryLoadTagLibrary(): void;
   render(): VNode;
 };
 
@@ -61,6 +75,7 @@ async function createTagSelectorHarness(
   let widgetDefinition: WidgetDefinition | null = null;
   const changes: unknown[][] = [];
   const queryCalls: unknown[][] = [];
+  const stateUpdates: Partial<WidgetState>[] = [];
   const h = (
     type: string,
     props: Record<string, unknown> | null,
@@ -118,8 +133,10 @@ async function createTagSelectorHarness(
       loading: true,
       loadError: false,
       activeIndex: 0,
+      isOpen: false,
     },
     setState: (update: Partial<WidgetState>) => {
+      stateUpdates.push(update);
       instance.state = { ...instance.state, ...update };
     },
   });
@@ -134,11 +151,58 @@ async function createTagSelectorHarness(
   instance.componentDidMount();
   await new Promise((resolve) => setTimeout(resolve, 0));
 
-  return { changes, instance, queryCalls };
+  return { changes, instance, queryCalls, stateUpdates };
 }
 
-function keyEvent(key: string) {
-  return { key, preventDefault: () => undefined };
+function keyEvent(
+  key: string,
+  composition: Pick<KeyboardEventStub, "isComposing" | "nativeEvent"> = {},
+): KeyboardEventStub {
+  const event: KeyboardEventStub = {
+    key,
+    ...composition,
+    preventDefaultCalls: 0,
+    stopPropagationCalls: 0,
+    preventDefault: () => {
+      event.preventDefaultCalls += 1;
+    },
+    stopPropagation: () => {
+      event.stopPropagationCalls += 1;
+    },
+  };
+
+  return event;
+}
+
+function deferred<T>() {
+  let resolvePromise: ((value: T) => void) | undefined;
+  let rejectPromise: ((reason?: unknown) => void) | undefined;
+  const promise = new Promise<T>((resolve, reject) => {
+    resolvePromise = resolve;
+    rejectPromise = reject;
+  });
+
+  return {
+    promise,
+    resolve: (value: T) => {
+      if (!resolvePromise) throw new Error("Deferred resolve is unavailable");
+      resolvePromise(value);
+    },
+    reject: (reason?: unknown) => {
+      if (!rejectPromise) throw new Error("Deferred reject is unavailable");
+      rejectPromise(reason);
+    },
+  };
+}
+
+function callNodeHandler(node: VNode, prop: string, ...args: unknown[]) {
+  const handler = node.props[prop];
+
+  if (typeof handler !== "function") {
+    throw new Error(`Node prop ${prop} is not callable`);
+  }
+
+  return handler(...args);
 }
 
 function findNodes(
@@ -267,6 +331,18 @@ describe("Decap tag domain", () => {
 });
 
 describe("Decap tag selector", () => {
+  test("loads the tag domain immediately before the selector", async () => {
+    const html = await readFile(`${root}public/admin/index.html`, "utf8");
+    const scriptSources = Array.from(
+      html.matchAll(/<script\s+src="([^"]+)"[^>]*><\/script>/g),
+      (match) => match[1],
+    );
+    const selectorIndex = scriptSources.indexOf("/admin/tag-selector.js");
+
+    expect(selectorIndex).toBeGreaterThan(0);
+    expect(scriptSources[selectorIndex - 1]).toBe("/admin/tag-domain.js");
+  });
+
   test("offers a normalized inline create suggestion", async () => {
     const { instance } = await createTagSelectorHarness({
       library: ["Astro", "Decap"],
@@ -313,6 +389,7 @@ describe("Decap tag selector", () => {
     const existing = await createTagSelectorHarness({
       library: ["Astro", "Decap"],
     });
+    existing.instance.setState({ isOpen: true });
 
     existing.instance.handleKeyDown(keyEvent("ArrowDown"));
     existing.instance.handleKeyDown(keyEvent("ArrowDown"));
@@ -381,6 +458,7 @@ describe("Decap tag selector", () => {
       loadError: false,
       query: "New",
       activeIndex: 0,
+      isOpen: true,
     });
 
     const combobox = findNodes(
@@ -394,6 +472,147 @@ describe("Decap tag selector", () => {
 
     instance.handleKeyDown(keyEvent("Enter"));
     expect.soft(changes).toEqual([]);
+  });
+
+  test("ignores composition keyboard events without changing selection", async () => {
+    const { changes, instance } = await createTagSelectorHarness({
+      library: ["Astro", "Decap"],
+    });
+    instance.setState({ isOpen: true });
+    const events = [
+      keyEvent("Enter", { isComposing: true }),
+      keyEvent("ArrowDown", { isComposing: true }),
+      keyEvent("ArrowUp", { nativeEvent: { isComposing: true } }),
+      keyEvent("Enter", { nativeEvent: { isComposing: true } }),
+    ];
+
+    events.forEach((event) => instance.handleKeyDown(event));
+
+    events.forEach((event) => {
+      expect.soft(event.preventDefaultCalls).toBe(0);
+      expect.soft(event.stopPropagationCalls).toBe(0);
+    });
+    expect.soft(instance.state.activeIndex).toBe(0);
+    expect.soft(changes).toEqual([]);
+  });
+
+  test("uses the same clamped suggestion for aria and Enter", async () => {
+    const { changes, instance } = await createTagSelectorHarness({
+      library: ["Astro", "Decap"],
+    });
+    instance.setState({ activeIndex: 9, isOpen: true });
+
+    const combobox = findNodes(
+      instance.render(),
+      (node) => node.props.role === "combobox",
+    )[0];
+    instance.handleKeyDown(keyEvent("Enter"));
+
+    expect(combobox.props["aria-activedescendant"]).toBe(
+      "tag-field-suggestions-1",
+    );
+    expect(changes).toEqual([["Decap"]]);
+  });
+
+  test("opens and closes the popup through focus, input, selection, and Escape", async () => {
+    const { changes, instance } = await createTagSelectorHarness();
+    const handleFocus = Reflect.get(instance, "handleFocus");
+
+    expect.soft(instance.state.isOpen).toBe(false);
+    expect.soft(typeof handleFocus).toBe("function");
+    if (typeof handleFocus === "function") handleFocus.call(instance);
+    expect.soft(instance.state.isOpen).toBe(true);
+
+    instance.handleInput({ target: { value: "New" } });
+    expect.soft(instance.state.isOpen).toBe(true);
+    instance.activateSuggestion(instance.getSuggestions()[0]);
+    expect.soft(changes).toEqual([["New"]]);
+    expect.soft(instance.state.isOpen).toBe(false);
+
+    instance.handleInput({ target: { value: "Ignored" } });
+    const escape = keyEvent("Escape");
+    instance.handleKeyDown(escape);
+    const rendered = instance.render();
+    const combobox = findNodes(
+      rendered,
+      (node) => node.props.role === "combobox",
+    )[0];
+
+    expect.soft(escape.preventDefaultCalls).toBe(1);
+    expect.soft(escape.stopPropagationCalls).toBe(1);
+    expect.soft(instance.state.query).toBe("");
+    expect.soft(instance.state.activeIndex).toBe(0);
+    expect.soft(instance.state.isOpen).toBe(false);
+    expect.soft(combobox.props["aria-expanded"]).toBe(false);
+    expect
+      .soft(combobox.props["aria-activedescendant"])
+      .toBeUndefined();
+    expect.soft(findNodes(rendered, (node) => node.props.role === "listbox")).toEqual(
+      [],
+    );
+  });
+
+  test("renders retryable load errors for resolved and rejected queries", async () => {
+    const queryResults = [
+      { payload: { error: "Query failed" } },
+      Promise.reject(new Error("Query rejected")),
+    ];
+
+    for (const queryResult of queryResults) {
+      const { instance, queryCalls } = await createTagSelectorHarness({
+        queryResult,
+      });
+      const rendered = instance.render();
+      const alert = findNodes(rendered, (node) => node.props.role === "alert")[0];
+      const retryButton = findNodes(
+        rendered,
+        (node) => node.type === "button" && renderedText(node) === "重新加载",
+      )[0];
+
+      expect.soft(alert).toBeDefined();
+      expect.soft(renderedText(alert)).toContain("标签库加载失败");
+      expect.soft(retryButton).toBeDefined();
+      if (retryButton) callNodeHandler(retryButton, "onClick");
+      expect.soft(instance.state.loading).toBe(true);
+      expect.soft(instance.state.loadError).toBe(false);
+      expect.soft(instance.state.isOpen).toBe(true);
+      expect.soft(queryCalls).toHaveLength(2);
+    }
+  });
+
+  test("does not update state when deferred queries settle after unmount", async () => {
+    const resolvedQuery = deferred<{ payload: { hits: unknown[] } }>();
+    const resolved = await createTagSelectorHarness({
+      queryResult: resolvedQuery.promise,
+    });
+    resolved.instance.componentWillUnmount();
+    resolvedQuery.resolve({ payload: { hits: [] } });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(resolved.stateUpdates).toEqual([]);
+
+    const rejectedQuery = deferred<never>();
+    const rejected = await createTagSelectorHarness({
+      queryResult: rejectedQuery.promise,
+    });
+    rejected.instance.componentWillUnmount();
+    rejectedQuery.reject(new Error("Query rejected"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(rejected.stateUpdates).toEqual([]);
+  });
+
+  test("protects long selected and suggested tag text in CSS", async () => {
+    const css = await readFile(`${root}public/admin/tag-selector.css`, "utf8");
+    const textRule = css.match(
+      /\.cms-tag-selector__tag\s*>\s*span,\s*\.cms-tag-selector__suggestion\s*\{([^}]*)\}/,
+    )?.[1];
+    const removeRule = css.match(
+      /\.cms-tag-selector__remove\s*\{([^}]*)\}/,
+    )?.[1];
+
+    expect.soft(textRule).toContain("min-width: 0");
+    expect.soft(textRule).toContain("max-width: 100%");
+    expect.soft(textRule).toContain("overflow-wrap: anywhere");
+    expect.soft(removeRule).toContain("flex-shrink: 0");
   });
 
   test("renders active create and pending status semantics", async () => {
