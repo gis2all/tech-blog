@@ -101,9 +101,9 @@ async function createTagSelectorHarness(
   if (!widgetDefinition) throw new Error("Tag selector was not registered");
   const definition: WidgetDefinition = widgetDefinition;
 
-  const getQueryResult =
+  const getQueryResult: () => unknown =
     typeof options.queryResult === "function"
-      ? options.queryResult
+      ? (options.queryResult as () => unknown)
       : () =>
           options.queryResult ?? {
             payload: {

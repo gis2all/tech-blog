@@ -16,6 +16,8 @@
 .cms-tag-selector__tag {
   display: inline-flex;
   align-items: center;
+  min-width: 0;
+  max-width: 100%;
   gap: 4px;
   padding: 4px 6px;
   border: 1px solid #c9d5dd;
@@ -25,7 +27,15 @@
   line-height: 1;
 }
 
+.cms-tag-selector__tag > span,
+.cms-tag-selector__suggestion {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 .cms-tag-selector__remove {
+  flex-shrink: 0;
   width: 18px;
   height: 18px;
   padding: 0;
@@ -71,6 +81,29 @@
   margin: 0;
   color: #52636d;
   font-size: 13px;
+}
+
+.cms-tag-selector__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #8e2525;
+  font-size: 13px;
+}
+
+.cms-tag-selector__retry {
+  flex-shrink: 0;
+  padding: 3px 6px;
+  border: 1px solid #a74646;
+  background: #fff;
+  color: #8e2525;
+  cursor: pointer;
+}
+
+.cms-tag-selector__retry:hover,
+.cms-tag-selector__retry:focus-visible {
+  background: #fff2f2;
 }
 
 .cms-tag-selector__pending {

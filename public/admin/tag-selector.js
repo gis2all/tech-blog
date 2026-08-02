@@ -6,6 +6,7 @@ var TagSelector = createClass({
       loading: true,
       loadError: false,
       activeIndex: 0,
+      isOpen: false,
     };
   },
 
@@ -76,7 +77,9 @@ var TagSelector = createClass({
   },
 
   getSuggestions: function () {
-    if (this.state.loading || this.state.loadError) return [];
+    if (!this.state.isOpen || this.state.loading || this.state.loadError) {
+      return [];
+    }
 
     var selectedTags = this.getSelectedTags();
     var normalizedQuery = DecapTagDomain.normalizeTag(this.state.query);
@@ -110,33 +113,54 @@ var TagSelector = createClass({
   },
 
   handleInput: function (event) {
-    this.setState({ query: event.target.value, activeIndex: 0 });
+    this.setState({
+      query: event.target.value,
+      activeIndex: 0,
+      isOpen: true,
+    });
+  },
+
+  handleFocus: function () {
+    this.setState({ isOpen: true });
+  },
+
+  getActiveIndex: function (suggestions) {
+    if (!suggestions.length) return -1;
+    return Math.min(Math.max(this.state.activeIndex, 0), suggestions.length - 1);
   },
 
   handleKeyDown: function (event) {
+    if (
+      event.isComposing ||
+      (event.nativeEvent && event.nativeEvent.isComposing)
+    ) {
+      return;
+    }
+
     var suggestions = this.getSuggestions();
+    var activeIndex = this.getActiveIndex(suggestions);
 
     if (event.key === "ArrowDown" && suggestions.length > 0) {
       event.preventDefault();
       this.setState({
-        activeIndex: Math.min(this.state.activeIndex + 1, suggestions.length - 1),
+        activeIndex: Math.min(activeIndex + 1, suggestions.length - 1),
       });
     }
 
     if (event.key === "ArrowUp" && suggestions.length > 0) {
       event.preventDefault();
-      this.setState({ activeIndex: Math.max(this.state.activeIndex - 1, 0) });
+      this.setState({ activeIndex: Math.max(activeIndex - 1, 0) });
     }
 
     if (event.key === "Enter" && suggestions.length > 0) {
       event.preventDefault();
-      this.activateSuggestion(
-        suggestions[this.state.activeIndex] || suggestions[0],
-      );
+      this.activateSuggestion(suggestions[activeIndex]);
     }
 
-    if (event.key === "Escape") {
-      this.setState({ query: "", activeIndex: 0 });
+    if (event.key === "Escape" && this.state.isOpen) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.setState({ query: "", activeIndex: 0, isOpen: false });
     }
   },
 
@@ -155,7 +179,17 @@ var TagSelector = createClass({
       );
     }
 
-    this.setState({ query: "", activeIndex: 0 });
+    this.setState({ query: "", activeIndex: 0, isOpen: false });
+  },
+
+  retryLoadTagLibrary: function () {
+    this.setState({
+      loading: true,
+      loadError: false,
+      activeIndex: 0,
+      isOpen: true,
+    });
+    this.loadTagLibrary();
   },
 
   removeTag: function (tag) {
@@ -177,9 +211,7 @@ var TagSelector = createClass({
       });
     var suggestions = this.getSuggestions();
     var suggestionListId = this.props.forID + "-suggestions";
-    var activeIndex = suggestions.length
-      ? Math.min(this.state.activeIndex, suggestions.length - 1)
-      : -1;
+    var activeIndex = this.getActiveIndex(suggestions);
 
     return h(
       "div",
@@ -229,11 +261,29 @@ var TagSelector = createClass({
         "aria-expanded": suggestions.length > 0,
         "aria-activedescendant":
           activeIndex >= 0 ? suggestionListId + "-" + activeIndex : undefined,
+        disabled: this.state.loading || this.state.loadError,
         onChange: this.handleInput,
+        onFocus: this.handleFocus,
         onKeyDown: this.handleKeyDown,
       }),
       this.state.loading
         ? h("p", { className: "cms-tag-selector__status" }, "正在加载标签库...")
+        : null,
+      this.state.loadError
+        ? h(
+            "div",
+            { className: "cms-tag-selector__error", role: "alert" },
+            h("span", null, "标签库加载失败，请重试。"),
+            h(
+              "button",
+              {
+                type: "button",
+                className: "cms-tag-selector__retry",
+                onClick: this.retryLoadTagLibrary,
+              },
+              "重新加载",
+            ),
+          )
         : null,
       !this.state.loading && suggestions.length > 0
         ? h(
