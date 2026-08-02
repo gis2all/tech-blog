@@ -363,6 +363,28 @@ describe("Decap tag selector", () => {
     expect(renderedText(instance.render())).not.toContain("创建“New”");
   });
 
+  test("disables creation and active option semantics while loading", async () => {
+    const { changes, instance } = await createTagSelectorHarness();
+    instance.setState({
+      loading: true,
+      loadError: false,
+      query: "New",
+      activeIndex: 0,
+    });
+
+    const combobox = findNodes(
+      instance.render(),
+      (node) => node.props.role === "combobox",
+    )[0];
+
+    expect.soft(instance.getSuggestions()).toEqual([]);
+    expect.soft(combobox.props["aria-expanded"]).toBe(false);
+    expect.soft(combobox.props["aria-activedescendant"]).toBeUndefined();
+
+    instance.handleKeyDown(keyEvent("Enter"));
+    expect.soft(changes).toEqual([]);
+  });
+
   test("renders active create and pending status semantics", async () => {
     const { instance } = await createTagSelectorHarness({
       library: ["Astro"],
