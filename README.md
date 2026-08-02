@@ -80,6 +80,32 @@ npm run preview -- --host 127.0.0.1 --port 4321
 
 `astro dev` 不会提供生产构建生成的 `dist/pagefind/`。开发态下搜索页提示索引尚未生成属于正常现象，完整搜索需要在生产预览态验证。
 
+## 本地 CMS 调试
+
+本地调试后台时，先停止占用 `4321` 的生产预览服务；后台必须运行在 Astro 开发态，而不是 `npm run preview`。
+
+终端 1 启动 Astro 开发服务：
+
+```text
+npm run dev -- --host 127.0.0.1 --port 4321
+```
+
+终端 2 启动 Decap 本地后端：
+
+```text
+npm run cms:local
+```
+
+该服务固定监听 `http://127.0.0.1:4322`；`4321` 只供 Astro 开发服务器使用。
+
+访问：
+
+```text
+http://127.0.0.1:4321/admin/
+```
+
+`/admin/` 在 `127.0.0.1` 或 `localhost` 上会自动使用本地后端，无需 GitHub OAuth。保存文章或上传图片只会写入当前本地工作树，不会向 GitHub 提交，也不会触发 Netlify 部署；用 `git diff` 检查内容后，按正常 Git 流程提交和推送。完成后台调试后，停止这两个进程，再按“开发态与生产预览”运行 `npm run build` 和 `npm run preview` 验证生产产物。
+
 ## 环境变量
 
 复制 `.env.example` 中需要的变量到本地或部署平台环境变量：
@@ -169,6 +195,12 @@ npm run build
 ```text
 public/admin/index.html
 public/admin/config.yml
+public/admin/preview.js
+public/admin/preview.css
+public/admin/tag-domain.js
+public/admin/tag-sync.js
+public/admin/tag-selector.js
+public/admin/tag-library-manager.js
 ```
 
 当前发布流程：
@@ -181,6 +213,12 @@ Decap CMS
 ```
 
 后台创建文章或上传图片后，内容写入 GitHub 仓库，并触发 Netlify 自动部署。
+
+后台保留 Decap CMS 原生编辑界面，并已完成第一阶段写作增强：简体中文 locale、文章/专题/项目列表摘要与常用筛选排序、文章分类枚举、专题 relation、字段提示和按写作顺序排列的文章表单。文章编辑页使用轻量预览显示封面、分类、日期、标题、摘要和 Markdown 正文，接近真实文章页，但不重复前台导航、评论和阅读交互。
+
+文章标签使用“标签库”多选搜索字段，标签数据集中在 `src/data/tag-library.json`。文章编辑页既可搜索已有标签，也可直接输入并创建多个新标签；保存文章时，新标签会与文章在同一次提交中写入全局标签库。删除标签只能在“标签库”集中进行，仍被文章使用的标签会锁定，未使用标签删除前需要二次确认。文章中的 `tags` 仍保存为字符串数组，前台无需调整。
+
+线上 `/admin/` 使用 GitHub OAuth 并直接提交 `main`；本地后台调试流程见“本地 CMS 调试”，两种保存路径互不混用。
 
 ## 评论
 
