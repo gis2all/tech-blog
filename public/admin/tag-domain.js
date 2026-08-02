@@ -14,9 +14,9 @@
 
   function sortTags(values) {
     return uniqueTags(values).sort(function (left, right) {
-      return left.localeCompare(right, "zh-Hans-CN", {
-        sensitivity: "variant",
-      });
+      if (left < right) return -1;
+      if (left > right) return 1;
+      return 0;
     });
   }
 
