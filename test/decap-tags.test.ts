@@ -29,6 +29,7 @@ type WidgetInstance = {
   props: Record<string, unknown>;
   state: WidgetState;
   setState(update: Partial<WidgetState>): void;
+  getInitialState(): WidgetState;
   componentDidMount(): void;
   getSuggestions(): Suggestion[];
   handleInput(event: { target: { value: string } }): void;
@@ -36,8 +37,13 @@ type WidgetInstance = {
   activateSuggestion(suggestion: Suggestion): void;
   removeTag(tag: string): void;
   render(): VNode;
-  [key: string]: unknown;
 };
+
+type WidgetDefinition = Omit<
+  WidgetInstance,
+  "props" | "state" | "setState"
+> &
+  Record<string, unknown>;
 
 type TagSelectorHarnessOptions = {
   value?: unknown[];
@@ -52,8 +58,7 @@ async function createTagSelectorHarness(
     readFile(`${root}public/admin/tag-domain.js`, "utf8"),
     readFile(`${root}public/admin/tag-selector.js`, "utf8"),
   ]);
-  let widgetDefinition: Record<string, (...args: never[]) => unknown> | null =
-    null;
+  let widgetDefinition: WidgetDefinition | null = null;
   const changes: unknown[][] = [];
   const queryCalls: unknown[][] = [];
   const h = (
@@ -62,15 +67,13 @@ async function createTagSelectorHarness(
     ...children: unknown[]
   ): VNode => ({ type, props: props || {}, children });
   const context: Record<string, unknown> = {
-    createClass: (
-      definition: Record<string, (...args: never[]) => unknown>,
-    ) => {
+    createClass: (definition: WidgetDefinition) => {
       widgetDefinition = definition;
       return definition;
     },
     h,
     CMS: {
-      registerWidget: (_name: string, definition: typeof widgetDefinition) => {
+      registerWidget: (_name: string, definition: WidgetDefinition) => {
         widgetDefinition = definition;
       },
     },
@@ -81,6 +84,7 @@ async function createTagSelectorHarness(
   runInNewContext(selectorSource, context);
 
   if (!widgetDefinition) throw new Error("Tag selector was not registered");
+  const definition: WidgetDefinition = widgetDefinition;
 
   const queryResult =
     options.queryResult ??
@@ -106,20 +110,27 @@ async function createTagSelectorHarness(
     },
     value: options.value || [],
   };
-  const instance = Object.assign({}, widgetDefinition, { props }) as WidgetInstance;
+  const instance: WidgetInstance = Object.assign({}, definition, {
+    props,
+    state: {
+      allTags: [],
+      query: "",
+      loading: true,
+      loadError: false,
+      activeIndex: 0,
+    },
+    setState: (update: Partial<WidgetState>) => {
+      instance.state = { ...instance.state, ...update };
+    },
+  });
 
-  Object.keys(widgetDefinition).forEach((key) => {
-    const member = widgetDefinition[key];
+  Object.keys(definition).forEach((key) => {
+    const member = definition[key];
     if (typeof member === "function") {
-      instance[key] = member.bind(instance);
+      Reflect.set(instance, key, member.bind(instance));
     }
   });
-  instance.setState = (update) => {
-    instance.state = { ...instance.state, ...update };
-  };
-  instance.state = (
-    instance.getInitialState as () => WidgetState
-  )();
+  instance.state = instance.getInitialState();
   instance.componentDidMount();
   await new Promise((resolve) => setTimeout(resolve, 0));
 
