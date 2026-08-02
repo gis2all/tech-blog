@@ -38,11 +38,17 @@
         usage[tag] = (usage[tag] || 0) + 1;
       });
       return usage;
-    }, {});
+    }, Object.create(null));
   }
 
   function canDelete(tag, usage) {
-    return !usage || !usage[normalizeTag(tag)];
+    var normalizedTag = normalizeTag(tag);
+
+    return (
+      !usage ||
+      !Object.prototype.hasOwnProperty.call(usage, normalizedTag) ||
+      usage[normalizedTag] === 0
+    );
   }
 
   window.DecapTagDomain = {
