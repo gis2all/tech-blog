@@ -82,7 +82,7 @@ collections:
         search_fields: [tags.*]
         multiple: true
         required: false
-        hint: 搜索并逐个选择已有标签；新标签先在“标签库”中创建。
+        hint: 搜索并选择已有标签，也可直接输入创建多个新标签；保存文章时会自动加入全局标签库。
       - label: 专题
         name: series
         widget: relation

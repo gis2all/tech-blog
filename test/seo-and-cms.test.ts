@@ -1,5 +1,6 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 import { describe, expect, test } from "vitest";
 import { site } from "../src/lib/site";
@@ -18,6 +19,30 @@ function getFieldNames(collection: unknown): string[] {
     (collection as { fields?: Array<{ name: string }> }).fields?.map(
       (field) => field.name,
     ) ?? []
+  );
+}
+
+function getField(collection: unknown, name: string) {
+  return (collection as { fields?: Array<{ name: string }> }).fields?.find(
+    (field) => field.name === name,
+  );
+}
+
+async function getPostTagValues() {
+  const postsDirectory = `${root}src/content/posts`;
+  const filenames = await readdir(postsDirectory);
+  const sources = await Promise.all(
+    filenames
+      .filter((filename) => filename.endsWith(".md"))
+      .map((filename) => readFile(`${postsDirectory}/${filename}`, "utf8")),
+  );
+
+  return new Set(
+    sources.flatMap((source) => {
+      const frontmatter = source.split("---", 3)[1] ?? "";
+      const data = parse(frontmatter) as { tags?: string[] };
+      return data.tags ?? [];
+    }),
   );
 }
 
@@ -137,5 +162,200 @@ describe("Decap CMS schema", () => {
     expect(getFieldNames(getCollection(config, "projects"))).toEqual(
       expect.arrayContaining(["image", "imageAlt", "order"]),
     );
+  });
+
+  test("supports a Chinese editorial workflow and an article preview", async () => {
+    const [configSource, adminIndex, previewScript, previewStyle] =
+      await Promise.all([
+        readFile(`${root}public/admin/config.yml`, "utf8"),
+        readFile(`${root}public/admin/index.html`, "utf8"),
+        readFile(`${root}public/admin/preview.js`, "utf8").catch(() => ""),
+        readFile(`${root}public/admin/preview.css`, "utf8").catch(() => ""),
+      ]);
+    const config = parse(configSource);
+    const posts = getCollection(config, "posts");
+    const series = getCollection(config, "series");
+    const projects = getCollection(config, "projects");
+
+    expect(config).toMatchObject({
+      locale: "zh_Hans",
+      editor: { preview: true },
+    });
+    expect(posts).toMatchObject({
+      summary: "{{title}} · {{publishedAt}} · {{category}}",
+      sortable_fields: ["publishedAt", "updatedAt", "title"],
+      view_filters: expect.arrayContaining([
+        expect.objectContaining({ field: "draft", pattern: true }),
+        expect.objectContaining({ field: "featured", pattern: true }),
+      ]),
+      view_groups: expect.arrayContaining([
+        expect.objectContaining({ field: "category" }),
+        expect.objectContaining({ field: "series" }),
+      ]),
+    });
+    expect(series).toMatchObject({
+      summary: "{{title}} · 排序 {{order}}",
+      sortable_fields: ["order", "title"],
+      view_filters: expect.arrayContaining([
+        expect.objectContaining({ field: "draft", pattern: true }),
+      ]),
+    });
+    expect(projects).toMatchObject({
+      summary: "{{title}} · {{publishedAt}}",
+      sortable_fields: ["order", "publishedAt", "title"],
+      view_filters: expect.arrayContaining([
+        expect.objectContaining({ field: "featured", pattern: true }),
+      ]),
+    });
+    expect(getField(posts, "category")).toMatchObject({
+      widget: "select",
+      options: [
+        { label: "DevOps", value: "DevOps" },
+        { label: "编程开发", value: "编程开发" },
+        { label: "测试工程", value: "测试工程" },
+        { label: "阅读与思考", value: "阅读与思考" },
+        { label: "GIS", value: "GIS" },
+        { label: "工程实践", value: "工程实践" },
+      ],
+    });
+    expect(getField(posts, "series")).toMatchObject({
+      widget: "relation",
+      collection: "series",
+      value_field: "slug",
+      search_fields: ["title", "slug"],
+      display_fields: ["title", "slug"],
+    });
+    expect(getFieldNames(posts)).toEqual([
+      "title",
+      "description",
+      "body",
+      "category",
+      "tags",
+      "series",
+      "seriesOrder",
+      "publishedAt",
+      "updatedAt",
+      "draft",
+      "featured",
+      "cover",
+      "coverAlt",
+      "repoUrl",
+      "references",
+      "changelog",
+    ]);
+    expect(getField(posts, "seriesOrder")).toHaveProperty("hint");
+    expect(getField(posts, "coverAlt")).toHaveProperty("hint");
+    expect(adminIndex).toContain(
+      'src="https://unpkg.com/decap-cms@3.15.1/dist/decap-cms.js"',
+    );
+    expect(adminIndex).toContain('src="/admin/preview.js"');
+    const previewRegistrations: {
+      styles: string[];
+      templates: Array<{ collection: string; template: unknown }>;
+    } = {
+      styles: [],
+      templates: [],
+    };
+
+    runInNewContext(previewScript, {
+      CMS: {
+        registerPreviewStyle: (style: string) => {
+          previewRegistrations.styles.push(style);
+        },
+        registerPreviewTemplate: (collection: string, template: unknown) => {
+          previewRegistrations.templates.push({ collection, template });
+        },
+      },
+      createClass: (definition: unknown) => definition,
+      h: () => null,
+    });
+
+    expect(previewRegistrations.styles).toContain("/admin/preview.css");
+    expect(previewRegistrations.templates).toHaveLength(1);
+    expect(previewRegistrations.templates[0]?.collection).toBe("posts");
+    expect(
+      typeof (previewRegistrations.templates[0]?.template as { render?: unknown })
+        .render,
+    ).toBe("function");
+    expect(previewStyle).toContain(".cms-post-preview");
+  });
+
+  test("supports local CMS development without GitHub authentication", async () => {
+    const [configSource, packageSource, readme, launcher] = await Promise.all([
+      readFile(`${root}public/admin/config.yml`, "utf8"),
+      readFile(`${root}package.json`, "utf8"),
+      readFile(`${root}README.md`, "utf8"),
+      readFile(`${root}scripts/start-decap-server.mjs`, "utf8").catch(() => ""),
+    ]);
+    const config = parse(configSource);
+    const packageJson = JSON.parse(packageSource) as {
+      devDependencies?: Record<string, string>;
+      scripts?: Record<string, string>;
+    };
+
+    expect(config).toMatchObject({
+      local_backend: {
+        url: "http://127.0.0.1:4322/api/v1",
+        allowed_hosts: ["127.0.0.1", "localhost"],
+      },
+    });
+    expect(packageJson.devDependencies?.["decap-server"]).toBe("3.10.0");
+    expect(packageJson.scripts?.["cms:local"]).toBe(
+      "node scripts/start-decap-server.mjs",
+    );
+    expect(launcher).toContain('process.env.PORT = "4322"');
+    expect(launcher).toContain('process.env.BIND_HOST = "127.0.0.1"');
+    expect(readme).toContain("npm run cms:local");
+    expect(readme).toContain("http://127.0.0.1:4321/admin/");
+    expect(readme).toContain("4322");
+    expect(readme).toContain("不会向 GitHub 提交");
+  });
+
+  test("uses a reusable tag library for searchable multi-select article tags", async () => {
+    const [configSource, adminIndex, tagSelector, tagLibrarySource, postTagValues] = await Promise.all([
+      readFile(`${root}public/admin/config.yml`, "utf8"),
+      readFile(`${root}public/admin/index.html`, "utf8"),
+      readFile(`${root}public/admin/tag-selector.js`, "utf8").catch(() => ""),
+      readFile(`${root}src/data/tag-library.json`, "utf8").catch(() => "{}"),
+      getPostTagValues(),
+    ]);
+    const config = parse(configSource);
+    const posts = getCollection(config, "posts");
+    const tags = getCollection(config, "tags");
+    const tagValues = (JSON.parse(tagLibrarySource) as { tags?: string[] }).tags ?? [];
+
+    expect(getField(posts, "tags")).toMatchObject({
+      widget: "tag_selector",
+      collection: "tags",
+      file: "library",
+      value_field: "tags.*",
+      search_fields: ["tags.*"],
+      multiple: true,
+    });
+    expect(adminIndex).toContain('src="/admin/tag-selector.js"');
+    expect(tagSelector).toContain('CMS.registerWidget("tag_selector"');
+    expect(tagSelector).toContain("loadTagLibrary");
+    expect(tagSelector).toContain("selectTag");
+    expect(tagSelector).toContain('event.key === "ArrowDown"');
+    expect(tagSelector).toContain('"aria-activedescendant"');
+    expect(tags).toMatchObject({
+      files: expect.arrayContaining([
+        expect.objectContaining({
+          name: "library",
+          file: "src/data/tag-library.json",
+        }),
+      ]),
+    });
+    expect(tagValues).toEqual(expect.arrayContaining([...postTagValues]));
+    expect(new Set(tagValues).size).toBe(tagValues.length);
+  });
+
+  test("redirects the local CMS directory URL to its static entry page", async () => {
+    const middleware = await readFile(`${root}src/middleware.ts`, "utf8").catch(
+      () => "",
+    );
+
+    expect(middleware).toContain('context.url.pathname === "/admin/"');
+    expect(middleware).toContain('context.redirect("/admin/index.html", 302)');
   });
 });
