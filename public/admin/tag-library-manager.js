@@ -7,6 +7,13 @@ var TagLibraryManager = createClass({
       confirmingTag: null,
       checkingTag: null,
       message: "",
+      query: "",
+      filter: "all",
+      sort: "name",
+      mergingSource: null,
+      mergeTarget: "",
+      mergePlan: null,
+      merging: false,
     };
   },
 
@@ -161,13 +168,142 @@ var TagLibraryManager = createClass({
       : 0;
   },
 
+  getVisibleTags: function () {
+    var stats = DecapTagDomain.tagStats(this.getTags(), this.state.usage);
+    return DecapTagDomain.filterTagStats(
+      stats,
+      this.state.query,
+      this.state.filter,
+      this.state.sort,
+    ).map(function (item) { return item.name; });
+  },
+
+  startMerge: function (tag) {
+    if (this.state.loading || this.state.loadError || this.state.merging) return;
+    this.setState({
+      mergingSource: tag,
+      mergeTarget: "",
+      mergePlan: null,
+      message: "",
+    });
+  },
+
+  cancelMerge: function () {
+    if (this.state.merging) return;
+    this.setState({
+      mergingSource: null,
+      mergeTarget: "",
+      mergePlan: null,
+      message: "",
+    });
+  },
+
+  prepareMerge: function () {
+    var self = this;
+    if (!this.state.mergingSource || !this.state.mergeTarget.trim()) {
+      this.setState({ message: "请输入目标标签。" });
+      return Promise.resolve();
+    }
+    this.setState({ merging: true, message: "" });
+    return window.DecapTagOperations
+      .plan(this.state.mergingSource, this.state.mergeTarget)
+      .then(function (plan) {
+        if (self.isMountedForTagManager) {
+          self.setState({ mergePlan: plan, merging: false });
+        }
+      })
+      .catch(function (error) {
+        if (self.isMountedForTagManager) {
+          self.setState({
+            merging: false,
+            mergePlan: null,
+            message: error.message || "无法生成标签合并计划。",
+          });
+        }
+      });
+  },
+
+  confirmMerge: function () {
+    var self = this;
+    var plan = this.state.mergePlan;
+    if (!plan || this.state.merging) return Promise.resolve();
+    var accepted = window.confirm(
+      "确认将“" + plan.source + "”合并为“" + plan.target + "”？将更新 " +
+      plan.affectedCount + " 篇文章，此操作会在一个 Git 提交中完成。",
+    );
+    if (!accepted) return Promise.resolve();
+    this.setState({ merging: true, message: "" });
+    return window.DecapTagOperations.merge(plan)
+      .then(function () {
+        if (!self.isMountedForTagManager) return;
+        self.setState({ merging: false, message: "标签合并完成，正在刷新..." });
+        window.setTimeout(function () { window.location.reload(); }, 300);
+      })
+      .catch(function (error) {
+        if (self.isMountedForTagManager) {
+          self.setState({
+            merging: false,
+            message: error.message || "标签合并失败，未写入任何修改。",
+          });
+        }
+      });
+  },
+
   render: function () {
     var self = this;
-    var tags = this.getTags();
+    var allTags = this.getTags();
+    var tags = this.getVisibleTags();
+    var unusedCount = allTags.filter(function (tag) {
+      return self.getUsageCount(tag) === 0;
+    }).length;
 
     return h(
       "div",
       { className: "cms-tag-manager" },
+      h(
+        "div",
+        { className: "cms-tag-manager__toolbar" },
+        h("input", {
+          type: "search",
+          value: this.state.query,
+          placeholder: "搜索标签",
+          "aria-label": "搜索标签",
+          onChange: function (event) { self.setState({ query: event.target.value }); },
+        }),
+        h(
+          "select",
+          {
+            value: this.state.filter,
+            "aria-label": "筛选标签",
+            onChange: function (event) { self.setState({ filter: event.target.value }); },
+          },
+          h("option", { value: "all" }, "全部"),
+          !this.state.loading && !this.state.loadError
+            ? h("option", { value: "used" }, "已使用")
+            : null,
+          !this.state.loading && !this.state.loadError
+            ? h("option", { value: "unused" }, "未使用")
+            : null,
+        ),
+        h(
+          "select",
+          {
+            value: this.state.sort,
+            "aria-label": "标签排序",
+            onChange: function (event) { self.setState({ sort: event.target.value }); },
+          },
+          h("option", { value: "name" }, "按名称"),
+          h("option", { value: "usage" }, "按使用量"),
+        ),
+        h(
+          "span",
+          { className: "cms-tag-manager__summary" },
+          "共 " + allTags.length + " 个" +
+            (!this.state.loading && !this.state.loadError
+              ? "，未使用 " + unusedCount + " 个"
+              : ""),
+        ),
+      ),
       this.state.loading
         ? h("p", { className: "cms-tag-manager__status" }, "正在统计标签使用情况...")
         : null,
@@ -193,6 +329,66 @@ var TagLibraryManager = createClass({
               this.state.message,
             )
           : null,
+      this.state.mergingSource
+        ? h(
+            "section",
+            { className: "cms-tag-manager__merge", "aria-label": "标签重命名和合并" },
+            h(
+              "p",
+              null,
+              "将“" + this.state.mergingSource + "”重命名或合并到：",
+            ),
+            h("input", {
+              type: "text",
+              value: this.state.mergeTarget,
+              placeholder: "已有或新标签名称",
+              disabled: this.state.merging,
+              onChange: function (event) {
+                self.setState({ mergeTarget: event.target.value, mergePlan: null });
+              },
+            }),
+            this.state.mergePlan
+              ? h(
+                  "p",
+                  { className: "cms-tag-manager__merge-plan", role: "status" },
+                  "将更新 " + this.state.mergePlan.affectedCount +
+                    " 篇文章，并从全局标签中移除源标签。",
+                )
+              : null,
+            h(
+              "div",
+              { className: "cms-tag-manager__merge-actions" },
+              this.state.mergePlan
+                ? h(
+                    "button",
+                    {
+                      type: "button",
+                      disabled: this.state.merging,
+                      onClick: this.confirmMerge,
+                    },
+                    this.state.merging ? "正在合并..." : "确认合并",
+                  )
+                : h(
+                    "button",
+                    {
+                      type: "button",
+                      disabled: this.state.merging,
+                      onClick: this.prepareMerge,
+                    },
+                    this.state.merging ? "正在检查..." : "检查影响",
+                  ),
+              h(
+                "button",
+                {
+                  type: "button",
+                  disabled: this.state.merging,
+                  onClick: this.cancelMerge,
+                },
+                "取消",
+              ),
+            ),
+          )
+        : null,
       h(
         "ul",
         { className: "cms-tag-manager__list", "aria-label": "全局标签" },
@@ -219,6 +415,17 @@ var TagLibraryManager = createClass({
               "span",
               { className: "cms-tag-manager__usage" },
               usageLabel,
+            ),
+            h(
+              "button",
+              {
+                type: "button",
+                className: "cms-tag-manager__rename",
+                disabled: self.state.loading || self.state.loadError || !!self.state.checkingTag,
+                "aria-label": "重命名或合并标签 " + tag,
+                onClick: function () { self.startMerge(tag); },
+              },
+              "重命名/合并",
             ),
             isConfirming
               ? h(

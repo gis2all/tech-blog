@@ -458,6 +458,24 @@ async function loadTagDomain() {
       entries: Array<{ data?: { tags?: unknown[] } }>,
     ): Record<string, number>;
     canDelete(tag: string, usage?: Record<string, number> | null): boolean;
+    tagStats(tags: string[], usage: Record<string, number>): Array<{
+      name: string;
+      count: number;
+      used: boolean;
+    }>;
+    filterTagStats(
+      items: Array<{ name: string; count: number; used: boolean }>,
+      query: string,
+      filter: string,
+      sort: string,
+    ): Array<{ name: string; count: number; used: boolean }>;
+    replaceTag(values: string[], source: string, target: string): string[];
+    mergePlan(
+      library: string[],
+      source: string,
+      target: string,
+      usage: Record<string, number>,
+    ): { source: string; target: string; affectedCount: number; library: string[] };
   };
 }
 
@@ -541,6 +559,41 @@ describe("Decap tag domain", () => {
     expect(domain.canDelete("__proto__", usage)).toBe(true);
     expect(domain.canDelete("constructor", usage)).toBe(true);
     expect(domain.canDelete("toString", usage)).toBe(true);
+  });
+
+  test("searches, filters, and sorts tag statistics", async () => {
+    const domain = await loadTagDomain();
+    const items = domain.tagStats(
+      ["Astro", "Decap", "Unused"],
+      { Astro: 2, Decap: 5 },
+    );
+
+    expect(domain.filterTagStats(items, "a", "used", "usage")).toEqual([
+      { name: "Decap", count: 5, used: true },
+      { name: "Astro", count: 2, used: true },
+    ]);
+    expect(domain.filterTagStats(items, "", "unused", "name")).toEqual([
+      { name: "Unused", count: 0, used: false },
+    ]);
+  });
+
+  test("plans rename as a merge and de-duplicates article tags", async () => {
+    const domain = await loadTagDomain();
+
+    expect(domain.replaceTag(["Old", "Target", "Old"], "Old", "Target")).toEqual([
+      "Target",
+    ]);
+    expect(domain.mergePlan(
+      ["Old", "Target", "Other"],
+      "Old",
+      "Target",
+      { Old: 3 },
+    )).toEqual({
+      source: "Old",
+      target: "Target",
+      affectedCount: 3,
+      library: ["Other", "Target"],
+    });
   });
 });
 

@@ -133,7 +133,7 @@ describe("production metadata", () => {
 
     expect(articleLayout).toContain("import GiscusComments");
     expect(articleLayout).toContain("<GiscusComments />");
-    expect(commentsComponent).toContain("import.meta.env.PROD");
+    expect(commentsComponent).not.toContain("import.meta.env.PROD");
     expect(commentsComponent).toContain("https://giscus.app/client.js");
     expect(commentsComponent).toContain('data-repo="gis2all/tech-blog"');
     expect(commentsComponent).toContain('data-repo-id="R_kgDOTk6_FA"');
@@ -382,11 +382,84 @@ describe("Decap CMS schema", () => {
     runInNewContext(navigationSource, context);
 
     expect(postsCollections).toHaveLength(1);
-    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=7"');
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=9"');
     expect(
       (context.DecapAdminNavigation as { isDraftRoute: () => boolean })
         .isDraftRoute(),
     ).toBe(true);
+  });
+
+  test("keeps draft and article shortcuts mutually exclusive", async () => {
+    const navigationSource = await readFile(
+      `${root}public/admin/admin-navigation.js`,
+      "utf8",
+    );
+    function makeLink(href: string, className: string) {
+      const attributes = new Map<string, string>();
+      return {
+        href,
+        className,
+        lastChild: { textContent: href },
+        parentElement: { before: () => undefined },
+        dataset: {} as Record<string, string>,
+        getAttribute: (name: string) => attributes.get(name) ?? null,
+        setAttribute: (name: string, value: string) => attributes.set(name, value),
+        hasAttribute: (name: string) => attributes.has(name),
+        removeAttribute: (name: string) => attributes.delete(name),
+        cloneNode: () => makeLink(href, className),
+      };
+    }
+    const postsLink = makeLink("#/collections/posts", "native-active");
+    const tagsLink = makeLink("#/collections/tags", "native-inactive");
+    let draftLink: ReturnType<typeof makeLink> | undefined;
+    let hashchangeHandler: (() => void) | undefined;
+    postsLink.parentElement = {
+      before: () => undefined,
+    };
+    const context: Record<string, unknown> = {
+      location: { hash: "#/collections/posts" },
+      document: {
+        body: {},
+        readyState: "complete",
+        addEventListener: () => undefined,
+        getElementById: () => null,
+        createElement: () => ({
+          appendChild: (child: ReturnType<typeof makeLink>) => {
+            draftLink = child;
+          },
+        }),
+        querySelector: (selector: string) =>
+          selector === 'a[href="#/collections/posts"]'
+            ? postsLink
+            : selector === 'a[href="#/collections/tags"]'
+              ? tagsLink
+              : selector === '[data-testid="drafts-shortcut"]'
+                ? draftLink ?? null
+              : null,
+        querySelectorAll: () => [],
+      },
+      MutationObserver: class {
+        observe() {}
+      },
+      addEventListener: (name: string, handler: () => void) => {
+        if (name === "hashchange") hashchangeHandler = handler;
+      },
+      setTimeout: () => 0,
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+    const navigation = context.DecapAdminNavigation as { start: () => void };
+    navigation.start();
+
+    expect(postsLink.getAttribute("aria-current")).toBe("page");
+    expect(postsLink.className).toBe("native-active");
+
+    (context.location as { hash: string }).hash = "#/collections/posts?view=drafts";
+    hashchangeHandler?.();
+
+    expect(draftLink?.getAttribute("aria-current")).toBe("page");
+    expect(postsLink.getAttribute("aria-current")).toBeNull();
   });
 
   test("opens the native draft filter only once while its menu renders", async () => {

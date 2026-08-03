@@ -138,6 +138,11 @@
       setCurrent(draftLink, true);
       setClassName(postsLink, nativeInactiveClass);
       setCurrent(postsLink, false);
+    } else if (isPostsRoute()) {
+      setClassName(draftLink, nativeInactiveClass);
+      setCurrent(draftLink, false);
+      setClassName(postsLink, nativeActiveClass || postsLink.className);
+      setCurrent(postsLink, true);
     } else {
       setClassName(draftLink, nativeInactiveClass);
       setCurrent(draftLink, false);

@@ -16,6 +16,9 @@ locale: zh_Hans
 editor:
   preview: true
 
+media_library:
+  name: article_media
+
 collections:
   - name: posts
     label: 文章
@@ -23,7 +26,10 @@ collections:
     create: true
     extension: md
     format: frontmatter
-    slug: "{{slug}}"
+    slug: "{{title}}"
+    media_folder: public/images/posts/{{title}}
+    public_folder: /images/posts/{{title}}
+    preview_path: posts/{{title}}
     summary: "{{title}} · {{publishedAt}} · {{category}}"
     sortable_fields: [publishedAt, updatedAt, title]
     view_filters:
@@ -46,8 +52,8 @@ collections:
     fields:
       - label: 标题
         name: title
-        widget: string
-        hint: 标题会直接用于公开文章地址，发布后尽量不要修改。
+        widget: article_title
+        hint: 标题同时决定 Markdown 文件名、公开地址和文章媒体目录。
       - label: 摘要
         name: description
         widget: text

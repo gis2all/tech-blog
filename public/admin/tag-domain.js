@@ -51,6 +51,59 @@
     );
   }
 
+  function tagStats(tags, usage) {
+    return uniqueTags(tags).map(function (tag) {
+      var count = usage && Object.prototype.hasOwnProperty.call(usage, tag)
+        ? usage[tag]
+        : 0;
+      return { name: tag, count: count, used: count > 0 };
+    });
+  }
+
+  function filterTagStats(items, query, filter, sort) {
+    var term = normalizeTag(query).toLocaleLowerCase();
+    var result = (Array.isArray(items) ? items : []).filter(function (item) {
+      var matchesQuery = !term || item.name.toLocaleLowerCase().includes(term);
+      var matchesFilter =
+        filter === "used" ? item.used :
+        filter === "unused" ? !item.used :
+        true;
+      return matchesQuery && matchesFilter;
+    });
+
+    return result.sort(function (left, right) {
+      if (sort === "usage") {
+        return right.count - left.count || left.name.localeCompare(right.name, "zh-CN");
+      }
+      return left.name.localeCompare(right.name, "zh-CN");
+    });
+  }
+
+  function replaceTag(values, source, target) {
+    return uniqueTags(values).map(function (tag) {
+      return tag === source ? target : tag;
+    }).filter(function (tag, index, all) {
+      return all.indexOf(tag) === index;
+    });
+  }
+
+  function mergePlan(library, source, target, usage) {
+    var oldTag = normalizeTag(source);
+    var newTag = normalizeTag(target);
+    if (!oldTag || !newTag || oldTag === newTag) {
+      throw new Error("源标签和目标标签必须不同且不能为空");
+    }
+    return {
+      source: oldTag,
+      target: newTag,
+      affectedCount: usage && usage[oldTag] ? usage[oldTag] : 0,
+      library: mergeTags(
+        uniqueTags(library).filter(function (tag) { return tag !== oldTag; }),
+        [newTag],
+      ),
+    };
+  }
+
   window.DecapTagDomain = {
     normalizeTag: normalizeTag,
     uniqueTags: uniqueTags,
@@ -58,5 +111,9 @@
     mergeTags: mergeTags,
     countUsage: countUsage,
     canDelete: canDelete,
+    tagStats: tagStats,
+    filterTagStats: filterTagStats,
+    replaceTag: replaceTag,
+    mergePlan: mergePlan,
   };
 })();
