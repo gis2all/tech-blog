@@ -100,12 +100,12 @@ const directoryPosts = [
 ];
 
 describe("post helpers", () => {
-  test("getPostSlug uses the trimmed article title", () => {
+  test("getPostSlug uses the exact valid article title", () => {
     expect(getPostSlug(posts[0])).toBe("Old Post");
     expect(
       getPostSlug({
         ...posts[0],
-        data: { ...posts[0].data, title: "  中文文章标题  " }
+        data: { ...posts[0].data, title: "中文文章标题" }
       })
     ).toBe("中文文章标题");
   });
@@ -121,6 +121,29 @@ describe("post helpers", () => {
       ).toThrow("Article title cannot contain URL-reserved characters");
     }
   );
+
+  test.each([
+    "标题\\路径",
+    "标题:说明",
+    "标题*星号",
+    '标题"引号',
+    "标题<左",
+    "标题>右",
+    "标题|管道",
+    " 标题",
+    "标题 ",
+    "标题.",
+    "CON",
+    "con.txt",
+    ".."
+  ])("getPostSlug rejects filesystem-unsafe title %s", (title) => {
+    expect(() =>
+      getPostSlug({
+        ...posts[0],
+        data: { ...posts[0].data, title }
+      })
+    ).toThrow("Article title is not filesystem-safe");
+  });
 
   test("validateUniquePostSlugs accepts distinct article titles", () => {
     expect(() => validateUniquePostSlugs(posts)).not.toThrow();

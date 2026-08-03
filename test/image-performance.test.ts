@@ -40,6 +40,19 @@ describe("Markdown image performance", () => {
     expect(html).not.toMatch(/\sheight=/);
   });
 
+  test("keeps reserved path characters readable for local article assets", async () => {
+    const { html } = await markdownToHtml(
+      "![article](/images/posts/Jenkins%20%2B%20Groovy%20%3D%20高效%21/image-01.webp)",
+      {
+        hastPlugins: [createImagePerformancePlugin({ publicDir: `${root}public` })],
+      },
+    );
+
+    expect(html).toContain(
+      'src="/images/posts/Jenkins%20+%20Groovy%20=%20%E9%AB%98%E6%95%88!/image-01.webp"',
+    );
+  });
+
   test("renders local MP4 Markdown media as a lazy looping video", async () => {
     const { html } = await markdownToHtml(
       "![操作演示](/images/posts/demo/image-01.mp4)",

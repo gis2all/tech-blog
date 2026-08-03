@@ -60,6 +60,9 @@ const monthLabels = [
 
 const asciiLetterPattern = /^[A-Za-z]$/;
 const reservedPostSlugPattern = /[/?#%]/u;
+const unsafePostFilenamePattern = /[\\:*"<>|]/u;
+const windowsReservedPostNamePattern =
+  /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/iu;
 
 function compareTagInitials(a: string, b: string): number {
   if (a === b) return 0;
@@ -92,7 +95,8 @@ export function compareTagNames(a: string, b: string): number {
 }
 
 export function getPostSlug(post: Pick<PostLike, "id" | "data">): string {
-  const slug = post.data.title.trim();
+  const rawTitle = post.data.title;
+  const slug = rawTitle.trim();
 
   if (!slug) {
     throw new Error(`Article title cannot be empty: ${post.id}`);
@@ -102,6 +106,17 @@ export function getPostSlug(post: Pick<PostLike, "id" | "data">): string {
     throw new Error(
       `Article title cannot contain URL-reserved characters: ${post.id}`
     );
+  }
+
+  if (
+    rawTitle !== slug ||
+    unsafePostFilenamePattern.test(slug) ||
+    slug === "." ||
+    slug === ".." ||
+    /[. ]$/u.test(slug) ||
+    windowsReservedPostNamePattern.test(slug)
+  ) {
+    throw new Error("Article title is not filesystem-safe: " + post.id);
   }
 
   return slug;
