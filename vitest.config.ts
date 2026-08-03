@@ -2,7 +2,12 @@ import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    exclude: [...configDefaults.exclude, "test/e2e/**", ".worktrees/**"],
+    exclude: [
+      ...configDefaults.exclude,
+      "test/e2e/**",
+      ".worktrees/**",
+      ".codex-temp/**",
+    ],
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "json-summary"],

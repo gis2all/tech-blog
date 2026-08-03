@@ -80,6 +80,32 @@ npm run preview -- --host 127.0.0.1 --port 4321
 
 `astro dev` 不会提供生产构建生成的 `dist/pagefind/`。开发态下搜索页提示索引尚未生成属于正常现象，完整搜索需要在生产预览态验证。
 
+## 本地 CMS 调试
+
+本地调试后台时，先停止占用 `4321` 的生产预览服务；后台必须运行在 Astro 开发态，而不是 `npm run preview`。
+
+终端 1 启动 Astro 开发服务：
+
+```text
+npm run dev -- --host 127.0.0.1 --port 4321
+```
+
+终端 2 启动 Decap 本地后端：
+
+```text
+npm run cms:local
+```
+
+该服务固定监听 `http://127.0.0.1:4322`；`4321` 只供 Astro 开发服务器使用。
+
+访问：
+
+```text
+http://127.0.0.1:4321/admin/
+```
+
+`/admin/` 在 `127.0.0.1` 或 `localhost` 上会自动使用本地后端，无需 GitHub OAuth。保存文章或上传图片只会写入当前本地工作树，不会向 GitHub 提交，也不会触发 Netlify 部署；用 `git diff` 检查内容后，按正常 Git 流程提交和推送。完成后台调试后，停止这两个进程，再按“开发态与生产预览”运行 `npm run build` 和 `npm run preview` 验证生产产物。
+
 ## 环境变量
 
 复制 `.env.example` 中需要的变量到本地或部署平台环境变量：
@@ -164,31 +190,18 @@ npm run build
 
 ## Decap CMS
 
-后台入口和配置位于：
-
-```text
-public/admin/index.html
-public/admin/config.yml
-```
-
-当前发布流程：
-
-```text
-Decap CMS
-  -> GitHub commit
-  -> Netlify build
-  -> published site
-```
-
-后台创建文章或上传图片后，内容写入 GitHub 仓库，并触发 Netlify 自动部署。
+- 线上从 `/admin/` 登录，Decap CMS 通过 GitHub OAuth 直接提交 `main`，随后由 Netlify 构建发布。
+- 本地调试同时运行 `npm run dev -- --host 127.0.0.1 --port 4321` 和 `npm run cms:local`；后台保存只写入当前工作树，不会提交 GitHub。
+- 文章标题决定文件名、公开地址和媒体目录：文章保存在 `src/content/posts/<标题>.md`，图片保存在 `public/images/posts/<标题>/`。已发布文章标题锁定，草稿改名会一并更新引用和媒体目录。
+- 后台使用简体中文，提供文章预览、保存校验、未保存离开提醒、标签库和文章媒体库；图片会压缩为 WebP 并保持原始宽高比。
 
 ## 评论
 
 文章详情页使用 Giscus 接入 GitHub Discussions。评论数据保存在 `gis2all/tech-blog` 仓库的 Discussions 中，当前使用 `Announcements` 分类和 `pathname` 映射；读者需要登录 GitHub 后参与讨论。
 
-开发态不会加载 Giscus 外部脚本，只显示评论区占位提示；生产构建会加载 `https://giscus.app/client.js`，并随站点浅色/深色主题同步切换。
+开发和生产环境都会加载 `https://giscus.app/client.js`，并随站点浅色/深色主题同步切换。
 
-Giscus GitHub App 已授权访问 `gis2all/tech-blog` 仓库，本地生产预览已验证评论区可加载；首次评论或 reaction 会自动创建对应的 GitHub Discussion。
+Giscus GitHub App 已授权访问 `gis2all/tech-blog` 仓库，本地已验证评论区可加载；首次评论或 reaction 会自动创建对应的 GitHub Discussion。
 
 ## Netlify 部署
 

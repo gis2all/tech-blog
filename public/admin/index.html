@@ -5,9 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/admin/tag-selector.css" />
+    <link rel="stylesheet" href="/admin/editorial.css" />
+    <link rel="stylesheet" href="/admin/media-library.css" />
     <title>知行后台</title>
   </head>
   <body>
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <script>window.CMS_MANUAL_INIT = true;</script>
+    <script src="https://unpkg.com/decap-cms@3.15.1/dist/decap-cms.js"></script>
+    <script src="/admin/editorial-domain.js"></script>
+    <script src="/admin/media-domain.js"></script>
+    <script src="/admin/media-processor.js"></script>
+    <script src="/admin/media-library.js"></script>
+    <script src="/admin/editorial-workflow.js"></script>
+    <script src="/admin/article-title.js"></script>
+    <script src="/admin/tag-domain.js"></script>
+    <script src="/admin/tag-sync.js?v=2"></script>
+    <script src="/admin/tag-selector.js"></script>
+    <script src="/admin/tag-operations.js"></script>
+    <script src="/admin/tag-library-manager.js"></script>
+    <script src="/admin/admin-navigation.js?v=9"></script>
+    <script src="/admin/unsaved-changes.js"></script>
+    <script src="/admin/preview.js"></script>
+    <script>CMS.init();</script>
   </body>
 </html>

@@ -1,0 +1,298 @@
+.cms-tag-selector {
+  display: grid;
+  gap: 8px;
+}
+
+.cms-tag-selector__selected,
+.cms-tag-selector__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cms-tag-selector__tag {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  gap: 4px;
+  padding: 4px 6px;
+  border: 1px solid #c9d5dd;
+  background: #f4f7f8;
+  color: #27343b;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.cms-tag-selector__tag > span,
+.cms-tag-selector__suggestion {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.cms-tag-selector__remove {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #52636d;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cms-tag-selector__remove:hover,
+.cms-tag-selector__remove:focus-visible {
+  color: #bd2c2c;
+}
+
+.cms-tag-selector__suggestion {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid #c9d5dd;
+  background: #fff;
+  color: #27343b;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cms-tag-selector__suggestion--create {
+  border-style: dashed;
+  background: #f7fbfc;
+  color: #006b84;
+  font-weight: 600;
+}
+
+.cms-tag-selector__suggestion:hover,
+.cms-tag-selector__suggestion--active {
+  border-color: #0082a6;
+  background: #e9f7fb;
+}
+
+.cms-tag-selector__status {
+  margin: 0;
+  color: #52636d;
+  font-size: 13px;
+}
+
+.cms-tag-selector__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #8e2525;
+  font-size: 13px;
+}
+
+.cms-tag-selector__retry {
+  flex-shrink: 0;
+  padding: 3px 6px;
+  border: 1px solid #a74646;
+  background: #fff;
+  color: #8e2525;
+  cursor: pointer;
+}
+
+.cms-tag-selector__retry:hover,
+.cms-tag-selector__retry:focus-visible {
+  background: #fff2f2;
+}
+
+.cms-tag-selector__pending {
+  min-height: 18px;
+  margin: 0;
+  color: #52636d;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.cms-tag-manager {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cms-tag-manager__toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto auto auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.cms-tag-manager__toolbar input,
+.cms-tag-manager__toolbar select,
+.cms-tag-manager__merge input {
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid #b8c5cc;
+  border-radius: 4px;
+  background: #fff;
+  color: #27343b;
+}
+
+.cms-tag-manager__summary {
+  color: #52636d;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.cms-tag-manager__merge {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #b8dfe4;
+  border-radius: 6px;
+  background: #f2fbfc;
+}
+
+.cms-tag-manager__merge p {
+  margin: 0;
+  color: #27343b;
+  font-size: 13px;
+}
+
+.cms-tag-manager__merge-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cms-tag-manager__merge-actions button,
+.cms-tag-manager__rename {
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 1px solid #aebbc2;
+  border-radius: 4px;
+  background: #fff;
+  color: #075e6e;
+  cursor: pointer;
+}
+
+.cms-tag-manager__list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #d6dfe4;
+  list-style: none;
+}
+
+.cms-tag-manager__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto minmax(92px, auto);
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e3e9ec;
+  background: #fff;
+}
+
+.cms-tag-manager__row:last-child {
+  border-bottom: 0;
+}
+
+.cms-tag-manager__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #27343b;
+  font-size: 14px;
+}
+
+.cms-tag-manager__usage,
+.cms-tag-manager__status,
+.cms-tag-manager__message {
+  margin: 0;
+  color: #52636d;
+  font-size: 13px;
+}
+
+.cms-tag-manager__delete {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #8e2525;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.cms-tag-manager__delete:hover:not(:disabled),
+.cms-tag-manager__delete:focus-visible:not(:disabled) {
+  border-color: #a74646;
+  background: #fff2f2;
+}
+
+.cms-tag-manager__delete:disabled {
+  color: #9ba8ae;
+  cursor: not-allowed;
+}
+
+.cms-tag-manager__confirm,
+.cms-tag-manager__error {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.cms-tag-manager__confirm button,
+.cms-tag-manager__retry {
+  min-height: 28px;
+  padding: 4px 7px;
+  border: 1px solid #aebbc2;
+  background: #fff;
+  color: #27343b;
+  cursor: pointer;
+}
+
+.cms-tag-manager__confirm .cms-tag-manager__confirm-delete {
+  border-color: #a74646;
+  color: #8e2525;
+}
+
+.cms-tag-manager__error {
+  justify-content: flex-start;
+  color: #8e2525;
+  font-size: 13px;
+}
+
+@media (max-width: 560px) {
+  .cms-tag-manager__toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cms-tag-manager__toolbar input,
+  .cms-tag-manager__summary {
+    grid-column: 1 / -1;
+  }
+
+  .cms-tag-manager__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .cms-tag-manager__usage {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .cms-tag-manager__confirm,
+  .cms-tag-manager__delete {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .cms-tag-manager__rename {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}

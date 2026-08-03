@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "cms:local": "node scripts/start-decap-server.mjs",
     "build": "astro build",
     "postbuild": "pagefind --site dist",
     "preview": "astro preview",
@@ -29,6 +30,7 @@
     "@playwright/test": "^1.62.0",
     "@types/node": "^26.1.2",
     "@vitest/coverage-v8": "^4.1.10",
+    "decap-server": "3.10.0",
     "pinyin-pro": "^3.28.2",
     "vitest": "^4.1.10",
     "yaml": "^2.9.0"

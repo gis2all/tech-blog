@@ -3,6 +3,21 @@ import sharp from "sharp";
 
 const metadataCache = new Map();
 
+function normalizeLocalAssetUrl(src) {
+  if (typeof src !== "string" || !src.startsWith("/")) return src;
+
+  const separatorIndex = src.search(/[?#]/);
+  const pathname = separatorIndex === -1 ? src : src.slice(0, separatorIndex);
+  const suffix = separatorIndex === -1 ? "" : src.slice(separatorIndex);
+
+  return (
+    pathname.replace(
+      /%(21|24|26|27|28|29|2A|2B|2C|3B|3D|40)/gi,
+      (match) => decodeURIComponent(match),
+    ) + suffix
+  );
+}
+
 function getLocalImagePath(src, publicDir) {
   if (typeof src !== "string" || !src.startsWith("/")) return null;
 
@@ -52,6 +67,11 @@ export default function createImagePerformancePlugin(options = {}) {
       filter: ["img"],
       async visit(image, context) {
         const properties = image.properties ?? {};
+        const normalizedSrc = normalizeLocalAssetUrl(properties.src);
+        if (normalizedSrc !== properties.src) {
+          properties.src = normalizedSrc;
+          context.setProperty(image, "src", normalizedSrc);
+        }
         const posterSrc = getVideoPosterSrc(properties.src);
         if (posterSrc) {
           const videoProperties = {

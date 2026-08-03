@@ -3,10 +3,21 @@ backend:
   repo: gis2all/tech-blog
   branch: main
 
+local_backend:
+  url: http://127.0.0.1:4322/api/v1
+  allowed_hosts: [127.0.0.1, localhost]
+
 media_folder: public/images/uploads
 public_folder: /images/uploads
 
 publish_mode: simple
+locale: zh_Hans
+
+editor:
+  preview: true
+
+media_library:
+  name: article_media
 
 collections:
   - name: posts
@@ -15,61 +26,124 @@ collections:
     create: true
     extension: md
     format: frontmatter
-    slug: "{{slug}}"
+    slug: "{{title}}"
+    media_folder: public/images/posts/{{title}}
+    public_folder: /images/posts/{{title}}
+    preview_path: posts/{{title}}
+    summary: "{{title}} · {{publishedAt}} · {{category}}"
+    sortable_fields: [publishedAt, updatedAt, title]
+    view_filters:
+      - label: 草稿
+        field: draft
+        pattern: true
+      - label: 已发布
+        field: draft
+        pattern: false
+      - label: 精选
+        field: featured
+        pattern: true
+    view_groups:
+      - label: 分类
+        field: category
+      - label: 专题
+        field: series
+      - label: 状态
+        field: draft
     fields:
       - label: 标题
         name: title
-        widget: string
+        widget: article_title
+        hint: 标题同时决定 Markdown 文件名、公开地址和文章媒体目录。
       - label: 摘要
         name: description
         widget: text
+        hint: 用一两句话说明文章解决的问题，会显示在文章列表和搜索结果中。
+      - label: 正文
+        name: body
+        widget: markdown
+        modes: [raw]
+        hint: 使用 Markdown 写作，可在右侧预览查看接近前台文章页的效果。
+      - label: 分类
+        name: category
+        widget: select
+        options:
+          - label: DevOps
+            value: DevOps
+          - label: 编程开发
+            value: 编程开发
+          - label: 测试工程
+            value: 测试工程
+          - label: 阅读与思考
+            value: 阅读与思考
+          - label: GIS
+            value: GIS
+          - label: 工程实践
+            value: 工程实践
+        hint: 分类用于前台筛选和归档，保持使用既有分类。
+      - label: 标签
+        name: tags
+        widget: tag_selector
+        collection: tags
+        file: library
+        value_field: tags.*
+        search_fields: [tags.*]
+        multiple: true
+        required: false
+        hint: 搜索并选择已有标签，也可直接输入创建多个新标签；保存文章时会自动加入全局标签库。
+      - label: 专题
+        name: series
+        widget: relation
+        collection: series
+        value_field: slug
+        search_fields: [title, slug]
+        display_fields: [title, slug]
+        required: false
+        hint: 文章属于已有专题时选择；普通文章可留空。
+      - label: 专题顺序
+        name: seriesOrder
+        widget: number
+        required: false
+        value_type: int
+        min: 1
+        hint: 仅专题文章填写，数字越小越靠前。
       - label: 发布日期
         name: publishedAt
         widget: datetime
         date_format: "YYYY-MM-DD"
         time_format: false
+        hint: 前台文章列表默认按此日期排序。
       - label: 更新日期
         name: updatedAt
         widget: datetime
         required: false
         date_format: "YYYY-MM-DD"
         time_format: false
-      - label: 分类
-        name: category
-        widget: string
-      - label: 标签
-        name: tags
-        widget: list
-        allow_add: true
-      - label: 封面
-        name: cover
-        widget: image
-        required: false
-      - label: 封面替代文本
-        name: coverAlt
-        widget: string
-        required: false
+        hint: 文章有实质更新时填写。
       - label: 草稿
         name: draft
         widget: boolean
         default: true
+        hint: 草稿不会进入前台、RSS 或搜索索引。
       - label: 精选
         name: featured
         widget: boolean
         default: false
-      - label: 专题 Slug
-        name: series
+        hint: 仅用于前台的精选文章区域。
+      - label: 封面
+        name: cover
+        widget: image
+        required: false
+        hint: 可上传图片或选择已有媒体，建议优先使用与文章有关的实图。
+      - label: 封面替代文本
+        name: coverAlt
         widget: string
         required: false
-      - label: 专题顺序
-        name: seriesOrder
-        widget: number
-        required: false
-        value_type: int
+        hint: 有封面时填写图片中真实可见的信息，便于读屏和图片加载失败时理解内容。
       - label: 示例仓库
         name: repoUrl
         widget: string
         required: false
+        hint: 可选，填写与文章对应的 GitHub 仓库完整地址。
       - label: 参考资料
         name: references
         widget: list
@@ -94,9 +168,21 @@ collections:
           - label: 说明
             name: note
             widget: string
-      - label: 正文
-        name: body
-        widget: markdown
+
+  - name: tags
+    label: 标签
+    label_singular: 标签
+    files:
+      - name: library
+        label: 标签
+        file: src/data/tag-library.json
+        fields:
+          - label: 标签
+            name: tags
+            widget: tag_library_manager
+            posts_collection: posts
+            search_fields: [tags.*]
+            hint: 标签只能在此处删除；仍被文章使用的标签会自动锁定。
 
   - name: series
     label: 专题
@@ -105,6 +191,18 @@ collections:
     extension: json
     format: json
     slug: "{{slug}}"
+    summary: "{{title}} · 排序 {{order}}"
+    sortable_fields: [order, title]
+    view_filters:
+      - label: 草稿
+        field: draft
+        pattern: true
+      - label: 已发布
+        field: draft
+        pattern: false
+    view_groups:
+      - label: 状态
+        field: draft
     fields:
       - label: 标题
         name: title
@@ -115,21 +213,26 @@ collections:
       - label: Slug
         name: slug
         widget: string
+        hint: 用于文章关联和专题地址，创建后不要随意修改。
       - label: 封面
         name: image
         widget: image
       - label: 封面替代文本
         name: imageAlt
         widget: string
+        hint: 描述封面中的真实信息。
       - label: 排序
         name: order
         widget: number
         required: false
         value_type: int
+        min: 1
+        hint: 数字越小，专题在前台列表中越靠前。
       - label: 草稿
         name: draft
         widget: boolean
         default: false
+        hint: 草稿专题不会显示在前台。
 
   - name: projects
     label: 项目
@@ -138,6 +241,23 @@ collections:
     extension: json
     format: json
     slug: "{{slug}}"
+    summary: "{{title}} · {{publishedAt}}"
+    sortable_fields: [order, publishedAt, title]
+    view_filters:
+      - label: 草稿
+        field: draft
+        pattern: true
+      - label: 已发布
+        field: draft
+        pattern: false
+      - label: 精选
+        field: featured
+        pattern: true
+    view_groups:
+      - label: 状态
+        field: draft
+      - label: 精选状态
+        field: featured
     fields:
       - label: 标题
         name: title
@@ -156,17 +276,20 @@ collections:
       - label: 技术栈
         name: tech
         widget: list
+        hint: 每项填写一个主要技术或工具。
       - label: 封面
         name: image
         widget: image
       - label: 封面替代文本
         name: imageAlt
         widget: string
+        hint: 描述项目封面中的真实信息。
       - label: 排序
         name: order
         widget: number
         value_type: int
         min: 1
+        hint: 数字越小，项目在前台越靠前。
       - label: 精选
         name: featured
         widget: boolean
