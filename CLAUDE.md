@@ -42,12 +42,13 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - `feat` 在最新 `main` 基础上完成标题直出文章 URL、文章阅读控件优化、迁移文章内链治理、CI/覆盖率门禁与 GitHub Pages 动态覆盖率徽章、README/许可证、正式域名与 SEO 收口。
 - 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
-- 本地共有 106 篇 Markdown 文章：105 篇公开文章和 `git-team-workflow.md` 这一篇草稿。
+- 本地共有 106 篇 Markdown 文章：105 篇公开文章和 `小团队 Git 工作流：什么时候 merge，什么时候 rebase.md` 这一篇草稿。
 - 已实现首页、文章详情、分类、标签、归档、专题、项目、关于、搜索、RSS、站点地图和 404。
 - 专题页展示 5 个真实专题；项目页展示 `xdata-collector`、`focus-flow`、`tech-blog` 3 个真实 GitHub 项目及截图。
 - 已实现 Decap CMS 写作后台：`public/admin/index.html`、`public/admin/config.yml`、预览资源和标签管理扩展。
 - Decap CMS 的文章、专题和项目字段已与 Content Collections 必填字段对齐。
 - 已完成 Decap CMS 第一阶段配置增强：中文 locale、列表摘要/筛选/排序/分组、受控文章分类、专题 relation、字段提示和接近真实文章页的轻量预览。
+- 已完成 Decap CMS 第二阶段编辑增强：草稿独立入口、标题驱动的中文文章文件名/公开地址/媒体目录、保存前校验、未保存离开提醒、增强预览、标签搜索筛选排序与重命名合并、独立文章媒体库、未使用媒体检查和图片压缩转换。
 - 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
 - 正式站点 URL 已统一为 `https://blog.gis2all.top`，Astro `site`、站内 canonical、RSS、站点地图和 `robots.txt` 均以该域名为准。
 - Netlify 使用 `npm run build` 进行生产构建，随后由 `postbuild` 自动生成 Pagefind 索引并发布 `dist/`。
@@ -64,7 +65,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - Vitest 覆盖率任务生成 HTML 报告和 `coverage/coverage-summary.json`；本地 Node.js 脚本读取真实行覆盖率并生成 `coverage/badge.svg`，GitHub Actions 在 `main` 验证通过后将徽章和报告发布到 GitHub Pages，不依赖第三方覆盖率服务。
 - 文章页显示 4 篇相关文章，优先级依次为同专题、共同标签、同分类和发布时间。
 - 阅读历史保存在浏览器 `localStorage`，记录最近 20 篇及阅读进度；首页桌面右栏、移动端文章列表前和正文桌面右栏均最多显示 3 篇并使用 `01` 至 `03` 编号，正文排除当前文章，最近阅读卡片不展示进度或清空操作。
-- 已开启 GitHub Discussions，并在文章详情页通过 Giscus 接入评论；当前使用 `gis2all/tech-blog` 仓库、`Announcements` 分类、`pathname` 映射，开发态显示占位提示，生产构建加载 Giscus 外部脚本；Giscus GitHub App 已授权到该仓库，本地生产预览已验证评论区可加载。
+- 已开启 GitHub Discussions，并在文章详情页通过 Giscus 接入评论；当前使用 `gis2all/tech-blog` 仓库、`Announcements` 分类、`pathname` 映射，开发和生产环境均加载 Giscus 外部脚本；Giscus GitHub App 已授权到该仓库，本地已验证评论区可加载。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
@@ -101,7 +102,7 @@ Pagefind              → indexed 104 pages
 - `/search/?q=Agent` 可加载 Pagefind 并返回文章结果。
 - `/admin/` GitHub OAuth 登录已验证，可进入 Decap CMS 后台。
 - Decap CMS 后台发布闭环已验证：新建测试文章会写入 GitHub commit，并触发 Netlify 自动部署到前台。
-- Decap CMS 媒体上传闭环已验证：后台上传图片会写入 `public/images/uploads/`，并可通过 Netlify 静态 URL 访问。
+- Decap CMS 媒体上传闭环已验证：后台上传图片会写入对应的 `public/images/posts/<文章标题>/`，并可通过 Netlify 静态 URL 访问。
 - 2026-07-28 的测试文章和测试图片仅用于验证链路，验证后已从生产内容和线上站点中清理。
 - `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
 - 从迁移文章正文点击本站文章引用后，地址保持在 `/posts/<编码后的文章标题>/`，不会再跳转到本人旧 CSDN 页面。
@@ -239,19 +240,24 @@ Markdown / images / config
 
 ## 6. CMS 当前状态
 
-Decap CMS 发布闭环和第一阶段后台增强已经完成：
+Decap CMS 发布闭环以及第一、第二阶段后台增强已经完成：
 
 - `/admin/` 可通过 GitHub OAuth 登录。
 - 新建文章可以写入 GitHub Commit，并触发 Netlify 自动部署。
-- 后台上传图片可以写入 `public/images/uploads/`，部署后可通过静态 URL 访问。
+- 后台上传图片写入对应的 `public/images/posts/<文章标题>/`，部署后可通过静态 URL 访问。
 - 后台仍使用 Decap CMS 原生界面，配置和扩展位于 `public/admin/index.html`、`public/admin/config.yml`、`public/admin/preview.js` 与 `public/admin/preview.css`。
 - 后台 locale 为 `zh_Hans`；文章、专题和项目列表显示摘要，支持常用筛选、排序和分组。
 - 文章分类使用既有分类枚举，专题通过 relation 关联到 `series` 集合；写作字段已按标题、摘要、正文、分类/标签/专题、发布状态和附加资料排序并提供提示。
 - 文章编辑页注册轻量预览模板，显示封面、分类/日期、标题、摘要和 Markdown 正文；它只负责编辑态预览，不复制前台的导航、评论、目录或阅读历史交互。
 - 文章标签关联到 `src/data/tag-library.json` 的全局标签库，后台可搜索既有标签，也可在文章内直接创建多个新标签；保存时文章与新增标签通过同一次 `persistEntry` 提交。标签只能在标签库集中删除，使用中标签禁删，未使用标签需要二次确认；文章 frontmatter 仍为字符串数组。
+- 文章标题是文章唯一身份来源；新建文章和草稿保存到标题对应的 `src/content/posts/<标题>.md`，公开地址和媒体目录同步使用同一标题，不维护独立 slug 或旧 URL 跳转。已发布文章标题锁定，草稿重命名会原子更新引用和文章媒体目录。
+- 保存前会校验标题、必填字段、封面替代文本、正文图片替代文本、专题顺序、日期和链接；新文章预览会显示最终 Markdown 路径、公开地址和媒体目录，文章预览还显示标签、专题、更新时间和参考资料。
+- 文章媒体集中位于 `public/images/posts/<文章标题>/`。独立媒体库支持按文章或文件搜索、筛选未使用文件、查看尺寸和引用状态、复制路径/Markdown、按文章上传，并在保存时将栅格图压缩为 WebP、限制尺寸且保持宽高比。
+- 标签库支持按名称或使用量排序、按使用状态筛选、重命名或合并标签；使用中的标签不可直接删除，合并前会展示影响文章数量并要求确认。
+- 草稿和已发布文章使用独立入口；编辑页离开前会对未保存内容进行页面内导航和浏览器离开提醒。
 - 本地调试使用 `npm run cms:local` 启动 Decap Local Backend（固定端口 `4322`）；同时必须以 `astro dev` 运行 `127.0.0.1:4321`，此时不需要 GitHub OAuth，保存只写入本地工作树。线上后台仍通过 GitHub OAuth 直接提交 `main`。
 
-自定义文章管理仪表盘、双栏 Markdown 编辑器、独立媒体库、离线编辑和复杂冲突处理均未实现，也不是当前功能。只有第一阶段仍无法满足真实写作流程时，才评估这些高级能力。
+完整自定义文章管理仪表盘、替代 Decap 原生界面的双栏 Markdown 编辑器、离线编辑和复杂冲突处理仍未实现，也不属于当前阶段；当前媒体库和预览是围绕原生 Decap 的轻量扩展。
 
 ## 7. 信息架构与页面地图
 
@@ -387,14 +393,14 @@ seriesOrder: 1
 
 ```text
 src/content/posts/
-├─ jenkins-groovy-practices.md
-├─ pc-dian-nao-ruan-jian-bian-cheng-huan-jing-cha-jian-tui-jian.md
+├─ 15个免费遥感影像数据源.md
+├─ Jenkins书籍推荐.md
 ├─ ...
-└─ git-team-workflow.md  （draft）
+└─ 小团队 Git 工作流：什么时候 merge，什么时候 rebase.md  （draft）
 
 public/images/posts/
-├─ jenkins-groovy-practices/
-├─ pc-dian-nao-ruan-jian-bian-cheng-huan-jing-cha-jian-tui-jian/
+├─ Jenkins书籍推荐/
+├─ Katalon Studio —— 事半功十倍的自动化测试利器/
 └─ ...
 ```
 
@@ -461,7 +467,7 @@ public/images/posts/
 - 前台：无搜索结果、无筛选结果、文章不存在、草稿不公开和 404。
 - 内容构建：Frontmatter 字段错误应由 Content Collections Schema 阻止构建，并定位到具体文件和字段。
 - 搜索：开发态未生成 Pagefind 索引时显示明确提示；生产构建后加载真实索引。
-- 评论：开发态显示占位提示且不请求外部 Giscus 脚本；生产构建加载 Giscus，并由 GitHub Discussions 负责登录、发布和审核状态。Giscus GitHub App 已授权到 `gis2all/tech-blog`，首次评论或 reaction 会自动创建对应的 GitHub Discussion。
+- 评论：开发和生产环境均加载 Giscus，并由 GitHub Discussions 负责登录、发布和审核状态。Giscus GitHub App 已授权到 `gis2all/tech-blog`，首次评论或 reaction 会自动创建对应的 GitHub Discussion。
 - CMS：登录、保存、上传和发布状态由 Decap CMS 原生界面负责；列表管理、字段提示和文章预览由本地配置与预览资源增强，不在前台重复模拟。
 - 部署：Netlify 构建结果以平台状态和日志为准，不在站内展示未经接入的虚假进度。
 
@@ -479,7 +485,7 @@ public/images/posts/
 - RSS、站点地图、公开 `robots.txt` 和自定义 404。
 - 草稿排除、内容 Schema 构建校验和静态 Pagefind 搜索。
 - Astro 生产构建按 `PUBLIC_UMAMI_WEBSITE_ID` 配置加载 Umami Cloud；未设置网站 ID 时不加载外部脚本，开发态始终不加载。
-- 文章页生产构建加载 Giscus 评论脚本，评论数据保存在 GitHub Discussions，不进入 Astro 内容集合。
+- 文章页在开发和生产环境加载 Giscus 评论脚本，评论数据保存在 GitHub Discussions，不进入 Astro 内容集合。
 - 静态输出到 `dist/`。
 
 仍待完成：
@@ -490,7 +496,7 @@ public/images/posts/
 
 ## 15. 当前路线图
 
-1. 提交并审核当前 `decap` 分支中的 CMS 第一阶段配置增强、本地调试、文章预览和标签库工作流。
+1. 提交并审核当前 `decap` 分支中的 CMS 第一、第二阶段配置增强、本地调试、文章预览、标签库和媒体工作流。
 2. 在 Netlify 生产环境配置 `PUBLIC_UMAMI_WEBSITE_ID`，并完成正式域名、统计、搜索、RSS、站点地图、robots、桌面/移动和浅色/深色验收。
 3. 部署后在线上验证文章评论加载、GitHub 登录评论闭环、首次评论自动创建 Discussion 和浅色/深色主题同步。
 4. 收集实际写作反馈；仅在当前 Decap 第一阶段增强仍无法满足需求时，再评估高级 CMS 功能。
@@ -518,7 +524,7 @@ public/images/posts/
 
 以下事项尚未由代码或正式配置锁定，开始相关工作前应向项目所有者确认，或在最小验证后记录决策：
 
-- 是否需要进入 Decap CMS 第二阶段（自定义仪表盘、双栏编辑或独立媒体库）；定时发布、离线同步和自定义媒体处理暂不纳入当前范围。
+- 是否需要进入完整自定义 CMS（替代 Decap 原生界面、提供双栏编辑或更复杂的冲突处理）；定时发布和离线同步仍不纳入当前范围。
 
 已确认的第一版约束：
 

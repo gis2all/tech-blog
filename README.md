@@ -190,43 +190,18 @@ npm run build
 
 ## Decap CMS
 
-后台入口和配置位于：
-
-```text
-public/admin/index.html
-public/admin/config.yml
-public/admin/preview.js
-public/admin/preview.css
-public/admin/tag-domain.js
-public/admin/tag-sync.js
-public/admin/tag-selector.js
-public/admin/tag-library-manager.js
-```
-
-当前发布流程：
-
-```text
-Decap CMS
-  -> GitHub commit
-  -> Netlify build
-  -> published site
-```
-
-后台创建文章或上传图片后，内容写入 GitHub 仓库，并触发 Netlify 自动部署。
-
-后台保留 Decap CMS 原生编辑界面，并已完成第一阶段写作增强：简体中文 locale、文章/专题/项目列表摘要与常用筛选排序、文章分类枚举、专题 relation、字段提示和按写作顺序排列的文章表单。文章编辑页使用轻量预览显示封面、分类、日期、标题、摘要和 Markdown 正文，接近真实文章页，但不重复前台导航、评论和阅读交互。
-
-文章标签使用“标签库”多选搜索字段，标签数据集中在 `src/data/tag-library.json`。文章编辑页既可搜索已有标签，也可直接输入并创建多个新标签；保存文章时，新标签会与文章在同一次提交中写入全局标签库。删除标签只能在“标签库”集中进行，仍被文章使用的标签会锁定，未使用标签删除前需要二次确认。文章中的 `tags` 仍保存为字符串数组，前台无需调整。
-
-线上 `/admin/` 使用 GitHub OAuth 并直接提交 `main`；本地后台调试流程见“本地 CMS 调试”，两种保存路径互不混用。
+- 线上从 `/admin/` 登录，Decap CMS 通过 GitHub OAuth 直接提交 `main`，随后由 Netlify 构建发布。
+- 本地调试同时运行 `npm run dev -- --host 127.0.0.1 --port 4321` 和 `npm run cms:local`；后台保存只写入当前工作树，不会提交 GitHub。
+- 文章标题决定文件名、公开地址和媒体目录：文章保存在 `src/content/posts/<标题>.md`，图片保存在 `public/images/posts/<标题>/`。已发布文章标题锁定，草稿改名会一并更新引用和媒体目录。
+- 后台使用简体中文，提供文章预览、保存校验、未保存离开提醒、标签库和文章媒体库；图片会压缩为 WebP 并保持原始宽高比。
 
 ## 评论
 
 文章详情页使用 Giscus 接入 GitHub Discussions。评论数据保存在 `gis2all/tech-blog` 仓库的 Discussions 中，当前使用 `Announcements` 分类和 `pathname` 映射；读者需要登录 GitHub 后参与讨论。
 
-开发态不会加载 Giscus 外部脚本，只显示评论区占位提示；生产构建会加载 `https://giscus.app/client.js`，并随站点浅色/深色主题同步切换。
+开发和生产环境都会加载 `https://giscus.app/client.js`，并随站点浅色/深色主题同步切换。
 
-Giscus GitHub App 已授权访问 `gis2all/tech-blog` 仓库，本地生产预览已验证评论区可加载；首次评论或 reaction 会自动创建对应的 GitHub Discussion。
+Giscus GitHub App 已授权访问 `gis2all/tech-blog` 仓库，本地已验证评论区可加载；首次评论或 reaction 会自动创建对应的 GitHub Discussion。
 
 ## Netlify 部署
 
