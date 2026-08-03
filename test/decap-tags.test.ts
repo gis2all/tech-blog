@@ -912,6 +912,18 @@ describe("Decap tag library manager", () => {
     expect(changes).toEqual([]);
   });
 
+  test("does not label tags unused before usage is known", async () => {
+    const pendingUsage = new Promise(() => {});
+    const { instance } = await createTagManagerHarness({
+      value: ["Astro"],
+      queryResults: [() => pendingUsage],
+    });
+    const rendered = instance.render();
+
+    expect(renderedText(rendered)).toContain("统计中...");
+    expect(renderedText(rendered)).not.toContain("未使用");
+  });
+
   test("rechecks usage before confirming deletion of an unused tag", async () => {
     const { changes, instance, queryCalls } = await createTagManagerHarness({
       value: ["Astro", "Unused"],
@@ -960,6 +972,12 @@ describe("Decap tag library manager", () => {
 
     expect(initialFailure.instance.state.loadError).toBe(true);
     expect(alert).toBeDefined();
+    expect(renderedText(initialFailure.instance.render())).toContain(
+      "统计失败",
+    );
+    expect(renderedText(initialFailure.instance.render())).not.toContain(
+      "未使用",
+    );
     initialFailure.instance.requestDelete("Unused");
     expect(initialFailure.instance.state.confirmingTag).toBeNull();
 

@@ -201,6 +201,13 @@ var TagLibraryManager = createClass({
           var isUsed = count > 0;
           var isConfirming = self.state.confirmingTag === tag;
           var isChecking = self.state.checkingTag === tag;
+          var usageLabel = self.state.loading
+            ? "统计中..."
+            : self.state.loadError
+              ? "统计失败"
+              : isUsed
+                ? count + " 篇文章"
+                : "未使用";
           var deletionDisabled =
             self.state.loading || self.state.loadError || isUsed || !!self.state.checkingTag;
 
@@ -211,7 +218,7 @@ var TagLibraryManager = createClass({
             h(
               "span",
               { className: "cms-tag-manager__usage" },
-              isUsed ? count + " 篇文章" : "未使用",
+              usageLabel,
             ),
             isConfirming
               ? h(

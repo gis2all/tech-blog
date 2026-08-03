@@ -218,6 +218,10 @@ describe("Decap CMS schema", () => {
         { label: "工程实践", value: "工程实践" },
       ],
     });
+    expect(getField(posts, "body")).toMatchObject({
+      widget: "markdown",
+      modes: ["raw"],
+    });
     expect(getField(posts, "series")).toMatchObject({
       widget: "relation",
       collection: "series",
@@ -339,15 +343,301 @@ describe("Decap CMS schema", () => {
     expect(tagSelector).toContain('event.key === "ArrowDown"');
     expect(tagSelector).toContain('"aria-activedescendant"');
     expect(tags).toMatchObject({
+      label: "标签",
       files: expect.arrayContaining([
         expect.objectContaining({
           name: "library",
+          label: "标签",
           file: "src/data/tag-library.json",
         }),
       ]),
     });
     expect(tagValues).toEqual(expect.arrayContaining([...postTagValues]));
     expect(new Set(tagValues).size).toBe(tagValues.length);
+  });
+
+  test("adds a draft shortcut without defining a second post collection", async () => {
+    const [configSource, adminIndex, navigationSource] = await Promise.all([
+      readFile(`${root}public/admin/config.yml`, "utf8"),
+      readFile(`${root}public/admin/index.html`, "utf8"),
+      readFile(`${root}public/admin/admin-navigation.js`, "utf8").catch(
+        () => "",
+      ),
+    ]);
+    const config = parse(configSource);
+    const postsCollections = (config.collections as Array<{ name?: string }>).filter(
+      (collection) => collection.name === "posts",
+    );
+    const context: Record<string, unknown> = {
+      location: { hash: "#/collections/posts?view=drafts" },
+      document: {
+        readyState: "loading",
+        addEventListener: () => undefined,
+      },
+      addEventListener: () => undefined,
+      setTimeout: () => 0,
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+
+    expect(postsCollections).toHaveLength(1);
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=7"');
+    expect(
+      (context.DecapAdminNavigation as { isDraftRoute: () => boolean })
+        .isDraftRoute(),
+    ).toBe(true);
+  });
+
+  test("opens the native draft filter only once while its menu renders", async () => {
+    const navigationSource = await readFile(
+      `${root}public/admin/admin-navigation.js`,
+      "utf8",
+    );
+    let filterClicks = 0;
+    const scheduled: Array<() => void> = [];
+    const filterButton = {
+      click: () => {
+        filterClicks += 1;
+      },
+      getAttribute: () => "false",
+      textContent: "筛选",
+    };
+    const context: Record<string, unknown> = {
+      location: { hash: "#/collections/posts?view=drafts" },
+      document: {
+        readyState: "loading",
+        addEventListener: () => undefined,
+        getElementById: () => null,
+        querySelectorAll: (selector: string) =>
+          selector === 'button, [role="button"]' ? [filterButton] : [],
+      },
+      addEventListener: () => undefined,
+      setTimeout: (callback: () => void) => {
+        scheduled.push(callback);
+        return scheduled.length;
+      },
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+    const navigation = context.DecapAdminNavigation as {
+      ensureDraftFilter: () => void;
+    };
+    navigation.ensureDraftFilter();
+    navigation.ensureDraftFilter();
+
+    expect(filterClicks).toBe(1);
+    expect(scheduled).toHaveLength(1);
+  });
+
+  test("finds Decap's role button when opening the draft filter", async () => {
+    const navigationSource = await readFile(
+      `${root}public/admin/admin-navigation.js`,
+      "utf8",
+    );
+    let filterClicks = 0;
+    const filterButton = {
+      click: () => {
+        filterClicks += 1;
+      },
+      getAttribute: () => "false",
+      textContent: "筛选",
+    };
+    const context: Record<string, unknown> = {
+      location: { hash: "#/collections/posts?view=drafts" },
+      document: {
+        readyState: "loading",
+        addEventListener: () => undefined,
+        getElementById: () => null,
+        querySelectorAll: (selector: string) =>
+          selector.includes('[role="button"]') ? [filterButton] : [],
+      },
+      addEventListener: () => undefined,
+      setTimeout: () => 0,
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+    (context.DecapAdminNavigation as { ensureDraftFilter: () => void })
+      .ensureDraftFilter();
+
+    expect(filterClicks).toBe(1);
+  });
+
+  test("clears the draft filter when leaving the shortcut route", async () => {
+    const navigationSource = await readFile(
+      `${root}public/admin/admin-navigation.js`,
+      "utf8",
+    );
+    let menuItemClicks = 0;
+    const checkbox = {
+      checked: false,
+      closest: () => ({
+        click: () => {
+          menuItemClicks += 1;
+          checkbox.checked = !checkbox.checked;
+        },
+      }),
+    };
+    const location = { hash: "#/collections/posts?view=drafts" };
+    const context: Record<string, unknown> = {
+      location,
+      document: {
+        readyState: "loading",
+        addEventListener: () => undefined,
+        getElementById: () => checkbox,
+        querySelectorAll: () => [],
+      },
+      addEventListener: () => undefined,
+      setTimeout: () => 0,
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+    const navigation = context.DecapAdminNavigation as {
+      ensureDraftFilter: () => void;
+    };
+    navigation.ensureDraftFilter();
+    location.hash = "#/collections/posts";
+    navigation.ensureDraftFilter();
+
+    expect(menuItemClicks).toBe(2);
+    expect(checkbox.checked).toBe(false);
+  });
+
+  test("closes the filter menu after applying the draft shortcut", async () => {
+    const navigationSource = await readFile(
+      `${root}public/admin/admin-navigation.js`,
+      "utf8",
+    );
+    let filterButtonClicks = 0;
+    let checkboxVisible = false;
+    const scheduled: Array<() => void> = [];
+    const filterButton = {
+      click: () => {
+        filterButtonClicks += 1;
+        checkboxVisible = !checkboxVisible;
+      },
+      getAttribute: () => (checkboxVisible ? "true" : "false"),
+      textContent: "筛选",
+    };
+    const checkbox = {
+      checked: false,
+      closest: () => ({
+        click: () => {
+          checkbox.checked = true;
+        },
+      }),
+    };
+    const context: Record<string, unknown> = {
+      location: { hash: "#/collections/posts?view=drafts" },
+      document: {
+        readyState: "loading",
+        addEventListener: () => undefined,
+        getElementById: () => (checkboxVisible ? checkbox : null),
+        querySelectorAll: (selector: string) =>
+          selector === 'button, [role="button"]' ? [filterButton] : [],
+      },
+      addEventListener: () => undefined,
+      setTimeout: (callback: () => void) => {
+        scheduled.push(callback);
+        return scheduled.length;
+      },
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+    const navigation = context.DecapAdminNavigation as {
+      ensureDraftFilter: () => void;
+    };
+    navigation.ensureDraftFilter();
+    scheduled.shift()?.();
+    scheduled.shift()?.();
+    navigation.ensureDraftFilter();
+
+    expect(checkbox.checked).toBe(true);
+    expect(filterButtonClicks).toBe(2);
+    expect(scheduled).toHaveLength(0);
+  });
+
+  test("observes Decap navigation attribute updates", async () => {
+    const navigationSource = await readFile(
+      `${root}public/admin/admin-navigation.js`,
+      "utf8",
+    );
+    let observerOptions: Record<string, unknown> | undefined;
+    class MutationObserverStub {
+      constructor(_callback: () => void) {}
+
+      observe(_target: unknown, options: Record<string, unknown>) {
+        observerOptions = options;
+      }
+    }
+    const context: Record<string, unknown> = {
+      location: { hash: "#/" },
+      document: {
+        body: {},
+        readyState: "complete",
+        getElementById: () => null,
+        querySelector: () => null,
+        querySelectorAll: () => [],
+      },
+      MutationObserver: MutationObserverStub,
+      addEventListener: () => undefined,
+      setTimeout: () => 0,
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+
+    expect(observerOptions).toMatchObject({
+      attributes: true,
+      attributeFilter: ["aria-current", "class"],
+      childList: true,
+      subtree: true,
+    });
+  });
+
+  test("retries the draft filter when the first menu click is too early", async () => {
+    const navigationSource = await readFile(
+      `${root}public/admin/admin-navigation.js`,
+      "utf8",
+    );
+    let filterClicks = 0;
+    const scheduled: Array<() => void> = [];
+    const filterButton = {
+      click: () => {
+        filterClicks += 1;
+      },
+      getAttribute: () => "false",
+      textContent: "筛选",
+    };
+    const context: Record<string, unknown> = {
+      location: { hash: "#/collections/posts?view=drafts" },
+      document: {
+        readyState: "loading",
+        addEventListener: () => undefined,
+        getElementById: () => null,
+        querySelectorAll: (selector: string) =>
+          selector === 'button, [role="button"]' ? [filterButton] : [],
+      },
+      addEventListener: () => undefined,
+      setTimeout: (callback: () => void) => {
+        scheduled.push(callback);
+        return scheduled.length;
+      },
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+    const navigation = context.DecapAdminNavigation as {
+      ensureDraftFilter: () => void;
+    };
+    navigation.ensureDraftFilter();
+    scheduled.shift()?.();
+
+    expect(filterClicks).toBe(2);
   });
 
   test("redirects the local CMS directory URL to its static entry page", async () => {

@@ -55,6 +55,7 @@ collections:
       - label: 正文
         name: body
         widget: markdown
+        modes: [raw]
         hint: 使用 Markdown 写作，可在右侧预览查看接近前台文章页的效果。
       - label: 分类
         name: category
@@ -163,11 +164,11 @@ collections:
             widget: string
 
   - name: tags
-    label: 标签库
+    label: 标签
     label_singular: 标签
     files:
       - name: library
-        label: 标签库
+        label: 标签
         file: src/data/tag-library.json
         fields:
           - label: 标签
