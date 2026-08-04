@@ -261,6 +261,12 @@ var TagLibraryManager = createClass({
       "div",
       { className: "cms-tag-manager" },
       h(
+        "header",
+        { className: "cms-tag-manager__heading" },
+        h("h1", null, "标签"),
+        h("p", null, "集中维护全局标签库"),
+      ),
+      h(
         "div",
         { className: "cms-tag-manager__toolbar" },
         h("input", {

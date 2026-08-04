@@ -10,6 +10,7 @@
     article: "all",
     unusedOnly: false,
     selectedForDeletion: new Set(),
+    dimensionsByPath: Object.create(null),
     loading: false,
     message: "",
     showOptions: {},
@@ -17,7 +18,9 @@
     uploadTitle: "",
   };
   var overlay = null;
-  var panel = null;
+  var modalPanel = null;
+  var standalonePanel = null;
+  var mode = "modal";
   var previousFocus = null;
   var insertMedia = null;
 
@@ -51,6 +54,19 @@
     var bytes = Number(size) || 0;
     if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(2) + " MB";
     return Math.max(1, Math.round(bytes / 1024)) + " KB";
+  }
+
+  function dimensionsLabel(file) {
+    if (!isImage(file.path)) return "视频";
+    return state.dimensionsByPath[file.path] || "读取尺寸...";
+  }
+
+  function updateImageDimensions(file, image, item) {
+    if (!image.naturalWidth || !image.naturalHeight) return;
+    var label = image.naturalWidth + " x " + image.naturalHeight;
+    state.dimensionsByPath[file.path] = label;
+    var dimensions = item.querySelector("[data-dimensions]");
+    if (dimensions) dimensions.textContent = label;
   }
 
   function referenceSet() {
@@ -105,6 +121,32 @@
       });
     }));
     return groups.flat();
+  }
+
+  function activePanel() {
+    return mode === "page" ? standalonePanel : modalPanel;
+  }
+
+  function articleTitleExists(title) {
+    var normalized = String(title || "").trim();
+    return state.articles.some(function (article) { return article.title === normalized; });
+  }
+
+  function uploadTitleError(title) {
+    var normalized = String(title || "").trim();
+    var error = titleError(normalized);
+    if (error) return error;
+    if (mode === "page" && !articleTitleExists(normalized)) return "请选择已有文章。";
+    return "";
+  }
+
+  function selectUploadTitle(title) {
+    state.uploadTitle = String(title || "").trim();
+    var panel = activePanel();
+    if (!panel) return;
+    var input = panel.querySelector(".cms-media__article-title");
+    if (input) input.value = state.uploadTitle;
+    updateUploadButton(panel);
   }
 
   async function loadLibrary() {
@@ -167,6 +209,34 @@
     hide();
   }
 
+  function handleZoomKeydown(event) {
+    if (event.key === "Escape") hideZoom();
+  }
+
+  function hideZoom() {
+    var existing = document.querySelector(".cms-media__zoom");
+    if (existing) existing.remove();
+    document.removeEventListener("keydown", handleZoomKeydown);
+  }
+
+  function showZoom(file) {
+    hideZoom();
+    var zoom = element("div");
+    zoom.className = "cms-media__zoom";
+    zoom.setAttribute("role", "dialog");
+    zoom.setAttribute("aria-modal", "true");
+    zoom.setAttribute("aria-label", file.name || "图片预览");
+    var image = element("img");
+    image.alt = file.name || "";
+    image.src = publicPath(file);
+    zoom.appendChild(image);
+    zoom.addEventListener("click", function (event) {
+      if (event.target === zoom) hideZoom();
+    });
+    document.addEventListener("keydown", handleZoomKeydown);
+    document.body.appendChild(zoom);
+  }
+
   async function copyMarkdown(file) {
     var alt = window.prompt("请输入图片替代文本（必填）", "");
     if (!alt || !alt.trim()) {
@@ -191,7 +261,7 @@
   async function upload() {
     var backend = window.DecapArticleMediaBackend;
     var title = state.uploadTitle.trim();
-    var error = titleError(title);
+    var error = uploadTitleError(title);
     if (error || !state.uploadFile) {
       state.message = error || "请选择文件。";
       render();
@@ -260,6 +330,21 @@
     }
   }
 
+  function updateDeleteButton(container) {
+    if (!container) return;
+    var button = container.querySelector(".cms-media__delete");
+    if (!button) return;
+    button.textContent = "删除已选 (" + state.selectedForDeletion.size + ")";
+    button.disabled = state.selectedForDeletion.size === 0 || state.loading;
+  }
+
+  function updateUploadButton(container) {
+    if (!container) return;
+    var button = container.querySelector(".cms-media__upload-button");
+    if (!button) return;
+    button.disabled = state.loading || !state.uploadFile || Boolean(uploadTitleError(state.uploadTitle));
+  }
+
   function renderToolbar(container) {
     var toolbar = element("div", "cms-media__toolbar");
     var search = element("input");
@@ -269,7 +354,7 @@
     search.setAttribute("aria-label", "搜索文章或文件");
     search.addEventListener("input", function () {
       state.query = search.value;
-      render();
+      renderMediaContent(activePanel());
     });
     toolbar.appendChild(search);
 
@@ -282,7 +367,7 @@
     article.value = state.article;
     article.addEventListener("change", function () {
       state.article = article.value;
-      render();
+      renderMediaContent(activePanel());
     });
     toolbar.appendChild(article);
 
@@ -292,7 +377,7 @@
     unused.checked = state.unusedOnly;
     unused.addEventListener("change", function () {
       state.unusedOnly = unused.checked;
-      render();
+      renderMediaContent(activePanel());
     });
     unusedLabel.append(unused, document.createTextNode("仅未使用"));
     toolbar.appendChild(unusedLabel);
@@ -303,22 +388,28 @@
       "删除已选 (" + state.selectedForDeletion.size + ")",
     );
     deleteButton.type = "button";
-    deleteButton.disabled = state.selectedForDeletion.size === 0 || state.loading;
     deleteButton.addEventListener("click", deleteSelected);
     toolbar.appendChild(deleteButton);
+    updateDeleteButton(toolbar);
     container.appendChild(toolbar);
   }
 
   function renderUpload(container) {
     var uploadArea = element("section", "cms-media__upload");
-    var title = element("input");
+    var title = element("input", "cms-media__article-title");
     title.type = "text";
     title.placeholder = "文章标题";
     title.value = state.uploadTitle;
     title.setAttribute("aria-label", "上传目标文章标题");
+    title.setAttribute("list", "cms-media-article-options");
     title.addEventListener("input", function () {
       state.uploadTitle = title.value;
-      render();
+      updateUploadButton(uploadArea);
+    });
+    var datalist = element("datalist");
+    datalist.id = "cms-media-article-options";
+    state.articles.forEach(function (article) {
+      datalist.appendChild(new Option(article.title, article.title));
     });
     var file = element("input");
     file.type = "file";
@@ -327,12 +418,13 @@
       : "image/jpeg,image/png,image/webp,image/gif,image/svg+xml,video/mp4";
     file.addEventListener("change", function () {
       state.uploadFile = file.files && file.files[0];
+      updateUploadButton(uploadArea);
     });
-    var button = element("button", "", "上传");
+    var button = element("button", "cms-media__upload-button", "上传并压缩");
     button.type = "button";
-    button.disabled = state.loading || Boolean(titleError(state.uploadTitle));
     button.addEventListener("click", upload);
-    uploadArea.append(title, file, button);
+    uploadArea.append(title, datalist, file, button);
+    updateUploadButton(uploadArea);
     container.appendChild(uploadArea);
   }
 
@@ -340,17 +432,25 @@
     var item = element("article", "cms-media__item");
     var visual = element("div", "cms-media__visual");
     if (isImage(file.path)) {
+      visual.classList.add("cms-media__visual--image");
       var image = element("img");
-      image.src = publicPath(file);
       image.alt = "";
       image.loading = "lazy";
       image.addEventListener("load", function () {
-        var dimensions = item.querySelector("[data-dimensions]");
-        if (dimensions) {
-          dimensions.textContent = image.naturalWidth + " x " + image.naturalHeight;
+        updateImageDimensions(file, image, item);
+      });
+      image.src = publicPath(file);
+      visual.appendChild(image);
+      visual.tabIndex = 0;
+      visual.setAttribute("role", "button");
+      visual.setAttribute("aria-label", "放大预览 " + file.name);
+      visual.addEventListener("click", function () { showZoom(file); });
+      visual.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          showZoom(file);
         }
       });
-      visual.appendChild(image);
     } else {
       visual.textContent = "MP4";
     }
@@ -360,7 +460,7 @@
     details.appendChild(element("span", "", formatSize(file.size)));
     var dimensions = element("span", "");
     dimensions.dataset.dimensions = "";
-    dimensions.textContent = isImage(file.path) ? "读取尺寸..." : "视频";
+    dimensions.textContent = dimensionsLabel(file);
     details.appendChild(dimensions);
     details.appendChild(element(
       "span",
@@ -393,7 +493,7 @@
     checkbox.addEventListener("change", function () {
       if (checkbox.checked) state.selectedForDeletion.add(file.path);
       else state.selectedForDeletion.delete(file.path);
-      render();
+      updateDeleteButton(activePanel());
     });
     deletion.append(checkbox, document.createTextNode("删除"));
     actions.appendChild(deletion);
@@ -401,17 +501,59 @@
     container.appendChild(item);
   }
 
+  function renderMediaContent(container) {
+    if (!container) return;
+    var existing = container.querySelector(".cms-media__content");
+    if (existing) existing.remove();
+    if (state.loading) return;
+
+    var files = filteredFiles();
+    var groups = new Map();
+    files.forEach(function (file) {
+      if (!groups.has(file.article)) groups.set(file.article, []);
+      groups.get(file.article).push(file);
+    });
+    var content = element("div", "cms-media__content");
+    groups.forEach(function (groupFiles, title) {
+      var group = element("section", "cms-media__group");
+      var groupTitle = element("h3", "cms-media__group-title", title + " (" + groupFiles.length + ")");
+      groupTitle.tabIndex = 0;
+      groupTitle.setAttribute("role", "button");
+      groupTitle.setAttribute("aria-label", "选择上传目标 " + title);
+      groupTitle.addEventListener("click", function () { selectUploadTitle(title); });
+      groupTitle.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectUploadTitle(title);
+        }
+      });
+      group.appendChild(groupTitle);
+      var grid = element("div", "cms-media__grid");
+      groupFiles.forEach(function (file) { renderFile(file, grid); });
+      group.appendChild(grid);
+      content.appendChild(group);
+    });
+    if (!files.length) content.appendChild(element("p", "cms-media__empty", "没有匹配的媒体。"));
+    container.appendChild(content);
+  }
+
   function render() {
+    var panel = activePanel();
     if (!panel) return;
     panel.replaceChildren();
     var header = element("header", "cms-media__header");
-    header.appendChild(element("h2", "", "文章媒体库"));
-    var close = element("button", "cms-media__close", "x");
-    close.type = "button";
-    close.title = "关闭";
-    close.setAttribute("aria-label", "关闭媒体库");
-    close.addEventListener("click", hide);
-    header.appendChild(close);
+    var heading = element("div", "cms-media__heading");
+    heading.appendChild(element("h2", "", "文章媒体库"));
+    heading.appendChild(element("p", "", "按文章目录整理封面和正文图片"));
+    header.appendChild(heading);
+    if (mode !== "page") {
+      var close = element("button", "cms-media__close", "x");
+      close.type = "button";
+      close.title = "关闭";
+      close.setAttribute("aria-label", "关闭媒体库");
+      close.addEventListener("click", hide);
+      header.appendChild(close);
+    }
     panel.appendChild(header);
     renderToolbar(panel);
     renderUpload(panel);
@@ -424,23 +566,7 @@
       return;
     }
 
-    var files = filteredFiles();
-    var groups = new Map();
-    files.forEach(function (file) {
-      if (!groups.has(file.article)) groups.set(file.article, []);
-      groups.get(file.article).push(file);
-    });
-    var content = element("div", "cms-media__content");
-    groups.forEach(function (groupFiles, title) {
-      var group = element("section", "cms-media__group");
-      group.appendChild(element("h3", "", title + " (" + groupFiles.length + ")"));
-      var grid = element("div", "cms-media__grid");
-      groupFiles.forEach(function (file) { renderFile(file, grid); });
-      group.appendChild(grid);
-      content.appendChild(group);
-    });
-    if (!files.length) content.appendChild(element("p", "cms-media__empty", "没有匹配的媒体。"));
-    panel.appendChild(content);
+    renderMediaContent(panel);
   }
 
   function ensureModal() {
@@ -450,8 +576,8 @@
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
     overlay.setAttribute("aria-label", "文章媒体库");
-    panel = element("div", "cms-media__panel");
-    overlay.appendChild(panel);
+    modalPanel = element("div", "cms-media__panel");
+    overlay.appendChild(modalPanel);
     overlay.addEventListener("mousedown", function (event) {
       if (event.target === overlay) hide();
     });
@@ -460,6 +586,7 @@
 
   function show(options) {
     ensureModal();
+    mode = "modal";
     previousFocus = document.activeElement;
     state.showOptions = options || {};
     state.uploadTitle = currentTitle() || state.uploadTitle;
@@ -471,10 +598,35 @@
   }
 
   function hide() {
+    hideZoom();
     if (!overlay) return;
     overlay.hidden = true;
     document.body.classList.remove("cms-media-open");
     if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+    if (standalonePanel) {
+      mode = "page";
+      state.showOptions = { standalone: true };
+      render();
+    }
+  }
+
+  function mountStandalone(container) {
+    if (!container) return;
+    if (standalonePanel === container && mode === "page") return;
+    standalonePanel = container;
+    standalonePanel.classList.add("cms-media__panel", "cms-media__panel--page");
+    mode = "page";
+    state.showOptions = { standalone: true };
+    state.uploadTitle = state.uploadTitle || currentTitle();
+    state.message = "";
+    render();
+    loadLibrary();
+  }
+
+  function unmountStandalone(container) {
+    if (container && container !== standalonePanel) return;
+    standalonePanel = null;
+    if (mode === "page") mode = "modal";
   }
 
   CMS.registerMediaLibrary({
@@ -488,4 +640,11 @@
       };
     },
   });
+
+  window.DecapArticleMediaLibrary = {
+    mountStandalone: mountStandalone,
+    unmountStandalone: unmountStandalone,
+    show: show,
+    hide: hide,
+  };
 })();
