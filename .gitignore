@@ -8,6 +8,7 @@ coverage/
 
 # Local planning and agent handoff docs
 docs/
+/design/
 
 # Local one-time migration artifacts and raw source data
 .migration/
