@@ -1209,7 +1209,7 @@ describe("Decap atomic tag synchronization", () => {
     const decapIndex = html.indexOf("decap-cms@3.15.1");
     const syncIndex = html.indexOf('/admin/tag-sync.js');
     const selectorIndex = html.indexOf('/admin/tag-selector.js');
-    const initIndex = html.lastIndexOf("CMS.init()");
+    const initIndex = html.indexOf("/admin/cms-init.js");
 
     expect(manualIndex).toBeGreaterThan(-1);
     expect(manualIndex).toBeLessThan(decapIndex);

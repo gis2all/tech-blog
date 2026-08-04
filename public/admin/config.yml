@@ -30,7 +30,7 @@ collections:
     media_folder: public/images/posts/{{title}}
     public_folder: /images/posts/{{title}}
     preview_path: posts/{{title}}
-    summary: "{{title}} · {{publishedAt}} · {{category}}"
+    summary: "{{title}} · {{publishedAt}} · {{category}} · {{draft}}"
     sortable_fields: [publishedAt, updatedAt, title]
     view_filters:
       - label: 草稿
@@ -191,7 +191,7 @@ collections:
     extension: json
     format: json
     slug: "{{slug}}"
-    summary: "{{title}} · 排序 {{order}}"
+    summary: "{{title}} · 排序 {{order}} · {{draft}}"
     sortable_fields: [order, title]
     view_filters:
       - label: 草稿
@@ -241,7 +241,7 @@ collections:
     extension: json
     format: json
     slug: "{{slug}}"
-    summary: "{{title}} · {{publishedAt}}"
+    summary: "{{title}} · {{publishedAt}} · {{draft}}"
     sortable_fields: [order, publishedAt, title]
     view_filters:
       - label: 草稿
