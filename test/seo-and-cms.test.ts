@@ -182,7 +182,7 @@ describe("Decap CMS schema", () => {
       editor: { preview: true },
     });
     expect(posts).toMatchObject({
-      summary: "{{title}} · {{publishedAt}} · {{category}}",
+      summary: "{{title}} · {{publishedAt}} · {{category}} · {{draft}}",
       sortable_fields: ["publishedAt", "updatedAt", "title"],
       view_filters: expect.arrayContaining([
         expect.objectContaining({ field: "draft", pattern: true }),
@@ -194,14 +194,14 @@ describe("Decap CMS schema", () => {
       ]),
     });
     expect(series).toMatchObject({
-      summary: "{{title}} · 排序 {{order}}",
+      summary: "{{title}} · 排序 {{order}} · {{draft}}",
       sortable_fields: ["order", "title"],
       view_filters: expect.arrayContaining([
         expect.objectContaining({ field: "draft", pattern: true }),
       ]),
     });
     expect(projects).toMatchObject({
-      summary: "{{title}} · {{publishedAt}}",
+      summary: "{{title}} · {{publishedAt}} · {{draft}}",
       sortable_fields: ["order", "publishedAt", "title"],
       view_filters: expect.arrayContaining([
         expect.objectContaining({ field: "featured", pattern: true }),
@@ -275,13 +275,16 @@ describe("Decap CMS schema", () => {
     });
 
     expect(previewRegistrations.styles).toContain("/admin/preview.css");
-    expect(previewRegistrations.templates).toHaveLength(1);
-    expect(previewRegistrations.templates[0]?.collection).toBe("posts");
-    expect(
-      typeof (previewRegistrations.templates[0]?.template as { render?: unknown })
-        .render,
-    ).toBe("function");
+    expect(previewRegistrations.templates.map((item) => item.collection)).toEqual([
+      "posts",
+      "series",
+      "projects",
+    ]);
+    for (const registration of previewRegistrations.templates) {
+      expect(typeof (registration.template as { render?: unknown }).render).toBe("function");
+    }
     expect(previewStyle).toContain(".cms-post-preview");
+    expect(previewStyle).toContain(".cms-entity-preview");
   });
 
   test("supports local CMS development without GitHub authentication", async () => {
@@ -382,7 +385,7 @@ describe("Decap CMS schema", () => {
     runInNewContext(navigationSource, context);
 
     expect(postsCollections).toHaveLength(1);
-    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=9"');
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=16"');
     expect(
       (context.DecapAdminNavigation as { isDraftRoute: () => boolean })
         .isDraftRoute(),
@@ -400,7 +403,7 @@ describe("Decap CMS schema", () => {
         href,
         className,
         lastChild: { textContent: href },
-        parentElement: { before: () => undefined },
+        parentElement: { after: () => undefined },
         dataset: {} as Record<string, string>,
         getAttribute: (name: string) => attributes.get(name) ?? null,
         setAttribute: (name: string, value: string) => attributes.set(name, value),
@@ -412,9 +415,12 @@ describe("Decap CMS schema", () => {
     const postsLink = makeLink("#/collections/posts", "native-active");
     const tagsLink = makeLink("#/collections/tags", "native-inactive");
     let draftLink: ReturnType<typeof makeLink> | undefined;
+    let insertedAfterPosts = false;
     let hashchangeHandler: (() => void) | undefined;
     postsLink.parentElement = {
-      before: () => undefined,
+      after: () => {
+        insertedAfterPosts = true;
+      },
     };
     const context: Record<string, unknown> = {
       location: { hash: "#/collections/posts" },
@@ -454,12 +460,61 @@ describe("Decap CMS schema", () => {
 
     expect(postsLink.getAttribute("aria-current")).toBe("page");
     expect(postsLink.className).toBe("native-active");
+    expect(insertedAfterPosts).toBe(true);
 
     (context.location as { hash: string }).hash = "#/collections/posts?view=drafts";
     hashchangeHandler?.();
 
     expect(draftLink?.getAttribute("aria-current")).toBe("page");
     expect(postsLink.getAttribute("aria-current")).toBeNull();
+  });
+
+  test("keeps the tag library inside the admin shell and normalizes legacy editor links", async () => {
+    const navigationSource = await readFile(
+      `${root}public/admin/admin-navigation.js`,
+      "utf8",
+    );
+    let hashchangeHandler: (() => void) | undefined;
+    const location = { hash: "#/collections/tags/entries/library" };
+    const context: Record<string, unknown> = {
+      location,
+      document: {
+        body: {},
+        documentElement: {
+          getAttribute: () => null,
+          removeAttribute: () => undefined,
+          setAttribute: () => undefined,
+        },
+        readyState: "complete",
+        addEventListener: () => undefined,
+        getElementById: () => null,
+        querySelector: () => null,
+        querySelectorAll: () => [],
+      },
+      localStorage: {
+        getItem: () => null,
+        setItem: () => undefined,
+      },
+      MutationObserver: class {
+        observe() {}
+      },
+      addEventListener: (name: string, handler: () => void) => {
+        if (name === "hashchange") hashchangeHandler = handler;
+      },
+      setTimeout: () => 0,
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+    location.hash = "#/collections/tags";
+    hashchangeHandler?.();
+
+    expect(location.hash).toBe("#/collections/tags");
+
+    location.hash = "#/collections/tags/entries/library";
+    hashchangeHandler?.();
+
+    expect(location.hash).toBe("#/collections/tags");
   });
 
   test("opens the native draft filter only once while its menu renders", async () => {
@@ -670,6 +725,68 @@ describe("Decap CMS schema", () => {
       childList: true,
       subtree: true,
     });
+  });
+
+  test("runs global article search while typing in the top search box", async () => {
+    const navigationSource = await readFile(
+      `${root}public/admin/admin-navigation.js`,
+      "utf8",
+    );
+    const listeners = new Map<string, () => void>();
+    const body = {
+      appendChild: (element: { parentElement?: unknown }) => {
+        element.parentElement = body;
+      },
+    };
+    const searchControl = {
+      dataset: {} as Record<string, string>,
+      parentElement: body,
+      value: "",
+      addEventListener: (name: string, handler: () => void) => {
+        listeners.set(name, handler);
+      },
+    };
+    const calls: string[] = [];
+    class MutationObserverStub {
+      constructor(_callback: () => void) {}
+
+      observe() {}
+    }
+    const context: Record<string, unknown> = {
+      location: { hash: "#/collections/posts" },
+      document: {
+        body,
+        documentElement: {
+          getAttribute: () => null,
+          removeAttribute: () => undefined,
+          setAttribute: () => undefined,
+        },
+        readyState: "complete",
+        addEventListener: () => undefined,
+        getElementById: () => null,
+        querySelector: (selector: string) =>
+          selector === "[data-cms-global-search]" ? searchControl : null,
+        querySelectorAll: () => [],
+      },
+      DecapAdminShell: {
+        searchPosts: (query: string) => {
+          calls.push(query);
+        },
+      },
+      MutationObserver: MutationObserverStub,
+      addEventListener: () => undefined,
+      setTimeout: (callback: () => void) => {
+        callback();
+        return 0;
+      },
+    };
+    context.window = context;
+
+    runInNewContext(navigationSource, context);
+    searchControl.value = "TensorFlow";
+    listeners.get("input")?.();
+
+    expect(calls).toEqual(["TensorFlow"]);
   });
 
   test("retries the draft filter when the first menu click is too early", async () => {

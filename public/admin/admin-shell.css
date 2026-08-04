@@ -1,0 +1,1741 @@
+:root {
+  --cms-canvas: #f5f6f7;
+  --cms-panel: #ffffff;
+  --cms-soft: #f8fafc;
+  --cms-line: #e3e7eb;
+  --cms-line-strong: #cfd7dd;
+  --cms-text: #20242b;
+  --cms-muted: #5d6670;
+  --cms-faint: #8a939c;
+  --cms-ink: #18324a;
+  --cms-brand: #0b7285;
+  --cms-brand-strong: #075e6e;
+  --cms-brand-soft: #e7f5f7;
+  --cms-danger: #a33a43;
+  --cms-warning: #bd6718;
+  --cms-success: #16845b;
+  --cms-radius: 6px;
+  color: var(--cms-text);
+  background: var(--cms-canvas);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+[data-theme="dark"] {
+  --cms-canvas: #13171c;
+  --cms-panel: #181c22;
+  --cms-soft: #20252d;
+  --cms-line: #2c333d;
+  --cms-line-strong: #3b4550;
+  --cms-text: #e7edf2;
+  --cms-muted: #aeb8c3;
+  --cms-faint: #8995a2;
+  --cms-ink: #b9d9de;
+  --cms-brand: #55bdc8;
+  --cms-brand-strong: #76d0d9;
+  --cms-brand-soft: #17363c;
+  --cms-danger: #ef959d;
+  --cms-warning: #f3b66a;
+  --cms-success: #6ccd9c;
+  color-scheme: dark;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--cms-canvas) !important;
+  color: var(--cms-text) !important;
+}
+
+#nc-root {
+  min-height: 100vh;
+  background: var(--cms-canvas);
+  color: var(--cms-text);
+}
+
+#nc-root:has([class*=LoginButton]) {
+  box-sizing: border-box;
+  display: block;
+  min-height: 100vh;
+  padding: 0;
+}
+
+#nc-root:has([class*=LoginButton]) *:not([class*=LoginButton]):not([class*=LoginButton] *) {
+  visibility: hidden !important;
+}
+
+#nc-root:has([class*=LoginButton]) [class*=LoginButton] {
+  position: fixed !important;
+  z-index: 45 !important;
+  top: 392px !important;
+  left: 50% !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+  width: max-content !important;
+  min-width: 168px !important;
+  max-width: none !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  overflow: visible !important;
+  gap: 8px !important;
+  padding: 0 16px !important;
+  border: 1px solid var(--cms-brand) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-brand) !important;
+  color: #fff !important;
+  visibility: visible !important;
+  transform: translateX(-50%) !important;
+  box-shadow: 0 2px 5px rgb(11 114 133 / 18%) !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+#nc-root:has([class*=LoginButton]) [class*=LoginButton] svg {
+  display: block !important;
+  width: 22px !important;
+  height: 22px !important;
+  flex: 0 0 22px;
+  visibility: visible !important;
+}
+
+#nc-root:has([class*=LoginButton]) [class*=LoginButton] * {
+  box-sizing: border-box !important;
+  visibility: visible !important;
+  max-width: none !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+}
+
+#nc-root:has([class*=LoginButton]) [class*=LoginButton] .cms-login-button-label {
+  display: block !important;
+  width: auto !important;
+  min-width: max-content !important;
+  flex: 0 0 auto !important;
+  line-height: 1 !important;
+}
+
+#nc-root:has([class*=LoginButton]) [class*=LoginButton]::after {
+  content: "授权仅用于当前内容仓库";
+  position: absolute;
+  top: calc(100% + 18px);
+  left: 50%;
+  width: min(420px, calc(100vw - 40px));
+  color: var(--cms-faint);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#nc-root:has([class*=LoginButton]) [class*=LoginButton]:hover,
+#nc-root:has([class*=LoginButton]) [class*=LoginButton]:focus-visible {
+  border-color: var(--cms-brand-strong) !important;
+  background: var(--cms-brand-strong) !important;
+}
+
+.cms-login-copy {
+  display: none;
+}
+
+body:has(#nc-root [class*=LoginButton]) > .cms-login-copy {
+  position: fixed;
+  z-index: 40;
+  top: 239px;
+  left: 50%;
+  display: block;
+  width: min(420px, calc(100% - 40px));
+  color: var(--cms-text);
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.cms-login-copy__mark {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 18px;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--cms-ink);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.cms-login-copy h1,
+.cms-login-copy p {
+  margin: 0;
+}
+
+.cms-login-copy h1 {
+  color: var(--cms-ink);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.cms-login-copy p {
+  margin: 8px 0 26px;
+  color: var(--cms-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+body:has(#nc-root [class*=LoginButton]) #nc-root > header,
+body:has(#nc-root [class*=LoginButton]) > .cms-theme-toggle,
+body:has(#nc-root [class*=LoginButton]) > .cms-back-to-site,
+body:has(#nc-root [class*=LoginButton]) > .cms-global-search {
+  display: none !important;
+}
+
+#nc-root > header {
+  position: sticky !important;
+  z-index: 50 !important;
+  top: 0;
+  min-height: 62px !important;
+  border-bottom: 1px solid var(--cms-line) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+}
+
+#nc-root > header > div {
+  box-sizing: border-box;
+  width: min(1280px, 100%) !important;
+  min-height: 62px !important;
+  margin: 0 auto !important;
+  padding: 0 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+#nc-root > header > div::before {
+  content: "知";
+  order: -3;
+  display: grid;
+  flex: 0 0 27px;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 5px;
+  background: var(--cms-ink);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 27px;
+  box-shadow: inset -4px -4px 0 rgb(11 114 133 / 35%);
+}
+
+#nc-root > header > div::after {
+  content: "行";
+  order: -2;
+  flex: 0 0 auto;
+  margin: 0 2px 0 0;
+  padding: 0;
+  color: var(--cms-ink);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 27px;
+}
+
+#nc-root > header nav {
+  display: flex !important;
+  align-items: stretch !important;
+  align-self: stretch !important;
+}
+
+#nc-root > header nav::before {
+  content: "后台";
+  display: flex;
+  align-self: center;
+  align-items: center;
+  height: 27px;
+  margin-right: 2px;
+  padding: 0 16px;
+  border-left: 1px solid var(--cms-line);
+  color: var(--cms-muted);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 27px;
+  white-space: nowrap;
+}
+
+#nc-root > header nav ul {
+  height: 100%;
+  margin: 0 !important;
+  display: none !important;
+  align-items: stretch !important;
+  gap: 2px !important;
+}
+
+#nc-root > header nav a,
+#nc-root > header nav button {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 62px !important;
+  gap: 6px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--cms-muted) !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+#nc-root > header nav a[aria-current="page"],
+#nc-root > header nav a.header-link-active,
+#nc-root > header nav button:hover {
+  color: var(--cms-text) !important;
+}
+
+#nc-root > header nav a[aria-current="page"]::after,
+#nc-root > header nav a.header-link-active::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  bottom: 0;
+  left: 10px;
+  height: 2px;
+  background: var(--cms-brand);
+}
+
+#nc-root > header nav svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+#nc-root > header [class*=AppHeaderActions] {
+  margin-left: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.cms-theme-toggle {
+  display: inline-grid;
+  flex: 0 0 34px;
+  place-items: center;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  cursor: pointer;
+}
+
+.cms-theme-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cms-back-to-site {
+  display: inline-grid;
+  flex: 0 0 34px;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--cms-line);
+  border-radius: var(--cms-radius);
+  background: var(--cms-panel);
+  color: var(--cms-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.cms-back-to-site:hover,
+.cms-back-to-site:focus-visible {
+  border-color: var(--cms-brand);
+  background: var(--cms-brand-soft);
+  color: var(--cms-brand);
+}
+
+.cms-back-to-site svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cms-theme-toggle:hover,
+.cms-theme-toggle:focus-visible {
+  border-color: var(--cms-brand) !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand) !important;
+}
+
+.cms-global-search {
+  position: static;
+  flex: 0 1 335px;
+  width: min(335px, 28vw);
+  height: 34px;
+  margin-left: auto;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--cms-line);
+  border-radius: var(--cms-radius);
+  background: var(--cms-soft);
+  color: var(--cms-text);
+  font: 12px/1 inherit;
+}
+
+body > .cms-theme-toggle {
+  position: fixed;
+  z-index: 60;
+  top: 14px;
+  right: 310px;
+}
+
+.cms-global-search::placeholder {
+  color: var(--cms-faint);
+}
+
+.cms-global-search:focus {
+  border-color: var(--cms-brand);
+  outline: 2px solid color-mix(in srgb, var(--cms-brand) 16%, transparent);
+  outline-offset: 1px;
+}
+
+body > .cms-global-search,
+body > .cms-back-to-site,
+body:has(#nc-root [class*=EditorContainer]) .cms-global-search,
+body:has(#nc-root [class*=LoginButton]) .cms-global-search {
+  display: none;
+}
+
+#nc-root > header [class*=AppHeaderQuickNewButton] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+  min-width: 104px !important;
+  min-height: 34px !important;
+  gap: 8px !important;
+  padding: 0 30px 0 14px !important;
+  border: 1px solid var(--cms-brand) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-brand) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+#nc-root > header [class*=AppHeaderQuickNewButton]::after {
+  top: 50% !important;
+  right: 14px !important;
+  bottom: auto !important;
+  transform: translateY(-50%) !important;
+}
+
+#nc-root > header [class*=AppHeaderQuickNewButton] svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+#nc-root > header [class*=AvatarDropdownButton] {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-ink) !important;
+}
+
+#nc-root > header [class*=AvatarDropdownButton] svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+#nc-root > [class*=AppMainContainer] {
+  box-sizing: border-box;
+  width: min(1280px, 100%) !important;
+  min-height: calc(100vh - 62px) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+#nc-root > [class*=AppMainContainer] > [class*=CollectionContainer] {
+  box-sizing: border-box;
+  min-height: calc(100vh - 62px) !important;
+  margin: 0 !important;
+  padding: 18px 18px 32px !important;
+  display: grid !important;
+  grid-template-columns: 232px minmax(0, 1fr) !important;
+  gap: 16px !important;
+  background: transparent !important;
+}
+
+#nc-root aside {
+  position: sticky !important;
+  top: 80px !important;
+  align-self: start !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-muted) !important;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 6%) !important;
+}
+
+#nc-root aside h2 {
+  margin: 0 !important;
+  padding: 13px 14px !important;
+  border-bottom: 1px solid var(--cms-line) !important;
+  color: var(--cms-ink) !important;
+  font-size: 0 !important;
+  font-weight: 750 !important;
+  line-height: 1.5 !important;
+}
+
+#nc-root aside h2::after {
+  content: "内容管理";
+  font-size: 14px;
+}
+
+#nc-root aside [class*=SearchContainer] {
+  display: none !important;
+}
+
+#nc-root aside [class*=InputContainer] {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 34px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-soft) !important;
+}
+
+#nc-root aside [class*=SearchContainer] svg {
+  display: none !important;
+}
+
+#nc-root aside input {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 0 10px !important;
+  background: transparent !important;
+  color: var(--cms-text) !important;
+  font-size: 12px !important;
+}
+
+#nc-root aside ul {
+  margin: 0 !important;
+  padding: 5px 8px 10px !important;
+}
+
+#nc-root aside li {
+  margin: 0 !important;
+}
+
+#nc-root aside li:first-child::before,
+#nc-root aside li:nth-child(3)::before {
+  display: block;
+  padding: 10px 8px 4px;
+  color: var(--cms-faint);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+#nc-root aside li:first-child::before {
+  content: "内容";
+}
+
+#nc-root aside li:nth-child(3)::before {
+  content: "内容组织";
+}
+
+#nc-root aside a[href*="#/collections/"] {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 35px !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 0 9px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--cms-muted) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.45 !important;
+}
+
+#nc-root aside a[href*="#/collections/"] svg {
+  flex: 0 0 17px;
+  width: 17px !important;
+  height: 17px !important;
+  color: var(--cms-faint) !important;
+}
+
+#nc-root aside a[href*="#/collections/"]:hover {
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
+}
+
+#nc-root aside a[href*="#/collections/"][aria-current="page"] {
+  border-left: 2px solid var(--cms-brand) !important;
+  border-radius: 0 !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand-strong) !important;
+  font-weight: 600 !important;
+}
+
+#nc-root aside a[href*="#/collections/"][aria-current="page"] svg {
+  color: var(--cms-brand) !important;
+}
+
+body.cms-media-page #nc-root aside a[href*="#/collections/"][aria-current="page"] {
+  border-left-color: transparent !important;
+  background: transparent !important;
+  color: var(--cms-muted) !important;
+  font-weight: 400 !important;
+}
+
+body.cms-media-page #nc-root aside a[href*="#/collections/"][aria-current="page"] svg {
+  color: var(--cms-faint) !important;
+}
+
+#nc-root aside [data-admin-media-shortcut] {
+  margin-top: 4px !important;
+}
+
+#nc-root aside [data-admin-media-shortcut] [data-admin-sidebar-label] {
+  display: block;
+  padding: 10px 8px 4px;
+  color: var(--cms-faint);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+#nc-root aside [data-admin-media-shortcut] button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 35px;
+  gap: 8px;
+  padding: 0 9px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--cms-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+}
+
+#nc-root aside [data-admin-media-shortcut] button svg {
+  width: 17px;
+  height: 17px;
+  color: var(--cms-faint);
+}
+
+#nc-root aside [data-admin-media-shortcut] button:hover {
+  background: var(--cms-soft);
+  color: var(--cms-text);
+}
+
+body.cms-media-open #nc-root aside [data-admin-media-shortcut] button,
+body.cms-media-page #nc-root aside [data-admin-media-shortcut] button,
+#nc-root aside [data-admin-media-shortcut] button[aria-current="page"] {
+  border-left-color: var(--cms-brand);
+  background: var(--cms-brand-soft);
+  color: var(--cms-brand-strong);
+  font-weight: 600;
+}
+
+body.cms-media-open #nc-root aside [data-admin-media-shortcut] button svg,
+body.cms-media-page #nc-root aside [data-admin-media-shortcut] button svg,
+#nc-root aside [data-admin-media-shortcut] button[aria-current="page"] svg {
+  color: var(--cms-brand);
+}
+
+#nc-root aside::after {
+  content: "GitHub 已连接 · decap";
+  display: block;
+  margin-top: auto;
+  padding: 10px 14px;
+  border-top: 1px solid var(--cms-line);
+  color: var(--cms-faint);
+  font-size: 10px;
+}
+
+#nc-root main {
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+#nc-root main > [class*=CollectionTopContainer] {
+  min-height: 52px !important;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root main [class*=CollectionTopRow] {
+  min-height: 52px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+#nc-root main h1 {
+  margin: 0 !important;
+  color: var(--cms-text) !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+#nc-root:has(aside a[href="#/collections/posts"][aria-current="page"]) main h1::after,
+#nc-root:has(aside a[data-testid="drafts-shortcut"][aria-current="page"]) main h1::after,
+#nc-root:has(aside a[href="#/collections/tags"][aria-current="page"]) main h1::after,
+#nc-root:has(aside a[href="#/collections/series"][aria-current="page"]) main h1::after,
+#nc-root:has(aside a[href="#/collections/projects"][aria-current="page"]) main h1::after {
+  display: block;
+  margin-top: 3px;
+  color: var(--cms-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+#nc-root:has(aside a[href="#/collections/posts"][aria-current="page"]) main h1::after {
+  content: "管理公开文章与草稿";
+}
+
+#nc-root:has(aside a[data-testid="drafts-shortcut"][aria-current="page"]) main h1::after {
+  content: "管理尚未公开的文章草稿";
+}
+
+#nc-root:has(aside a[href="#/collections/tags"][aria-current="page"]) main h1::after {
+  content: "集中维护全局标签库";
+}
+
+#nc-root:has(aside a[href="#/collections/series"][aria-current="page"]) main h1::after {
+  content: "管理专题和文章编排";
+}
+
+#nc-root:has(aside a[href="#/collections/projects"][aria-current="page"]) main h1::after {
+  content: "管理项目资料与展示顺序";
+}
+
+#nc-root main [class*=CollectionTopNewButton] {
+  display: none !important;
+}
+
+#nc-root main [class*=CollectionTopNewButton]:hover {
+  background: var(--cms-brand-strong) !important;
+}
+
+#nc-root main [class*=CollectionControlsContainer] {
+  min-height: 35px !important;
+  margin: 0 0 10px !important;
+  gap: 7px !important;
+}
+
+#nc-root main [class*=CollectionControlsContainer] button,
+#nc-root main [class*=CollectionControlsContainer] [role=button] {
+  min-height: 35px !important;
+  padding: 0 10px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-muted) !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+}
+
+#nc-root main [class*=CollectionControlsContainer] button:hover,
+#nc-root main [class*=CollectionControlsContainer] [role=button]:hover {
+  border-color: var(--cms-brand) !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand) !important;
+}
+
+#nc-root main:has([data-admin-list-toolbar]) [class*=CollectionControlsContainer] {
+  display: none !important;
+}
+
+#nc-root [data-admin-list-toolbar] {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) repeat(3, auto);
+  gap: 7px;
+  margin: 0 0 8px;
+}
+
+#nc-root [data-admin-list-toolbar] input,
+#nc-root [data-admin-list-toolbar] button,
+#nc-root [data-admin-list-toolbar] select {
+  min-height: 35px;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-muted) !important;
+  box-shadow: none !important;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#nc-root [data-admin-list-toolbar] input {
+  min-width: 0;
+  padding: 0 11px;
+  background: var(--cms-soft) !important;
+}
+
+#nc-root [data-admin-list-toolbar] button {
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+#nc-root [data-admin-list-toolbar] select {
+  min-width: 100px;
+  padding: 0 28px 0 10px;
+  cursor: pointer;
+}
+
+#nc-root [data-admin-list-toolbar] input:focus,
+#nc-root [data-admin-list-toolbar] button:hover,
+#nc-root [data-admin-list-toolbar] button:focus-visible,
+#nc-root [data-admin-list-toolbar] select:focus {
+  border-color: var(--cms-brand) !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand-strong) !important;
+  outline: 0;
+}
+
+#nc-root [data-admin-entry-table-head] {
+  display: grid;
+  align-items: center;
+  min-height: 35px;
+  padding: 0 13px;
+  border: 1px solid var(--cms-line);
+  border-bottom: 0;
+  border-radius: var(--cms-radius) var(--cms-radius) 0 0;
+  background: var(--cms-soft);
+  color: var(--cms-faint);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+#nc-root [data-admin-entry-table-head][data-admin-collection="posts"],
+#nc-root main[data-admin-collection="posts"] [data-admin-entry-row="posts"] {
+  grid-template-columns: minmax(0, 1fr) 92px 108px 74px;
+}
+
+#nc-root [data-admin-entry-table-head][data-admin-collection="series"],
+#nc-root main[data-admin-collection="series"] [data-admin-entry-row="series"] {
+  grid-template-columns: minmax(0, 1fr) 112px 88px 74px;
+}
+
+#nc-root [data-admin-entry-table-head][data-admin-collection="projects"],
+#nc-root main[data-admin-collection="projects"] [data-admin-entry-row="projects"] {
+  grid-template-columns: minmax(0, 1fr) 122px 88px 74px;
+}
+
+#nc-root [data-admin-entry-table-head][data-admin-collection="tags"],
+#nc-root main[data-admin-collection="tags"] .cms-tag-manager__row {
+  grid-template-columns: minmax(0, 1fr) 112px minmax(180px, auto);
+}
+
+#nc-root [data-admin-entry-table-head] span:last-child {
+  text-align: right;
+}
+
+#nc-root [data-admin-entry-table-head] + ul {
+  border-radius: 0 0 var(--cms-radius) var(--cms-radius) !important;
+}
+
+#nc-root [data-admin-list-summary] {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  gap: 16px;
+  padding: 8px 2px 0;
+  color: var(--cms-muted);
+  font-size: 11px;
+}
+
+#nc-root main > div > ul > li[data-admin-entry-row] {
+  display: grid !important;
+  align-items: center;
+  gap: 0;
+  min-height: 62px !important;
+  padding: 0 13px !important;
+}
+
+#nc-root main > div > ul > li[data-admin-entry-row] > a[data-admin-entry-source] {
+  display: block !important;
+  min-width: 0;
+  min-height: 0 !important;
+  padding: 10px 12px 10px 0 !important;
+}
+
+#nc-root main > div > ul > li[data-admin-entry-row] h2 {
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+}
+
+#nc-root main > div > ul > li[data-admin-entry-row][hidden] {
+  display: none !important;
+}
+
+#nc-root [data-admin-entry-updated] {
+  display: block;
+  margin-top: 3px;
+  color: var(--cms-faint);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+#nc-root [data-admin-entry-status] {
+  grid-column: 2;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cms-success) 12%, var(--cms-panel));
+  color: var(--cms-success);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+#nc-root [data-admin-entry-status="draft"] {
+  background: color-mix(in srgb, var(--cms-warning) 14%, var(--cms-panel));
+  color: var(--cms-warning);
+}
+
+#nc-root [data-admin-entry-category] {
+  grid-column: 3;
+  color: var(--cms-muted);
+  font-size: 12px;
+}
+
+#nc-root [data-admin-entry-detail] {
+  grid-column: 2;
+  color: var(--cms-muted);
+  font-size: 12px;
+}
+
+#nc-root main[data-admin-collection="series"] [data-admin-entry-status],
+#nc-root main[data-admin-collection="projects"] [data-admin-entry-status] {
+  grid-column: 3;
+}
+
+#nc-root [data-admin-entry-action] {
+  justify-self: end;
+  color: var(--cms-brand) !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+#nc-root main[data-admin-collection="posts"] [data-admin-entry-action] {
+  grid-column: 4;
+}
+
+#nc-root main[data-admin-collection="series"] [data-admin-entry-action],
+#nc-root main[data-admin-collection="projects"] [data-admin-entry-action] {
+  grid-column: 4;
+}
+
+#nc-root [data-admin-entry-action]:hover {
+  color: var(--cms-brand-strong) !important;
+  text-decoration: underline;
+}
+
+#nc-root main > div > ul {
+  width: 100% !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 6%) !important;
+}
+
+#nc-root main > div > ul > li {
+  width: 100% !important;
+  min-height: 59px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--cms-line) !important;
+  border-radius: 0 !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root main > div > ul > li:last-child {
+  border-bottom: 0 !important;
+}
+
+#nc-root main > div > ul > li > a:not([data-admin-entry-action]) {
+  width: 100% !important;
+  min-height: 58px !important;
+  padding: 11px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  color: var(--cms-text) !important;
+  text-decoration: none !important;
+}
+
+#nc-root main > div > ul > li > a:not([data-admin-entry-action]):hover {
+  background: var(--cms-soft) !important;
+}
+
+#nc-root main > div > ul > li h2 {
+  display: block !important;
+  margin: 0 !important;
+  color: var(--cms-text) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.55 !important;
+}
+
+#nc-root main input,
+#nc-root main textarea,
+#nc-root main select {
+  border-color: var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+}
+
+#nc-root main input:focus,
+#nc-root main textarea:focus,
+#nc-root main select:focus {
+  border-color: var(--cms-brand) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cms-brand) 16%, transparent) !important;
+}
+
+#nc-root main [class*=Editor] h1,
+#nc-root main [class*=Editor] h2,
+#nc-root main [class*=Editor] h3 {
+  color: var(--cms-text) !important;
+}
+
+#nc-root main [class*=Editor] button,
+#nc-root main [class*=ControlButton] {
+  border-radius: var(--cms-radius) !important;
+}
+
+#nc-root [class*=EditorContainer] {
+  min-height: 100vh !important;
+  padding-top: 0 !important;
+  background: var(--cms-canvas) !important;
+  color: var(--cms-text) !important;
+}
+
+#nc-root [class*=EditorContainer] > [class*=ToolbarContainer] {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  min-height: 62px !important;
+  padding: 0 24px !important;
+  border-bottom: 1px solid var(--cms-line) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
+  right: 310px;
+}
+
+#nc-root [class*=ToolbarSectionBackLink] {
+  min-height: 62px !important;
+  padding-right: 18px !important;
+  border-right: 1px solid var(--cms-line) !important;
+  color: var(--cms-ink) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+#nc-root [class*=ToolbarSectionMain],
+#nc-root [class*=ToolbarSectionMeta] {
+  gap: 8px !important;
+}
+
+#nc-root [class*=ToolbarContainer] [class*=ToolbarButton],
+#nc-root [class*=ToolbarContainer] [class*=DropdownButton],
+#nc-root [class*=ToolbarContainer] [class*=RefreshPreviewButton] {
+  min-height: 34px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-muted) !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+#nc-root [class*=ToolbarContainer] [class*=PublishedToolbarButton] {
+  border-color: var(--cms-brand) !important;
+  background: var(--cms-brand) !important;
+  color: #fff !important;
+}
+
+#nc-root [class*=ToolbarContainer] [class*=DeleteButton] {
+  border-color: color-mix(in srgb, var(--cms-danger) 28%, var(--cms-panel)) !important;
+  background: color-mix(in srgb, var(--cms-danger) 8%, var(--cms-panel)) !important;
+  color: var(--cms-danger) !important;
+}
+
+#nc-root [class*=EditorContainer] .SplitPane {
+  min-height: calc(100vh - 62px) !important;
+  background: var(--cms-canvas) !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 {
+  border-right: 1px solid var(--cms-line) !important;
+  background: var(--cms-canvas) !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane2 {
+  background: var(--cms-panel) !important;
+}
+
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) .Pane1 {
+  width: 100% !important;
+  flex: 1 1 100% !important;
+  border-right: 0 !important;
+}
+
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) .Pane2 {
+  display: none !important;
+}
+
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) [class*=RefreshPreviewButton],
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) button[title="打开/关闭预览"],
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) button[title="打开预览"],
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) button[title="关闭预览"],
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) button[title="同步滚动"] {
+  display: none !important;
+}
+
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) [class*=ControlPaneContainer] {
+  max-width: 960px;
+}
+
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) [class*=FieldLabel] {
+  display: none !important;
+}
+
+#nc-root [class*=EditorContainer]:has(.cms-tag-manager) [class*=FieldLabel] + .cms-tag-manager {
+  margin-top: 0 !important;
+}
+
+#nc-root .cms-tag-manager {
+  gap: 16px;
+}
+
+#nc-root [data-admin-tag-native-hidden] {
+  display: none !important;
+}
+
+#nc-root [data-admin-media-native-hidden] {
+  display: none !important;
+}
+
+#nc-root [data-admin-media-page] {
+  min-width: 0;
+}
+
+#nc-root [data-admin-media-page] .cms-media__panel {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0;
+  overflow: visible;
+  border: 1px solid var(--cms-line);
+  border-radius: var(--cms-radius);
+  background: var(--cms-panel) !important;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 6%) !important;
+}
+
+#nc-root [data-admin-media-page] .cms-media__header,
+#nc-root [data-admin-media-page] .cms-media__toolbar,
+#nc-root [data-admin-media-page] .cms-media__upload {
+  padding: 12px 13px;
+}
+
+#nc-root [data-admin-media-page] .cms-media__header {
+  background: transparent !important;
+}
+
+#nc-root [data-admin-media-page] .cms-media__content {
+  padding: 13px;
+}
+
+#nc-root [data-admin-tag-page] {
+  display: grid;
+  gap: 10px;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar {
+  grid-template-columns: minmax(220px, 1fr) auto auto auto;
+  gap: 7px;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar input,
+#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar select,
+#nc-root [data-admin-tag-page] .cms-tag-manager__merge input {
+  min-height: 35px;
+  border-color: var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-muted) !important;
+  box-shadow: none !important;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar input {
+  padding: 0 11px;
+  background: var(--cms-soft) !important;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar select {
+  min-width: 100px;
+  padding: 0 28px 0 10px;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__summary {
+  align-self: center;
+  color: var(--cms-muted);
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__status-area:empty,
+#nc-root [data-admin-tag-page] .cms-tag-manager__merge-area:empty {
+  display: none;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__list {
+  overflow: hidden;
+  border-color: var(--cms-line);
+  border-radius: 0 0 var(--cms-radius) var(--cms-radius);
+  background: var(--cms-panel);
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__row {
+  min-height: 56px;
+  padding: 0 13px;
+  border-color: var(--cms-line);
+  background: var(--cms-panel);
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__row--empty {
+  display: block;
+  padding: 16px 13px;
+  color: var(--cms-muted);
+  font-size: 13px;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__usage {
+  color: var(--cms-muted);
+  font-size: 12px;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__rename,
+#nc-root [data-admin-tag-page] .cms-tag-manager__confirm button,
+#nc-root [data-admin-tag-page] .cms-tag-manager__retry,
+#nc-root [data-admin-tag-page] .cms-tag-manager__merge-actions button {
+  min-height: 30px;
+  padding: 0 9px;
+  border-color: var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-brand) !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__confirm .cms-tag-manager__confirm-delete,
+#nc-root [data-admin-tag-page] .cms-tag-manager__delete {
+  color: var(--cms-danger) !important;
+}
+
+#nc-root .cms-tag-manager__heading h1,
+#nc-root .cms-tag-manager__heading p {
+  margin: 0;
+}
+
+#nc-root .cms-tag-manager__heading h1 {
+  color: var(--cms-text);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__heading h1::after {
+  display: none !important;
+  content: none !important;
+}
+
+#nc-root .cms-tag-manager__heading p {
+  margin-top: 4px;
+  color: var(--cms-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+#nc-root [class*=ControlPaneContainer] {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 28px !important;
+  background: var(--cms-canvas) !important;
+}
+
+#nc-root [data-admin-editor-heading] {
+  margin: 0 0 22px;
+}
+
+#nc-root [data-admin-editor-heading] h1,
+#nc-root [data-admin-editor-heading] p {
+  margin: 0;
+}
+
+#nc-root [data-admin-editor-heading] h1 {
+  color: var(--cms-text);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+#nc-root [data-admin-editor-heading] p {
+  margin-top: 4px;
+  color: var(--cms-muted);
+  font-size: 12px;
+}
+
+#nc-root [class*=FieldLabel] {
+  display: block !important;
+  width: max-content !important;
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--cms-ink) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=FieldLabel] + * {
+  margin-top: 0 !important;
+}
+
+#nc-root [class*=FieldLabel] ~ p,
+#nc-root [class*=FieldLabel] ~ [class*=Hint] {
+  color: var(--cms-muted) !important;
+  font-size: 12px !important;
+}
+
+#nc-root [class*=EditorContainer] input,
+#nc-root [class*=EditorContainer] textarea,
+#nc-root [class*=EditorContainer] select,
+#nc-root [class*=EditorContainer] [class*=DropdownButton] {
+  border-color: var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+}
+
+#nc-root [class*=EditorContainer] input:focus,
+#nc-root [class*=EditorContainer] textarea:focus,
+#nc-root [class*=EditorContainer] select:focus {
+  border-color: var(--cms-brand) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cms-brand) 16%, transparent) !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ControlPaneContainer] button {
+  border-radius: var(--cms-radius) !important;
+  font-family: inherit !important;
+}
+
+#nc-root [class*=RawEditorContainer],
+#nc-root .cms-editor-raw {
+  border-color: var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorControlBar],
+#nc-root [class*=RawEditorContainer] [class*=ToolbarContainer] {
+  border-color: var(--cms-line) !important;
+  background: var(--cms-soft) !important;
+}
+
+#nc-root [class*=EditorControlBar] button,
+#nc-root [class*=RawEditorContainer] [class*=ToolbarContainer] button {
+  border-radius: 4px !important;
+  color: var(--cms-muted) !important;
+}
+
+#nc-root [class*=PreviewPaneContainer] {
+  background: var(--cms-panel) !important;
+}
+
+#nc-root [class*=PreviewPaneFrame] {
+  border: 0 !important;
+  background: var(--cms-panel) !important;
+}
+
+#nc-root .cms-article-title__lock,
+#nc-root .cms-article-title__destinations,
+#nc-root .cms-tag-manager__merge {
+  border-color: var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-muted) !important;
+}
+
+#nc-root .cms-article-title__destinations dd,
+#nc-root .cms-tag-manager__name,
+#nc-root .cms-tag-manager__merge p {
+  color: var(--cms-text) !important;
+}
+
+#nc-root .cms-tag-selector__tag,
+#nc-root .cms-tag-selector__suggestion {
+  border-color: var(--cms-line-strong) !important;
+  border-radius: 4px !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
+}
+
+#nc-root .cms-tag-selector__suggestion:hover,
+#nc-root .cms-tag-selector__suggestion--active {
+  border-color: var(--cms-brand) !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand-strong) !important;
+}
+
+.cms-media {
+  background: rgb(24 50 74 / 38%) !important;
+}
+
+.cms-media__panel {
+  color: var(--cms-text) !important;
+  background: var(--cms-canvas) !important;
+  box-shadow: -10px 0 32px rgb(15 23 42 / 20%) !important;
+}
+
+.cms-media__header,
+.cms-media__toolbar,
+.cms-media__upload {
+  border-color: var(--cms-line) !important;
+  background: var(--cms-panel) !important;
+}
+
+.cms-media__header h2,
+.cms-media__group h3 {
+  color: var(--cms-text) !important;
+}
+
+.cms-media__heading p {
+  color: var(--cms-muted) !important;
+}
+
+.cms-media__toolbar input,
+.cms-media__toolbar select,
+.cms-media__upload input,
+.cms-media__toolbar button,
+.cms-media__upload button,
+.cms-media__actions button {
+  border-color: var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+}
+
+.cms-media__upload .cms-media__upload-button {
+  border-color: var(--cms-brand) !important;
+  background: var(--cms-brand) !important;
+  color: #fff !important;
+  font-weight: 650 !important;
+}
+
+.cms-media__upload .cms-media__upload-button:hover:not(:disabled) {
+  border-color: var(--cms-brand-strong) !important;
+  background: var(--cms-brand-strong) !important;
+}
+
+.cms-media__item {
+  border-color: var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+}
+
+.cms-media__visual {
+  background: var(--cms-soft) !important;
+}
+
+.cms-media__details,
+.cms-media__message,
+.cms-media__empty {
+  color: var(--cms-muted) !important;
+}
+
+.cms-media__details strong {
+  color: var(--cms-text) !important;
+}
+
+.cms-media__actions {
+  border-color: var(--cms-line) !important;
+}
+
+.Toastify__toast,
+#nc-root [class*=Modal],
+#nc-root [class*=Dialog] {
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: 0 12px 36px rgb(15 23 42 / 18%) !important;
+}
+
+#nc-root [class*=Menu],
+#nc-root [role=menu],
+#nc-root [role=listbox] {
+  border-color: var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 14%) !important;
+}
+
+@media (max-width: 900px) {
+  .cms-global-search {
+    display: none;
+  }
+
+  .cms-back-to-site {
+    display: none;
+  }
+
+  #nc-root > header > div {
+    min-height: 56px !important;
+    padding: 0 12px !important;
+    gap: 10px !important;
+  }
+
+  #nc-root > header,
+  #nc-root > header nav a,
+  #nc-root > header nav button {
+    min-height: 56px !important;
+  }
+
+  #nc-root > header nav {
+    display: none !important;
+  }
+
+  #nc-root > header > div::after {
+    content: "行";
+    margin-right: auto;
+    font-size: 16px;
+  }
+
+  #nc-root > header [class*=AppHeaderQuickNewButton] {
+    width: 34px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    font-size: 0 !important;
+  }
+
+  body > .cms-theme-toggle {
+    top: 11px;
+    right: 108px;
+  }
+
+  #nc-root > [class*=AppMainContainer] > [class*=CollectionContainer] {
+    display: block !important;
+    padding: 12px !important;
+  }
+
+  #nc-root aside {
+    position: static !important;
+    margin: 0 0 12px !important;
+  }
+
+  #nc-root aside h2,
+  #nc-root aside [class*=SearchContainer] {
+    display: none !important;
+  }
+
+  #nc-root aside ul {
+    display: flex !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    padding: 6px !important;
+  }
+
+  #nc-root aside li {
+    flex: 0 0 auto !important;
+  }
+
+  #nc-root aside li::before {
+    display: none !important;
+  }
+
+  #nc-root aside [data-admin-media-shortcut] {
+    margin-top: 0 !important;
+  }
+
+  #nc-root aside [data-admin-media-shortcut] [data-admin-sidebar-label] {
+    display: none;
+  }
+
+  #nc-root aside [data-admin-media-shortcut] button {
+    width: auto;
+    min-height: 34px;
+    padding: 0 9px;
+    border: 1px solid transparent;
+  }
+
+  body.cms-media-open #nc-root aside [data-admin-media-shortcut] button,
+  body.cms-media-page #nc-root aside [data-admin-media-shortcut] button {
+    border-color: var(--cms-brand);
+  }
+
+  #nc-root aside::after {
+    display: none;
+  }
+
+  #nc-root aside a[href*="#/collections/"] {
+    min-height: 34px !important;
+    padding: 0 9px !important;
+    border: 1px solid transparent !important;
+  }
+
+  #nc-root aside a[href*="#/collections/"][aria-current="page"] {
+    border: 1px solid var(--cms-brand) !important;
+    border-radius: 0 !important;
+  }
+
+  #nc-root main > [class*=CollectionTopContainer] {
+    min-height: 48px !important;
+  }
+
+  #nc-root main [class*=CollectionTopRow] {
+    min-height: 48px !important;
+  }
+
+  #nc-root main h1 {
+    font-size: 19px !important;
+  }
+
+  #nc-root main [class*=CollectionControlsContainer] {
+    overflow-x: auto !important;
+    padding-bottom: 2px !important;
+  }
+
+  #nc-root [data-admin-list-toolbar] {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  #nc-root [data-admin-list-toolbar] select:nth-of-type(n + 2) {
+    display: none;
+  }
+
+  #nc-root [data-admin-entry-table-head] {
+    display: none;
+  }
+
+  #nc-root [data-admin-list-summary] {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  #nc-root [data-admin-entry-table-head] + ul {
+    border-radius: var(--cms-radius) !important;
+  }
+
+  #nc-root main > div > ul > li[data-admin-entry-row] {
+    display: block !important;
+    position: relative;
+    min-height: 68px !important;
+    padding: 10px 12px !important;
+  }
+
+  #nc-root main > div > ul > li[data-admin-entry-row][hidden] {
+    display: none !important;
+  }
+
+  #nc-root main > div > ul > li[data-admin-entry-row] > a[data-admin-entry-source] {
+    display: block !important;
+    padding: 0 78px 0 0 !important;
+  }
+
+  #nc-root [data-admin-entry-status],
+  #nc-root [data-admin-entry-category],
+  #nc-root [data-admin-entry-detail] {
+    display: none;
+  }
+
+  #nc-root [data-admin-entry-action] {
+    position: absolute;
+    top: 25px;
+    right: 12px;
+  }
+
+  #nc-root main > div > ul > li > a {
+    min-height: 56px !important;
+    padding: 10px 12px !important;
+  }
+}

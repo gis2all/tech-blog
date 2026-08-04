@@ -7,16 +7,43 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/admin/tag-selector.css" />
     <link rel="stylesheet" href="/admin/editorial.css" />
-    <link rel="stylesheet" href="/admin/media-library.css" />
+    <link rel="stylesheet" href="/admin/media-library.css?v=3" />
+    <link rel="stylesheet" href="/admin/admin-shell.css?v=8" />
     <title>知行后台</title>
   </head>
   <body>
+    <button
+      class="cms-theme-toggle"
+      type="button"
+      data-cms-theme-toggle
+      aria-label="切换深色模式"
+      title="切换深色模式"
+    >◐</button>
+    <input
+      class="cms-global-search"
+      type="search"
+      data-cms-global-search
+      aria-label="搜索文章、标签或专题"
+      placeholder="搜索文章、标签或专题"
+      autocomplete="off"
+    />
+    <a
+      class="cms-back-to-site"
+      data-cms-back-to-site
+      href="/"
+      aria-label="回到网站"
+    >回到网站</a>
+    <section class="cms-login-copy" aria-hidden="true">
+      <span class="cms-login-copy__mark">知</span>
+      <h1>登录知行后台</h1>
+      <p>管理文章、专题、项目与媒体资源</p>
+    </section>
     <script>window.CMS_MANUAL_INIT = true;</script>
     <script src="https://unpkg.com/decap-cms@3.15.1/dist/decap-cms.js"></script>
     <script src="/admin/editorial-domain.js"></script>
     <script src="/admin/media-domain.js"></script>
     <script src="/admin/media-processor.js"></script>
-    <script src="/admin/media-library.js"></script>
+    <script src="/admin/media-library.js?v=5"></script>
     <script src="/admin/editorial-workflow.js"></script>
     <script src="/admin/article-title.js"></script>
     <script src="/admin/tag-domain.js"></script>
@@ -24,9 +51,11 @@
     <script src="/admin/tag-selector.js"></script>
     <script src="/admin/tag-operations.js"></script>
     <script src="/admin/tag-library-manager.js"></script>
-    <script src="/admin/admin-navigation.js?v=9"></script>
+    <script src="/admin/admin-navigation.js?v=16"></script>
     <script src="/admin/unsaved-changes.js"></script>
     <script src="/admin/preview.js"></script>
-    <script>CMS.init();</script>
+    <script src="/admin/cms-init.js?v=1"></script>
+    <script src="/admin/admin-shell-domain.js"></script>
+    <script src="/admin/admin-shell.js?v=9"></script>
   </body>
 </html>
