@@ -70,7 +70,9 @@
   }
 
   function referenceSet() {
-    return new Set(state.references);
+    return new Set(state.references.map(function (reference) {
+      return DecapMediaDomain.normalizeMediaReference(reference);
+    }));
   }
 
   function normalizedFiles(files) {
@@ -80,7 +82,9 @@
       .map(function (file) {
         return Object.assign({}, file, {
           article: articleFromPath(file.path),
-          referenced: references.has(publicPath(file)),
+          referenced: references.has(
+            DecapMediaDomain.normalizeMediaReference(publicPath(file)),
+          ),
         });
       });
   }
@@ -338,6 +342,19 @@
     button.disabled = state.selectedForDeletion.size === 0 || state.loading;
   }
 
+  function updateSelectAllControl(container) {
+    if (!container) return;
+    var selectAll = container.querySelector("[data-media-select-all]");
+    if (!selectAll) return;
+    var selection = DecapMediaDomain.deletionSelectionState(
+      filteredFiles(),
+      Array.from(state.selectedForDeletion),
+    );
+    selectAll.disabled = !state.unusedOnly || selection.paths.length === 0 || state.loading;
+    selectAll.checked = state.unusedOnly && selection.checked;
+    selectAll.indeterminate = state.unusedOnly && selection.indeterminate;
+  }
+
   function updateUploadButton(container) {
     if (!container) return;
     var button = container.querySelector(".cms-media__upload-button");
@@ -355,19 +372,25 @@
     search.addEventListener("input", function () {
       state.query = search.value;
       renderMediaContent(activePanel());
+      updateSelectAllControl(activePanel());
     });
     toolbar.appendChild(search);
 
-    var article = element("select");
-    article.setAttribute("aria-label", "按文章筛选");
-    article.appendChild(new Option("全部文章", "all"));
+    var articleOptions = [["all", "全部文章"]];
     Array.from(new Set(state.files.map(function (file) { return file.article; })))
       .sort(function (left, right) { return left.localeCompare(right, "zh-CN"); })
-      .forEach(function (title) { article.appendChild(new Option(title, title)); });
+      .forEach(function (title) { articleOptions.push([title, title]); });
+    var article = window.DecapAdminControls.createSelect({
+      label: "按文章筛选",
+      options: articleOptions,
+      value: state.article,
+    });
+    article.classList.add("cms-media__article-filter");
     article.value = state.article;
     article.addEventListener("change", function () {
       state.article = article.value;
       renderMediaContent(activePanel());
+      updateSelectAllControl(activePanel());
     });
     toolbar.appendChild(article);
 
@@ -378,9 +401,27 @@
     unused.addEventListener("change", function () {
       state.unusedOnly = unused.checked;
       renderMediaContent(activePanel());
+      updateSelectAllControl(activePanel());
     });
     unusedLabel.append(unused, document.createTextNode("仅未使用"));
     toolbar.appendChild(unusedLabel);
+
+    var selectAllLabel = element("label", "cms-media__check cms-media__check--select-all");
+    var selectAll = element("input");
+    selectAll.type = "checkbox";
+    selectAll.setAttribute("data-media-select-all", "");
+    selectAll.addEventListener("change", function () {
+      state.selectedForDeletion = new Set(DecapMediaDomain.toggleDeletionSelection(
+        Array.from(state.selectedForDeletion),
+        filteredFiles(),
+        selectAll.checked,
+      ));
+      renderMediaContent(activePanel());
+      updateDeleteButton(activePanel());
+      updateSelectAllControl(activePanel());
+    });
+    selectAllLabel.append(selectAll, document.createTextNode("选择全部"));
+    toolbar.appendChild(selectAllLabel);
 
     var deleteButton = element(
       "button",
@@ -391,6 +432,7 @@
     deleteButton.addEventListener("click", deleteSelected);
     toolbar.appendChild(deleteButton);
     updateDeleteButton(toolbar);
+    updateSelectAllControl(toolbar);
     container.appendChild(toolbar);
   }
 
@@ -494,6 +536,7 @@
       if (checkbox.checked) state.selectedForDeletion.add(file.path);
       else state.selectedForDeletion.delete(file.path);
       updateDeleteButton(activePanel());
+      updateSelectAllControl(activePanel());
     });
     deletion.append(checkbox, document.createTextNode("删除"));
     actions.appendChild(deletion);

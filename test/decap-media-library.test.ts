@@ -16,13 +16,17 @@ describe("Decap custom article media library", () => {
 
     expect(config.media_library?.name).toBe("article_media");
     expect(index).toContain('href="/admin/media-library.css?v=3"');
-    expect(index).toContain('src="/admin/media-library.js?v=5"');
+    expect(index).toContain('src="/admin/media-domain.js?v=2"');
+    expect(index).toContain('src="/admin/media-library.js?v=8"');
     expect(library).toContain("CMS.registerMediaLibrary");
     expect(library).toContain("enableStandalone");
   });
 
   test("supports grouping, search, metadata, unused filtering, and confirmed batch deletion", async () => {
-    const source = await readFile(root + "public/admin/media-library.js", "utf8");
+    const [source, shellCss] = await Promise.all([
+      readFile(root + "public/admin/media-library.js", "utf8"),
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+    ]);
 
     for (const behavior of [
       "public/images/posts",
@@ -37,6 +41,10 @@ describe("Decap custom article media library", () => {
     ]) {
       expect(source).toContain(behavior);
     }
+    expect(source).toContain("normalizeMediaReference");
+    expect(shellCss).toMatch(
+      /\.cms-media__check input\[type="checkbox"\]:focus[^}]*\{[^}]*box-shadow:\s*none\s*!important;/s,
+    );
   });
 
   test("supports an embedded management page while retaining picker modal mode", async () => {
@@ -88,6 +96,22 @@ describe("Decap custom article media library", () => {
     expect(source).not.toContain("state.uploadTitle = title.value;\n      render();");
   });
 
+  test("selects all currently visible unused media without touching hidden selections", async () => {
+    const [source, css] = await Promise.all([
+      readFile(root + "public/admin/media-library.js", "utf8"),
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+    ]);
+
+    expect(source).toContain("data-media-select-all");
+    expect(source).toContain("function updateSelectAllControl");
+    expect(source).toContain("DecapMediaDomain.deletionSelectionState(");
+    expect(source).toContain("DecapMediaDomain.toggleDeletionSelection(");
+    expect(source).toContain("selectAll.indeterminate");
+    expect(source).toContain("selectAll.disabled = !state.unusedOnly");
+    expect(source).toContain('document.createTextNode("选择全部")');
+    expect(css).toContain(".cms-media__check--select-all");
+  });
+
   test("supports selecting an existing article title before uploading", async () => {
     const source = await readFile(root + "public/admin/media-library.js", "utf8");
 
@@ -116,5 +140,8 @@ describe("Decap custom article media library", () => {
     expect(source).toContain("showZoom(file)");
     expect(css).toContain(".cms-media__zoom");
     expect(css).toContain(".cms-media__zoom img");
+    expect(css).toContain('cursor: url("data:image/svg+xml');
+    expect(css).not.toContain("cursor: zoom-in;");
+    expect(css).not.toContain("cursor: zoom-out;");
   });
 });
