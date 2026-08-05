@@ -33,7 +33,6 @@
 
 [data-theme="dark"] .cms-post-preview__meta,
 [data-theme="dark"] .cms-post-preview__description,
-[data-theme="dark"] .cms-post-preview__destinations,
 [data-theme="dark"] .cms-entity-preview__description,
 [data-theme="dark"] .cms-entity-preview__details dt {
   color: #aeb8c3;
@@ -50,9 +49,10 @@ body {
 
 .cms-entity-preview {
   box-sizing: border-box;
-  max-width: 760px;
+  width: 100%;
+  max-width: none;
   min-height: 100vh;
-  margin: 0 auto;
+  margin: 0;
   padding: 42px 36px 70px;
   background: #fff;
 }
@@ -110,9 +110,11 @@ body {
 
 .cms-post-preview {
   box-sizing: border-box;
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 48px 32px 72px;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: 48px 40px 72px;
   background: #ffffff;
 }
 
@@ -166,22 +168,6 @@ body {
   border-radius: 4px;
   background: #e7f5f7;
   font-size: 13px;
-}
-
-.cms-post-preview__destinations {
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 4px 10px;
-  margin: 20px 0 0;
-  color: #52606d;
-  font-size: 12px;
-}
-
-.cms-post-preview__destinations dd {
-  min-width: 0;
-  margin: 0;
-  overflow-wrap: anywhere;
-  font-family: "SFMono-Regular", Consolas, monospace;
 }
 
 .cms-post-preview__body {

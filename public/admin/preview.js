@@ -57,9 +57,6 @@ var PostPreview = createClass({
       updatedAt ? "更新 " + updatedAt : "",
       series ? "专题 " + (this.state.seriesTitle || series) : "",
     ].filter(Boolean).join(" · ");
-    var publicArticlePath = DecapEditorialDomain.publicArticlePath(title);
-    var mediaFolder = DecapEditorialDomain.mediaFolder(title) + "/";
-
     return h(
       "article",
       { className: "cms-post-preview" },
@@ -86,14 +83,6 @@ var PostPreview = createClass({
               description,
             )
           : null,
-        h(
-          "dl",
-          { className: "cms-post-preview__destinations" },
-          h("dt", null, "公开地址"),
-          h("dd", null, publicArticlePath),
-          h("dt", null, "媒体目录"),
-          h("dd", null, mediaFolder),
-        ),
         coverUrl
           ? h("img", {
               className: "cms-post-preview__cover",
@@ -215,7 +204,7 @@ var ProjectPreview = createClass({
   },
 });
 
-CMS.registerPreviewStyle("/admin/preview.css");
+CMS.registerPreviewStyle("/admin/preview.css?v=2");
 CMS.registerPreviewTemplate("posts", PostPreview);
 CMS.registerPreviewTemplate("series", SeriesPreview);
 CMS.registerPreviewTemplate("projects", ProjectPreview);

@@ -220,7 +220,7 @@ describe("Decap CMS schema", () => {
     });
     expect(getField(posts, "body")).toMatchObject({
       widget: "markdown",
-      modes: ["raw"],
+      modes: ["raw", "rich_text"],
     });
     expect(getField(posts, "series")).toMatchObject({
       widget: "relation",
@@ -229,10 +229,10 @@ describe("Decap CMS schema", () => {
       search_fields: ["title", "slug"],
       display_fields: ["title", "slug"],
     });
-    expect(getFieldNames(posts)).toEqual([
+    const postFieldNames = getFieldNames(posts);
+    expect(postFieldNames).toEqual([
       "title",
       "description",
-      "body",
       "category",
       "tags",
       "series",
@@ -246,13 +246,20 @@ describe("Decap CMS schema", () => {
       "repoUrl",
       "references",
       "changelog",
+      "body",
     ]);
+    expect(postFieldNames.indexOf("references")).toBeLessThan(
+      postFieldNames.indexOf("changelog"),
+    );
+    expect(postFieldNames.indexOf("changelog")).toBeLessThan(
+      postFieldNames.indexOf("body"),
+    );
     expect(getField(posts, "seriesOrder")).toHaveProperty("hint");
     expect(getField(posts, "coverAlt")).toHaveProperty("hint");
     expect(adminIndex).toContain(
       'src="https://unpkg.com/decap-cms@3.15.1/dist/decap-cms.js"',
     );
-    expect(adminIndex).toContain('src="/admin/preview.js"');
+    expect(adminIndex).toContain('src="/admin/preview.js?v=2"');
     const previewRegistrations: {
       styles: string[];
       templates: Array<{ collection: string; template: unknown }>;
@@ -274,7 +281,7 @@ describe("Decap CMS schema", () => {
       h: () => null,
     });
 
-    expect(previewRegistrations.styles).toContain("/admin/preview.css");
+    expect(previewRegistrations.styles).toContain("/admin/preview.css?v=2");
     expect(previewRegistrations.templates.map((item) => item.collection)).toEqual([
       "posts",
       "series",
@@ -385,7 +392,7 @@ describe("Decap CMS schema", () => {
     runInNewContext(navigationSource, context);
 
     expect(postsCollections).toHaveLength(1);
-    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=17"');
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=24"');
     expect(
       (context.DecapAdminNavigation as { isDraftRoute: () => boolean })
         .isDraftRoute(),
