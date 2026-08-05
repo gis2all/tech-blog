@@ -1,41 +1,46 @@
 :root {
-  --cms-canvas: #f5f6f7;
-  --cms-panel: #ffffff;
-  --cms-soft: #f8fafc;
-  --cms-line: #e3e7eb;
-  --cms-line-strong: #cfd7dd;
-  --cms-text: #20242b;
-  --cms-muted: #5d6670;
-  --cms-faint: #8a939c;
-  --cms-ink: #18324a;
-  --cms-brand: #0b7285;
-  --cms-brand-strong: #075e6e;
-  --cms-brand-soft: #e7f5f7;
-  --cms-danger: #a33a43;
-  --cms-warning: #bd6718;
-  --cms-success: #16845b;
-  --cms-radius: 6px;
+  --cms-canvas: var(--surface-canvas, #f5f6f7);
+  --cms-panel: var(--surface-panel, #ffffff);
+  --cms-soft: var(--surface-soft, #f8fafc);
+  --cms-line: var(--border-default, #e3e7eb);
+  --cms-line-strong: var(--border-strong, #cfd7dd);
+  --cms-text: var(--text-primary, #20242b);
+  --cms-muted: var(--text-muted, #5d6670);
+  --cms-faint: var(--text-faint, #8a939c);
+  --cms-ink: var(--color-brand-ink, #18324a);
+  --cms-brand: var(--color-brand, #0b7285);
+  --cms-brand-strong: var(--color-brand-strong, #075e6e);
+  --cms-brand-soft: var(--color-brand-soft, #e7f5f7);
+  --cms-danger: var(--status-danger, #c63d48);
+  --cms-warning: var(--status-warning, #bd6718);
+  --cms-success: var(--status-success, #16845b);
+  --cms-radius: var(--control-radius, 6px);
+  --cms-control-height: var(--control-height, 36px);
+  --cms-control-height-compact: var(--control-height-compact, 34px);
+  --cms-control-font-size: var(--control-font-size, 14px);
+  --cms-focus-ring: var(--focus-ring, 0 0 0 3px rgb(11 114 133 / 14%));
+  --cms-menu-shadow: var(--shadow-menu, 0 10px 28px rgb(15 23 42 / 14%));
   color: var(--cms-text);
   background: var(--cms-canvas);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 [data-theme="dark"] {
-  --cms-canvas: #13171c;
-  --cms-panel: #181c22;
-  --cms-soft: #20252d;
-  --cms-line: #2c333d;
-  --cms-line-strong: #3b4550;
-  --cms-text: #e7edf2;
-  --cms-muted: #aeb8c3;
-  --cms-faint: #8995a2;
-  --cms-ink: #b9d9de;
-  --cms-brand: #55bdc8;
-  --cms-brand-strong: #76d0d9;
-  --cms-brand-soft: #17363c;
-  --cms-danger: #ef959d;
-  --cms-warning: #f3b66a;
-  --cms-success: #6ccd9c;
+  --cms-canvas: var(--surface-canvas, #101318);
+  --cms-panel: var(--surface-panel, #181c22);
+  --cms-soft: var(--surface-soft, #20252d);
+  --cms-line: var(--border-default, #2c333d);
+  --cms-line-strong: var(--border-strong, #3b4550);
+  --cms-text: var(--text-primary, #e8ebef);
+  --cms-muted: var(--text-muted, #aeb6bf);
+  --cms-faint: var(--text-faint, #8995a2);
+  --cms-ink: var(--color-brand-ink, #0e5965);
+  --cms-brand: var(--color-brand, #55bdc8);
+  --cms-brand-strong: var(--color-brand-strong, #6dccd5);
+  --cms-brand-soft: var(--color-brand-soft, #17363c);
+  --cms-danger: var(--status-danger, #ef959d);
+  --cms-warning: var(--status-warning, #f3b66a);
+  --cms-success: var(--status-success, #6ccd9c);
   color-scheme: dark;
 }
 
@@ -364,11 +369,18 @@ body:has(#nc-root [class*=LoginButton]) > .cms-global-search {
   white-space: nowrap;
 }
 
-.cms-back-to-site:hover,
-.cms-back-to-site:focus-visible {
+.cms-back-to-site:hover {
   border-color: var(--cms-brand);
   background: var(--cms-brand-soft);
   color: var(--cms-brand);
+}
+
+.cms-back-to-site:focus-visible {
+  border-color: var(--cms-brand);
+  outline: 0;
+  background: var(--cms-panel);
+  color: var(--cms-text);
+  box-shadow: var(--cms-focus-ring);
 }
 
 .cms-back-to-site svg {
@@ -376,8 +388,22 @@ body:has(#nc-root [class*=LoginButton]) > .cms-global-search {
   height: 16px;
 }
 
-.cms-theme-toggle:hover,
-.cms-theme-toggle:focus-visible {
+.cms-theme-toggle:hover {
+  border-color: var(--cms-brand) !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand) !important;
+}
+
+.cms-theme-toggle:focus-visible,
+#nc-root > header [class*=AvatarDropdownButton]:focus-visible {
+  border-color: var(--cms-brand) !important;
+  outline: 0 !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: var(--cms-focus-ring) !important;
+}
+
+#nc-root > header [class*=AvatarDropdownButton]:hover {
   border-color: var(--cms-brand) !important;
   background: var(--cms-brand-soft) !important;
   color: var(--cms-brand) !important;
@@ -387,7 +413,7 @@ body:has(#nc-root [class*=LoginButton]) > .cms-global-search {
   position: static;
   flex: 0 1 335px;
   width: min(335px, 28vw);
-  height: 34px;
+  height: var(--cms-control-height);
   margin-left: auto;
   box-sizing: border-box;
   padding: 0 12px;
@@ -395,7 +421,7 @@ body:has(#nc-root [class*=LoginButton]) > .cms-global-search {
   border-radius: var(--cms-radius);
   background: var(--cms-soft);
   color: var(--cms-text);
-  font: 12px/1 inherit;
+  font: var(--cms-control-font-size)/1 inherit;
 }
 
 body > .cms-theme-toggle {
@@ -410,9 +436,138 @@ body > .cms-theme-toggle {
 }
 
 .cms-global-search:focus {
+  border-color: var(--cms-line);
+  outline: 0;
+  box-shadow: none;
+}
+
+.cms-select {
+  position: relative;
+  min-width: 126px;
+  color: var(--cms-text);
+  font-family: inherit;
+  font-size: var(--cms-control-font-size);
+}
+
+.cms-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: var(--cms-control-height);
+  min-height: var(--cms-control-height);
+  gap: 12px;
+  padding: 0 10px;
+  border: 1px solid var(--cms-line);
+  border-radius: var(--cms-radius);
+  background: var(--cms-panel);
+  color: var(--cms-muted);
+  box-shadow: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.cms-select__trigger:hover {
   border-color: var(--cms-brand);
-  outline: 2px solid color-mix(in srgb, var(--cms-brand) 16%, transparent);
-  outline-offset: 1px;
+  color: var(--cms-text);
+}
+
+.cms-select__trigger:focus-visible {
+  border-color: var(--cms-brand);
+  outline: 0;
+  background: var(--cms-panel);
+  color: var(--cms-text);
+  box-shadow: var(--cms-focus-ring);
+}
+
+.cms-select[data-open="true"] .cms-select__trigger {
+  border-color: var(--cms-brand);
+  color: var(--cms-text);
+}
+
+.cms-select__value {
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cms-select__chevron,
+.cms-select__check {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.cms-select__chevron {
+  transition: transform 140ms ease;
+}
+
+.cms-select[data-open="true"] .cms-select__chevron {
+  transform: rotate(180deg);
+}
+
+.cms-select__listbox {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 32px));
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px 0;
+  border: 1px solid var(--cms-line);
+  border-radius: var(--cms-radius);
+  background: var(--cms-panel);
+  box-shadow: var(--cms-menu-shadow);
+}
+
+.cms-select__listbox[hidden] {
+  display: none;
+}
+
+.cms-select__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: var(--cms-control-height);
+  min-height: var(--cms-control-height);
+  gap: 12px;
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--cms-text);
+  box-shadow: none;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cms-select__option:hover,
+.cms-select__option:focus-visible,
+.cms-select__option[aria-selected="true"] {
+  outline: 0;
+  background: var(--cms-brand-soft);
+  color: var(--cms-brand-strong);
+}
+
+.cms-select__option[aria-selected="true"] {
+  font-weight: 600;
+}
+
+.cms-select__check {
+  opacity: 0;
+}
+
+.cms-select__option[aria-selected="true"] .cms-select__check {
+  opacity: 1;
 }
 
 body > .cms-global-search,
@@ -429,29 +584,41 @@ body:has(#nc-root [class*=LoginButton]) .cms-global-search {
   box-sizing: border-box !important;
   width: auto !important;
   min-width: 104px !important;
-  min-height: 34px !important;
+  height: var(--cms-control-height-compact) !important;
+  min-height: var(--cms-control-height-compact) !important;
   gap: 8px !important;
-  padding: 0 30px 0 14px !important;
+  padding: 0 12px !important;
   border: 1px solid var(--cms-brand) !important;
   border-radius: var(--cms-radius) !important;
   background: var(--cms-brand) !important;
   color: #fff !important;
-  font-size: 12px !important;
+  font-size: var(--cms-control-font-size) !important;
   font-weight: 700 !important;
   line-height: 1 !important;
   white-space: nowrap !important;
 }
 
 #nc-root > header [class*=AppHeaderQuickNewButton]::after {
-  top: 50% !important;
-  right: 14px !important;
-  bottom: auto !important;
-  transform: translateY(-50%) !important;
+  display: none !important;
 }
 
 #nc-root > header [class*=AppHeaderQuickNewButton] svg {
   width: 16px !important;
   height: 16px !important;
+}
+
+#nc-root > header [class*=AppHeaderQuickNewButton] svg[data-admin-icon="chevron-down"] {
+  margin-left: 2px;
+}
+
+#nc-root > header [class*=AppHeaderQuickNewButton]:hover {
+  border-color: var(--cms-brand-strong) !important;
+  background: var(--cms-brand-strong) !important;
+}
+
+#nc-root > header [class*=AppHeaderQuickNewButton]:focus-visible {
+  outline: 0 !important;
+  box-shadow: var(--cms-focus-ring) !important;
 }
 
 #nc-root > header [class*=AvatarDropdownButton] {
@@ -802,44 +969,53 @@ body.cms-media-page #nc-root aside [data-admin-media-shortcut] button svg,
   margin: 0 0 8px;
 }
 
-#nc-root [data-admin-list-toolbar] input,
-#nc-root [data-admin-list-toolbar] button,
-#nc-root [data-admin-list-toolbar] select {
-  min-height: 35px;
+#nc-root [data-admin-list-toolbar] > input,
+#nc-root [data-admin-list-toolbar] > button,
+#nc-root [data-admin-list-toolbar] > .cms-select > .cms-select__trigger {
+  height: var(--cms-control-height);
+  min-height: var(--cms-control-height);
   border: 1px solid var(--cms-line) !important;
   border-radius: var(--cms-radius) !important;
   background: var(--cms-panel) !important;
   color: var(--cms-muted) !important;
   box-shadow: none !important;
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--cms-control-font-size);
 }
 
-#nc-root [data-admin-list-toolbar] input {
+#nc-root [data-admin-list-toolbar] > input {
   min-width: 0;
   padding: 0 11px;
   background: var(--cms-soft) !important;
 }
 
-#nc-root [data-admin-list-toolbar] button {
+#nc-root [data-admin-list-toolbar] > button {
   padding: 0 10px;
   cursor: pointer;
 }
 
-#nc-root [data-admin-list-toolbar] select {
+#nc-root [data-admin-list-toolbar] > .cms-select {
   min-width: 100px;
-  padding: 0 28px 0 10px;
-  cursor: pointer;
 }
 
-#nc-root [data-admin-list-toolbar] input:focus,
-#nc-root [data-admin-list-toolbar] button:hover,
-#nc-root [data-admin-list-toolbar] button:focus-visible,
-#nc-root [data-admin-list-toolbar] select:focus {
-  border-color: var(--cms-brand) !important;
-  background: var(--cms-brand-soft) !important;
-  color: var(--cms-brand-strong) !important;
+#nc-root [data-admin-list-toolbar] > input[type="search"]:focus {
+  border-color: var(--cms-line) !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
   outline: 0;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-list-toolbar] > button:hover,
+#nc-root [data-admin-list-toolbar] > button:focus-visible {
+  border-color: var(--cms-brand) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+}
+
+#nc-root [data-admin-list-toolbar] > button:focus-visible {
+  outline: 0;
+  box-shadow: var(--cms-focus-ring) !important;
 }
 
 #nc-root [data-admin-entry-table-head] {
@@ -1050,7 +1226,8 @@ body.cms-media-page #nc-root aside [data-admin-media-shortcut] button svg,
 #nc-root main textarea:focus,
 #nc-root main select:focus {
   border-color: var(--cms-brand) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cms-brand) 16%, transparent) !important;
+  outline: 0 !important;
+  box-shadow: var(--cms-focus-ring) !important;
 }
 
 #nc-root main [class*=Editor] h1,
@@ -1222,16 +1399,16 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 }
 
 #nc-root [data-admin-tag-page] .cms-tag-manager__toolbar input,
-#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar select,
+#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar .cms-select__trigger,
 #nc-root [data-admin-tag-page] .cms-tag-manager__merge input {
-  min-height: 35px;
+  min-height: var(--cms-control-height);
   border-color: var(--cms-line) !important;
   border-radius: var(--cms-radius) !important;
   background: var(--cms-panel) !important;
   color: var(--cms-muted) !important;
   box-shadow: none !important;
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--cms-control-font-size);
 }
 
 #nc-root [data-admin-tag-page] .cms-tag-manager__toolbar input {
@@ -1239,9 +1416,27 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   background: var(--cms-soft) !important;
 }
 
-#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar select {
+#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar .cms-select {
   min-width: 100px;
-  padding: 0 28px 0 10px;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar input[type="search"]:focus {
+  border-color: var(--cms-line) !important;
+  outline: 0;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__toolbar input[type="search"]:focus {
+  background: var(--cms-soft) !important;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__merge input:focus {
+  border-color: var(--cms-brand) !important;
+  outline: 0;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: var(--cms-focus-ring) !important;
 }
 
 #nc-root [data-admin-tag-page] .cms-tag-manager__summary {
@@ -1398,7 +1593,10 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 #nc-root [class*=EditorContainer] textarea:focus,
 #nc-root [class*=EditorContainer] select:focus {
   border-color: var(--cms-brand) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cms-brand) 16%, transparent) !important;
+  outline: 0 !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: var(--cms-focus-ring) !important;
 }
 
 #nc-root [class*=EditorContainer] [class*=ControlPaneContainer] button {
@@ -1492,7 +1690,7 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 }
 
 .cms-media__toolbar input,
-.cms-media__toolbar select,
+.cms-media__toolbar .cms-select__trigger,
 .cms-media__upload input,
 .cms-media__toolbar button,
 .cms-media__upload button,
@@ -1501,6 +1699,33 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   border-radius: var(--cms-radius) !important;
   background: var(--cms-panel) !important;
   color: var(--cms-text) !important;
+}
+
+.cms-media__toolbar input[type="search"]:focus {
+  border-color: var(--cms-line-strong) !important;
+  outline: 0;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+}
+
+.cms-media__upload input:focus {
+  border-color: var(--cms-brand) !important;
+  outline: 0;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: var(--cms-focus-ring) !important;
+}
+
+#nc-root .cms-media__check input[type="checkbox"]:focus,
+#nc-root .cms-media__check input[type="checkbox"]:focus-visible {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.cms-media__check--select-all:has(input:disabled) {
+  opacity: 0.48;
+  cursor: not-allowed;
 }
 
 .cms-media__upload .cms-media__upload-button {
@@ -1556,7 +1781,81 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   border-radius: var(--cms-radius) !important;
   background: var(--cms-panel) !important;
   color: var(--cms-text) !important;
-  box-shadow: 0 10px 28px rgb(15 23 42 / 14%) !important;
+  box-shadow: var(--cms-menu-shadow) !important;
+}
+
+#nc-root > header [role=menu] {
+  position: absolute !important;
+  z-index: 300 !important;
+  top: calc(100% + 4px) !important;
+  right: 0 !important;
+  left: auto !important;
+  width: 140px !important;
+  min-width: 140px !important;
+  max-width: 140px !important;
+  overflow: hidden !important;
+  padding: 4px 0 !important;
+}
+
+#nc-root > header [role=menu] > ul {
+  position: static !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root > header [role="menuitem"] {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-height: var(--cms-control-height) !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  font-size: var(--cms-control-font-size) !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+}
+
+#nc-root > header [role="menuitem"] > * {
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font: inherit !important;
+}
+
+#nc-root > header [role="menuitem"]:hover,
+#nc-root > header [role="menuitem"]:focus-visible {
+  outline: 0 !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand-strong) !important;
+}
+
+#nc-root [role=listbox] [role=option] {
+  min-height: var(--cms-control-height) !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  font-size: var(--cms-control-font-size) !important;
+}
+
+.cms-select__trigger:disabled,
+.cms-media button:disabled,
+#nc-root [data-admin-tag-page] button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed !important;
 }
 
 @media (max-width: 900px) {
@@ -1688,7 +1987,8 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  #nc-root [data-admin-list-toolbar] select:nth-of-type(n + 2) {
+  #nc-root [data-admin-list-toolbar] [data-admin-filter="category"],
+  #nc-root [data-admin-list-toolbar] [data-admin-filter="sort"] {
     display: none;
   }
 

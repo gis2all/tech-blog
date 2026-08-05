@@ -179,15 +179,10 @@
   }
 
   function selectControl(label, options) {
-    var select = document.createElement("select");
-    select.setAttribute("aria-label", label);
-    options.forEach(function (item) {
-      var option = document.createElement("option");
-      option.value = item[0];
-      option.textContent = item[1];
-      select.appendChild(option);
+    return global.DecapAdminControls.createSelect({
+      label: label,
+      options: options,
     });
-    return select;
   }
 
   function element(tag, className, text) {

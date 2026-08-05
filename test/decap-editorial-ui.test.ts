@@ -14,7 +14,7 @@ describe("Decap phase-two editorial UI", () => {
       readFile(root + "public/admin/admin-shell.css", "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=8"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=10"');
     expect(html).toContain('data-cms-theme-toggle');
     expect(html).toContain('data-cms-global-search');
     expect(html.indexOf("/admin/admin-shell.css")).toBeLessThan(
@@ -29,8 +29,8 @@ describe("Decap phase-two editorial UI", () => {
     expect(navigation).not.toContain("ensureGroup");
 
     for (const token of [
-      "--cms-brand: #0b7285",
-      "--cms-ink: #18324a",
+      "--cms-brand: var(--color-brand",
+      "--cms-ink: var(--color-brand-ink",
       "[data-theme=\"dark\"]",
       "@media (max-width: 900px)",
       "#nc-root > header",
@@ -145,7 +145,7 @@ describe("Decap phase-two editorial UI", () => {
     ]);
 
     expect(html).toContain('src="/admin/admin-shell-domain.js"');
-    expect(html).toContain('src="/admin/admin-shell.js?v=9"');
+    expect(html).toContain('src="/admin/admin-shell.js?v=10"');
     expect(html.indexOf("/admin/cms-init.js")).toBeLessThan(
       html.indexOf("/admin/admin-shell.js"),
     );
@@ -215,6 +215,65 @@ describe("Decap phase-two editorial UI", () => {
     ]) {
       expect(navigation).toContain(`"${icon}"`);
     }
+  });
+
+  test("shares website control tokens and replaces admin-owned native selects", async () => {
+    const [baseLayout, html, globalCss, shell, shellScript, mediaScript] = await Promise.all([
+      readFile(root + "src/layouts/BaseLayout.astro", "utf8"),
+      readFile(root + "public/admin/index.html", "utf8"),
+      readFile(root + "src/styles/global.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.js", "utf8"),
+      readFile(root + "public/admin/media-library.js", "utf8"),
+    ]);
+
+    expect(baseLayout).toContain('href="/styles/design-system.css?v=1"');
+    expect(html).toContain('href="/styles/design-system.css?v=1"');
+    expect(html).toContain('src="/admin/admin-controls-domain.js?v=1"');
+    expect(html).toContain('src="/admin/admin-controls.js?v=1"');
+    expect(html.indexOf("/admin/admin-controls.js")).toBeLessThan(
+      html.indexOf("/admin/admin-shell.js"),
+    );
+    expect(globalCss).toContain("--bg: var(--surface-canvas");
+    expect(shell).toContain("--cms-control-height: var(--control-height");
+    expect(shell).toContain(".cms-select__listbox");
+    expect(shell).toContain('[role="menuitem"]');
+    expect(shellScript).toContain("DecapAdminControls.createSelect");
+    expect(shellScript).not.toContain('document.createElement("select")');
+    expect(mediaScript).toContain("DecapAdminControls.createSelect");
+    expect(mediaScript).not.toContain('element("select")');
+  });
+
+  test("keeps search fields visually quiet while typing", async () => {
+    const [globalCss, shell] = await Promise.all([
+      readFile(root + "src/styles/global.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+    ]);
+
+    expect(globalCss).not.toMatch(/\.nav-search:focus-within\s*\{/);
+    expect(shell).toMatch(
+      /\.cms-global-search:focus\s*\{[^}]*border-color:\s*var\(--cms-line\);[^}]*box-shadow:\s*none;/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-list-toolbar\]\s*>\s*input\[type="search"\]:focus\s*\{[^}]*box-shadow:\s*none\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\.cms-tag-manager__toolbar input\[type="search"\]:focus[^}]*\{[^}]*box-shadow:\s*none\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\.cms-media__toolbar input\[type="search"\]:focus\s*\{[^}]*box-shadow:\s*none\s*!important;/s,
+    );
+  });
+
+  test("keeps the quick-new trigger fixed while showing a compact menu", async () => {
+    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+
+    expect(shell).toMatch(
+      /#nc-root > header \[role=menu\]\s*\{[^}]*position:\s*absolute\s*!important;[^}]*right:\s*0\s*!important;[^}]*width:\s*140px\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /#nc-root > header \[role=menu\] > ul\s*\{[^}]*width:\s*100%\s*!important;[^}]*min-width:\s*100%\s*!important;[^}]*max-width:\s*100%\s*!important;/s,
+    );
   });
 
   test("keeps the sidebar typography close to the website list rhythm", async () => {
