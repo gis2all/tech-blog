@@ -6,6 +6,7 @@
   var observer = null;
   var syncScheduled = false;
   var headerPostSearch = "";
+  var tagMessageTimer = null;
   var TAG_LIBRARY_PATH = "src/data/tag-library.json";
   var MEDIA_ROUTE = "#/collections/posts?view=media";
   var LEGACY_MEDIA_ROUTE = "#/media-library";
@@ -26,6 +27,8 @@
     mergeTarget: "",
     mergePlan: null,
     merging: false,
+    addingTag: false,
+    newTag: "",
   };
 
   if (!document || !domain) return;
@@ -286,9 +289,24 @@
     return tagState.loading || tagState.saving || tagState.merging || tagState.loadError;
   }
 
-  function setTagMessage(message) {
-    tagState.message = message || "";
+  function setTagMessage(message, autoDismissMs) {
+    if (tagMessageTimer !== null) {
+      global.clearTimeout(tagMessageTimer);
+      tagMessageTimer = null;
+    }
+
+    var nextMessage = message || "";
+    tagState.message = nextMessage;
     updateTagPage();
+
+    if (nextMessage && autoDismissMs > 0) {
+      tagMessageTimer = global.setTimeout(function () {
+        tagMessageTimer = null;
+        if (tagState.message !== nextMessage) return;
+        tagState.message = "";
+        updateTagPage();
+      }, autoDismissMs);
+    }
   }
 
   async function loadTagData(successMessage) {
@@ -338,7 +356,7 @@
           raw: JSON.stringify({ tags: tags }, null, 2) + "\n",
         }],
         assets: [],
-      }, { commitMessage: commitMessage });
+      }, { commitMessage: commitMessage, useWorkflow: false });
       tagState.tags = tags;
       tagState.loaded = true;
       tagState.message = "标签库已保存。";
@@ -396,6 +414,8 @@
 
   function startTagMerge(tag) {
     if (tagActionDisabled()) return;
+    tagState.addingTag = false;
+    tagState.newTag = "";
     tagState.mergingSource = tag;
     tagState.mergeTarget = "";
     tagState.mergePlan = null;
@@ -460,6 +480,50 @@
     }
   }
 
+  function startTagAdd() {
+    if (tagActionDisabled() || tagState.addingTag) return;
+    tagState.mergingSource = null;
+    tagState.mergeTarget = "";
+    tagState.mergePlan = null;
+    tagState.addingTag = true;
+    tagState.newTag = "";
+    tagState.message = "";
+    updateTagPage();
+  }
+
+  function cancelTagAdd() {
+    if (tagState.saving) return;
+    tagState.addingTag = false;
+    tagState.newTag = "";
+    tagState.message = "";
+    updateTagPage();
+  }
+
+  async function persistNewTag() {
+    var tag = global.DecapTagDomain.normalizeTag(tagState.newTag);
+    if (!tag) {
+      setTagMessage("请输入标签名称。");
+      return;
+    }
+    if (!global.DecapTagDomain.missingTags([tag], tagState.tags).length) {
+      setTagMessage("标签“" + tag + "”已存在。");
+      return;
+    }
+
+    try {
+      await persistTags(
+        global.DecapTagDomain.mergeTags(tagState.tags, [tag]),
+        "Add tag " + tag,
+      );
+      tagState.addingTag = false;
+      tagState.newTag = "";
+      setTagMessage("标签“" + tag + "”已添加。", 5000);
+    } catch (error) {
+      tagState.message = error.message || "新增标签失败，未写入任何修改。";
+      updateTagPage();
+    }
+  }
+
   function renderTagToolbar(container) {
     var toolbar = element("div", "cms-tag-manager__toolbar");
     toolbar.setAttribute("data-admin-tag-toolbar", "");
@@ -497,7 +561,11 @@
     });
     toolbar.appendChild(sort);
 
-    toolbar.appendChild(element("span", "cms-tag-manager__summary"));
+    var add = element("button", "cms-tag-manager__add", "新增标签");
+    add.type = "button";
+    add.setAttribute("aria-expanded", "false");
+    add.addEventListener("click", startTagAdd);
+    toolbar.appendChild(add);
     container.appendChild(toolbar);
   }
 
@@ -506,13 +574,19 @@
     container.className = "cms-tag-manager";
     var heading = element("header", "cms-tag-manager__heading");
     heading.appendChild(element("h1", "", "标签"));
-    heading.appendChild(element("p", "", page.description));
+    var description = element("p", "", page.description + "。");
+    description.appendChild(element("span", "cms-tag-manager__summary"));
+    heading.appendChild(description);
     container.appendChild(heading);
     renderTagToolbar(container);
 
     var status = element("div", "cms-tag-manager__status-area");
     status.setAttribute("data-admin-tag-status", "");
     container.appendChild(status);
+
+    var add = element("div", "cms-tag-manager__add-area");
+    add.setAttribute("data-admin-tag-add", "");
+    container.appendChild(add);
 
     var merge = element("div", "cms-tag-manager__merge-area");
     merge.setAttribute("data-admin-tag-merge", "");
@@ -614,6 +688,48 @@
     merge.appendChild(section);
   }
 
+  function renderTagAdd(container) {
+    var area = container.querySelector("[data-admin-tag-add]");
+    if (!area) return;
+    area.replaceChildren();
+    if (!tagState.addingTag) return;
+
+    var section = element("section", "cms-tag-manager__merge cms-tag-manager__add-form");
+    section.setAttribute("aria-label", "新增标签");
+    section.appendChild(element("p", "", "新增标签"));
+    var input = element("input");
+    input.type = "text";
+    input.value = tagState.newTag;
+    input.placeholder = "标签名称";
+    input.setAttribute("aria-label", "标签名称");
+    input.disabled = tagState.saving;
+    input.addEventListener("input", function () {
+      tagState.newTag = input.value;
+    });
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        persistNewTag();
+      } else if (event.key === "Escape") {
+        cancelTagAdd();
+      }
+    });
+    section.appendChild(input);
+
+    var actions = element("div", "cms-tag-manager__merge-actions");
+    var primary = element("button", "", tagState.saving ? "正在添加..." : "添加");
+    primary.type = "button";
+    primary.disabled = tagState.saving;
+    primary.addEventListener("click", persistNewTag);
+    var cancel = element("button", "", "取消");
+    cancel.type = "button";
+    cancel.disabled = tagState.saving;
+    cancel.addEventListener("click", cancelTagAdd);
+    actions.append(primary, cancel);
+    section.appendChild(actions);
+    area.appendChild(section);
+  }
+
   function renderTagRows(container) {
     var list = container.querySelector("[data-admin-tag-list]");
     if (!list) return;
@@ -678,28 +794,34 @@
   }
 
   function renderTagPageState(container) {
+    var summary = container.querySelector(".cms-tag-manager__summary");
     var toolbar = container.querySelector("[data-admin-tag-toolbar]");
     if (toolbar) {
       var tagSearch = toolbar.querySelector('input[type="search"]');
       var filter = toolbar.querySelector('[data-admin-tag-filter="filter"]');
       var sort = toolbar.querySelector('[data-admin-tag-filter="sort"]');
-      var summary = toolbar.querySelector(".cms-tag-manager__summary");
+      var add = toolbar.querySelector(".cms-tag-manager__add");
       if (tagSearch && document.activeElement !== tagSearch && tagSearch.value !== tagState.query) {
         tagSearch.value = tagState.query;
       }
       if (filter && filter.value !== tagState.filter) filter.value = tagState.filter;
       if (sort && sort.value !== tagState.sort) sort.value = tagState.sort;
-      if (summary) {
-        var unused = tagState.tags.filter(function (tag) {
-          return !tagState.usage || !tagState.usage[tag];
-        }).length;
-        summary.textContent = tagState.loaded
-          ? "共 " + tagState.tags.length + " 个标签" +
-            (!tagState.loadError ? "，未使用 " + unused + " 个" : "")
-          : "正在准备标签库";
+      if (add) {
+        add.disabled = tagActionDisabled();
+        add.setAttribute("aria-expanded", tagState.addingTag ? "true" : "false");
       }
     }
+    if (summary) {
+      var unused = tagState.tags.filter(function (tag) {
+        return !tagState.usage || !tagState.usage[tag];
+      }).length;
+      summary.textContent = tagState.loaded
+        ? "共 " + tagState.tags.length + " 个标签" +
+          (!tagState.loadError ? "，未使用 " + unused + " 个" : "")
+        : "正在准备标签库";
+    }
     renderTagStatus(container);
+    renderTagAdd(container);
     renderTagMerge(container);
     renderTagRows(container);
   }
@@ -817,9 +939,9 @@
       container.setAttribute("data-admin-tag-page", "");
       main.appendChild(container);
       renderTagShell(container, page);
+      renderTagPageState(container);
     }
 
-    renderTagPageState(container);
     if (!tagState.loaded && !tagState.loading) loadTagData();
   }
 
@@ -1022,6 +1144,81 @@
     control.insertBefore(heading, control.firstChild);
   }
 
+  function ensureEditorToolbar() {
+    var page = domain.editorProfile(global.location.hash);
+    var back = document.querySelector("#nc-root [class*=ToolbarSectionBackLink]");
+    var collection = back && back.querySelector("[class*=BackCollection]");
+    if (!page || !back || !collection) return;
+
+    var labels = { posts: "文章", series: "专题", projects: "项目" };
+    var text = "正在编辑“" + labels[page.collection] + "”";
+    if (collection.textContent !== text) collection.textContent = text;
+    collection.setAttribute("data-admin-editor-back-label", page.collection);
+
+    var arrow = back.querySelector("[class*=BackArrow]");
+    if (arrow && !arrow.querySelector("[data-admin-editor-arrow]")) {
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("stroke-width", "2");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+      svg.setAttribute("aria-hidden", "true");
+      svg.setAttribute("data-admin-editor-arrow", "true");
+      var shaft = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      shaft.setAttribute("d", "M19 12H5");
+      var head = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      head.setAttribute("d", "m12 19-7-7 7-7");
+      svg.appendChild(shaft);
+      svg.appendChild(head);
+      arrow.replaceChildren(svg);
+    }
+  }
+
+  function ensureEditorFields() {
+    var editor = document.querySelector("#nc-root [class*=EditorContainer]");
+    var control = document.querySelector("#nc-root .Pane1 [class*=ControlPaneContainer]");
+    if (!editor || !control) return;
+
+    var fieldNames = {
+      "标题": "title",
+      "摘要": "description",
+      "正文": "body",
+      "分类": "category",
+      "标签": "tags",
+      "专题": "series",
+      "专题顺序": "seriesOrder",
+      "发布日期": "publishedAt",
+      "更新日期": "updatedAt",
+      "草稿": "draft",
+      "精选": "featured",
+      "封面": "cover",
+      "封面替代文本": "coverAlt",
+      "示例仓库": "repoUrl",
+      "参考资料": "references",
+      "更新记录": "changelog",
+    };
+
+    Array.from(control.querySelectorAll("[class*=ControlContainer]")).forEach(function (container) {
+      var label = container.querySelector("[class*=FieldLabel]");
+      if (!label) return;
+      var text = String(label.textContent || "").replace(/\s*\(.+?\)\s*$/, "").trim();
+      var name = fieldNames[text];
+      if (!name) return;
+      container.setAttribute("data-admin-editor-field", name);
+
+      if (name === "references" || name === "changelog") {
+        var itemLabel = name === "references" ? "参考资料" : "更新记录";
+        var empty = new RegExp("0\\s*" + itemLabel).test(
+          String(container.textContent || ""),
+        );
+        if (empty) container.setAttribute("data-admin-empty-list", "true");
+        else container.removeAttribute("data-admin-empty-list");
+      }
+    });
+  }
+
   function sync() {
     syncScheduled = false;
     if (redirectInitialAdminRoute()) return;
@@ -1037,7 +1234,9 @@
     var page = profile();
     if (!page) {
       removeTagPage();
+      ensureEditorToolbar();
       ensureEditorHeading();
+      ensureEditorFields();
       return;
     }
 

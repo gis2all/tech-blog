@@ -80,6 +80,12 @@ describe("Decap atomic tag operations", () => {
     expect(
       (harness.persistCalls[0] as { entry: { dataFiles: unknown[] } }).entry.dataFiles,
     ).toHaveLength(3);
+    expect(
+      (harness.persistCalls[0] as { persistOptions: unknown }).persistOptions,
+    ).toEqual({
+      commitMessage: "Merge tag Old into Target",
+      useWorkflow: false,
+    });
   });
 
   test("does not persist when the preflight read fails", async () => {

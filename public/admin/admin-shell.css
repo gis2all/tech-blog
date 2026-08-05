@@ -20,6 +20,7 @@
   --cms-control-font-size: var(--control-font-size, 14px);
   --cms-focus-ring: var(--focus-ring, 0 0 0 3px rgb(11 114 133 / 14%));
   --cms-menu-shadow: var(--shadow-menu, 0 10px 28px rgb(15 23 42 / 14%));
+  --cms-editor-toolbar-height: 62px;
   color: var(--cms-text);
   background: var(--cms-canvas);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -428,7 +429,7 @@ body > .cms-theme-toggle {
   position: fixed;
   z-index: 60;
   top: 14px;
-  right: 310px;
+  right: 18px;
 }
 
 .cms-global-search::placeholder {
@@ -1242,34 +1243,75 @@ body.cms-media-page #nc-root aside [data-admin-media-shortcut] button svg,
 }
 
 #nc-root [class*=EditorContainer] {
+  display: flex !important;
+  flex-direction: column !important;
   min-height: 100vh !important;
+  height: 100vh !important;
   padding-top: 0 !important;
   background: var(--cms-canvas) !important;
   color: var(--cms-text) !important;
 }
 
 #nc-root [class*=EditorContainer] > [class*=ToolbarContainer] {
-  position: sticky;
+  flex: 0 0 var(--cms-editor-toolbar-height) !important;
+  position: relative !important;
   z-index: 50;
-  top: 0;
-  min-height: 62px !important;
-  padding: 0 24px !important;
+  top: auto;
+  box-sizing: border-box;
+  height: var(--cms-editor-toolbar-height) !important;
+  min-height: var(--cms-editor-toolbar-height) !important;
+  padding: 0 !important;
   border-bottom: 1px solid var(--cms-line) !important;
   background: var(--cms-panel) !important;
   box-shadow: none !important;
 }
 
 body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
-  right: 310px;
+  top: 14px;
+  right: 202px;
+  z-index: 80;
 }
 
 #nc-root [class*=ToolbarSectionBackLink] {
-  min-height: 62px !important;
-  padding-right: 18px !important;
+  box-sizing: border-box;
+  flex: 0 0 216px !important;
+  width: 216px !important;
+  min-height: var(--cms-editor-toolbar-height) !important;
+  height: var(--cms-editor-toolbar-height) !important;
+  gap: 10px !important;
+  padding: 0 18px !important;
   border-right: 1px solid var(--cms-line) !important;
   color: var(--cms-ink) !important;
   font-size: 13px !important;
-  font-weight: 700 !important;
+  font-weight: 400 !important;
+}
+
+#nc-root [class*=ToolbarSectionBackLink] [class*=BackArrow] {
+  display: grid !important;
+  flex: 0 0 16px !important;
+  place-items: center;
+  box-sizing: border-box;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  color: var(--cms-ink) !important;
+  font-size: 20px !important;
+  line-height: 16px !important;
+}
+
+#nc-root [class*=ToolbarSectionBackLink] [class*=BackCollection] {
+  color: var(--cms-ink) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 19.5px !important;
+}
+
+#nc-root [class*=ToolbarSectionBackLink] [class*=BackStatus] {
+  color: var(--cms-success) !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 16.5px !important;
 }
 
 #nc-root [class*=ToolbarSectionMain],
@@ -1277,9 +1319,14 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   gap: 8px !important;
 }
 
+#nc-root [class*=ToolbarSectionMain] {
+  padding: 0 0 0 20px !important;
+}
+
 #nc-root [class*=ToolbarContainer] [class*=ToolbarButton],
 #nc-root [class*=ToolbarContainer] [class*=DropdownButton],
-#nc-root [class*=ToolbarContainer] [class*=RefreshPreviewButton] {
+#nc-root [class*=ToolbarContainer] [class*=RefreshPreviewButton],
+#nc-root [class*=ToolbarContainer] [data-admin-refresh-preview] {
   min-height: 34px !important;
   border: 1px solid var(--cms-line) !important;
   border-radius: var(--cms-radius) !important;
@@ -1289,6 +1336,26 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   font-family: inherit !important;
   font-size: 12px !important;
   font-weight: 600 !important;
+}
+
+#nc-root [class*=ToolbarContainer] [class*=ToolbarSubSectionFirst] {
+  gap: 10px !important;
+}
+
+#nc-root [class*=ToolbarContainer] [class*=ToolbarSubSectionFirst] > *,
+#nc-root [class*=ToolbarContainer] [class*=ToolbarSubSectionFirst] > * > button,
+#nc-root [class*=ToolbarContainer] [class*=ToolbarSubSectionFirst] > * > [class*=DropdownButton] {
+  margin: 0 !important;
+}
+
+#nc-root [class*=ToolbarContainer] [class*=PublishedToolbarButton],
+#nc-root [class*=ToolbarContainer] [class*=DeleteButton],
+#nc-root [class*=ToolbarContainer] [class*=RefreshPreviewButton],
+#nc-root [class*=ToolbarContainer] [data-admin-refresh-preview] {
+  box-sizing: border-box;
+  height: 34px !important;
+  min-height: 34px !important;
+  line-height: 32px !important;
 }
 
 #nc-root [class*=ToolbarContainer] [class*=PublishedToolbarButton] {
@@ -1304,16 +1371,55 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 }
 
 #nc-root [class*=EditorContainer] .SplitPane {
-  min-height: calc(100vh - 62px) !important;
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
   background: var(--cms-canvas) !important;
 }
 
+#nc-root [class*=EditorContainer] > [class*=Editor] {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] > [class*=Editor] > div:has(> .SplitPane) {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
 #nc-root [class*=EditorContainer] .Pane1 {
+  box-sizing: border-box;
+  flex: 0 0 auto !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
   border-right: 1px solid var(--cms-line) !important;
   background: var(--cms-canvas) !important;
 }
 
 #nc-root [class*=EditorContainer] .Pane2 {
+  box-sizing: border-box;
+  flex: 1 1 0% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
   background: var(--cms-panel) !important;
 }
 
@@ -1398,17 +1504,53 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   gap: 7px;
 }
 
+#nc-root [data-admin-tag-page] .cms-tag-manager__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--cms-control-height);
+  padding: 0 13px;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  font-family: inherit;
+  font-size: var(--cms-control-font-size);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__add:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__add-form {
+  grid-template-columns: auto minmax(220px, 1fr) auto;
+  align-items: center;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__add-form > p {
+  white-space: nowrap;
+}
+
 #nc-root [data-admin-tag-page] .cms-tag-manager__toolbar input,
 #nc-root [data-admin-tag-page] .cms-tag-manager__toolbar .cms-select__trigger,
 #nc-root [data-admin-tag-page] .cms-tag-manager__merge input {
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--cms-control-height);
   min-height: var(--cms-control-height);
-  border-color: var(--cms-line) !important;
+  padding: 0 11px;
+  border: 1px solid var(--cms-line) !important;
   border-radius: var(--cms-radius) !important;
   background: var(--cms-panel) !important;
-  color: var(--cms-muted) !important;
+  color: var(--cms-text) !important;
   box-shadow: none !important;
   font-family: inherit;
   font-size: var(--cms-control-font-size);
+  line-height: 1;
 }
 
 #nc-root [data-admin-tag-page] .cms-tag-manager__toolbar input {
@@ -1432,19 +1574,20 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 }
 
 #nc-root [data-admin-tag-page] .cms-tag-manager__merge input:focus {
-  border-color: var(--cms-brand) !important;
+  border-color: var(--cms-line) !important;
   outline: 0;
   background: var(--cms-panel) !important;
   color: var(--cms-text) !important;
-  box-shadow: var(--cms-focus-ring) !important;
+  box-shadow: none !important;
 }
 
-#nc-root [data-admin-tag-page] .cms-tag-manager__summary {
-  align-self: center;
+#nc-root [data-admin-tag-page] .cms-tag-manager__heading .cms-tag-manager__summary {
+  margin-left: 0;
   color: var(--cms-muted);
 }
 
 #nc-root [data-admin-tag-page] .cms-tag-manager__status-area:empty,
+#nc-root [data-admin-tag-page] .cms-tag-manager__add-area:empty,
 #nc-root [data-admin-tag-page] .cms-tag-manager__merge-area:empty {
   display: none;
 }
@@ -1482,7 +1625,6 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   gap: 8px;
 }
 
-#nc-root [data-admin-tag-page] .cms-tag-manager__rename,
 #nc-root [data-admin-tag-page] .cms-tag-manager__confirm button,
 #nc-root [data-admin-tag-page] .cms-tag-manager__retry,
 #nc-root [data-admin-tag-page] .cms-tag-manager__merge-actions button {
@@ -1494,6 +1636,31 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   color: var(--cms-brand) !important;
   font-size: 12px;
   font-weight: 700;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__rename {
+  min-height: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--cms-brand) !important;
+  box-shadow: none !important;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__rename:hover {
+  color: var(--cms-brand-strong) !important;
+  text-decoration: underline;
+}
+
+#nc-root [data-admin-tag-page] .cms-tag-manager__rename:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 #nc-root [data-admin-tag-page] .cms-tag-manager__confirm .cms-tag-manager__confirm-delete,
@@ -1532,8 +1699,115 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   background: var(--cms-canvas) !important;
 }
 
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] {
+  max-width: none;
+  box-sizing: border-box;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: 32px !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 > [class*=ControlPaneContainer] {
+  overflow: clip !important;
+  background: var(--cms-canvas) !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 > [class*=ControlPaneContainer] > [class*=ControlPaneContainer] {
+  height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [class*=ControlContainer] {
+  margin: 0 0 18px;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=RawEditorContainer],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-raw {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=RawEditorContainer] > *,
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-raw > * {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-visual {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin-top: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-visual [class*=EditorControlBar] {
+  position: relative !important;
+  top: auto !important;
+  z-index: 2 !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-visual [class*=EditorControlBar] + * {
+  position: relative !important;
+  z-index: 1 !important;
+  height: auto !important;
+  min-height: 360px !important;
+  margin-top: 0 !important;
+  overflow: auto !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=EditorControlBar] ~ *,
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=RawEditorContainer] > * > * {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=EditorControlBar],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=RawEditorContainer] [class*=ToolbarContainer] {
+  flex: 0 0 auto !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=CodeMirror],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=CodeMirror-scroll] {
+  height: auto !important;
+  min-height: 360px !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="category"],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="series"],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="draft"],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="featured"] {
+  box-sizing: border-box;
+  display: inline-block;
+  vertical-align: top;
+  width: calc(50% - 8px);
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="category"],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="draft"] {
+  margin-right: 16px;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="tags"] {
+  width: 100%;
+}
+
 #nc-root [data-admin-editor-heading] {
-  margin: 0 0 22px;
+  margin: 0 0 16px;
 }
 
 #nc-root [data-admin-editor-heading] h1,
@@ -1624,12 +1898,22 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   color: var(--cms-muted) !important;
 }
 
-#nc-root [class*=PreviewPaneContainer] {
+#nc-root [class*=EditorContainer] .Pane2 [class*=PreviewPaneContainer] {
+  box-sizing: border-box;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: auto !important;
   background: var(--cms-panel) !important;
 }
 
-#nc-root [class*=PreviewPaneFrame] {
+#nc-root [class*=EditorContainer] .Pane2 [class*=PreviewPaneFrame] {
+  display: block !important;
   border: 0 !important;
+  box-sizing: border-box;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
   background: var(--cms-panel) !important;
 }
 
@@ -1856,6 +2140,961 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 #nc-root [data-admin-tag-page] button:disabled {
   opacity: 0.55;
   cursor: not-allowed !important;
+}
+
+#nc-root main input:focus,
+#nc-root main textarea:focus,
+#nc-root main select:focus,
+#nc-root [class*=EditorContainer] input:focus,
+#nc-root [class*=EditorContainer] textarea:focus,
+#nc-root [class*=EditorContainer] select:focus,
+#nc-root [class*=EditorContainer] [role=combobox]:focus,
+#nc-root [class*=EditorContainer] [role=combobox]:focus-within,
+#nc-root [class*=EditorContainer] [class*="-control"]:focus,
+#nc-root [class*=EditorContainer] [class*="-control"]:focus-within,
+#nc-root .cms-tag-selector input[type="search"]:focus,
+#nc-root .cms-select__trigger:focus-visible {
+  border-color: var(--cms-line-strong) !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] input,
+#nc-root [class*=EditorContainer] textarea,
+#nc-root [class*=EditorContainer] select {
+  box-sizing: border-box !important;
+  line-height: 1.45 !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ControlContainer] > input:not([role="combobox"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="search"]) {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 12px !important;
+  border: 1px solid var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="title"] .cms-article-title > input {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 12px !important;
+  border: 1px solid var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="title"] .cms-article-title__lock {
+  min-height: 32px !important;
+  margin-top: 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="title"] .cms-article-title__lock button {
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 9px !important;
+  border: 1px solid var(--cms-line) !important;
+  background: var(--cms-panel) !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="title"] .cms-article-title__destinations {
+  margin-top: 8px !important;
+  padding: 8px 0 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--cms-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="description"] > textarea {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: 104px !important;
+  min-height: 104px !important;
+  max-height: 104px !important;
+  overflow-y: auto !important;
+  padding: 10px 12px !important;
+  border: 1px solid var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+  resize: vertical !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="draft"] > div:has(> [role="switch"]),
+#nc-root [class*=EditorContainer] [data-admin-editor-field="featured"] > div:has(> [role="switch"]) {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 12px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="cover"] > div:has(button[class*="FileWidgetButton"]) {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 42px !important;
+  gap: 8px !important;
+  padding: 4px 8px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="cover"] > div:has(button[class*="FileWidgetButton"]):has(img) {
+  align-items: flex-start !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding: 12px !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="cover"] > div:has(button[class*="FileWidgetButton"]) > span {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="cover"] button[class*="FileWidgetButton"] {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-brand) !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="cover"] button[class*="FileWidgetButtonRemove"] {
+  color: var(--cms-danger) !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="cover"] img {
+  width: auto !important;
+  max-width: 100% !important;
+  max-height: 180px !important;
+  object-fit: contain !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] .cms-editor-visual > div,
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] .cms-editor-raw > [class*=RawEditorContainer] {
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=EditorControlBar] {
+  box-sizing: border-box !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-bottom: 0 !important;
+  border-radius: var(--cms-radius) var(--cms-radius) 0 0 !important;
+  background: var(--cms-soft) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=EditorControlBar] > div {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  gap: 8px !important;
+  padding: 6px 8px !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=EditorControlBar] > div > div:first-child {
+  display: flex !important;
+  align-items: center !important;
+  flex: 1 1 auto !important;
+  flex-wrap: nowrap !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=EditorControlBar] > div > div:first-child::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=EditorControlBar] button:not([role="switch"]) {
+  box-sizing: border-box !important;
+  display: inline-grid !important;
+  flex: 0 0 30px !important;
+  place-items: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  color: var(--cms-muted) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=ToolbarDropdownWrapper] {
+  flex: 0 0 30px !important;
+  width: 30px !important;
+  height: 30px !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=ToolbarToggle] {
+  flex: 0 0 auto !important;
+  gap: 6px !important;
+  margin-left: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=ToolbarToggleLabel] {
+  font-size: 12px !important;
+  line-height: 20px !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] .cms-editor-raw [class*=EditorControlBar] {
+  position: relative !important;
+  top: auto !important;
+  margin: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] .cms-editor-visual [class*=EditorControlBar] + *,
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] .cms-editor-raw [class*=EditorControlBar] + * {
+  box-sizing: border-box !important;
+  min-height: 230px !important;
+  margin: 0 !important;
+  overflow: auto !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: 0 0 var(--cms-radius) var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ControlContainer] [class*="-control"] {
+  min-height: 42px !important;
+  border: 1px solid var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ControlContainer] [class*="-control"]:hover {
+  border-color: var(--cms-line-strong) !important;
+}
+
+#nc-root [data-admin-editor-field="category"] > div:has(> div input[role="combobox"]),
+#nc-root [data-admin-editor-field="series"] > div:has(> div input[role="combobox"]) {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-editor-field="category"] > div:has(input[role="combobox"]) > div:has(input[role="combobox"]),
+#nc-root [data-admin-editor-field="series"] > div:has(input[role="combobox"]) > div:has(input[role="combobox"]) {
+  min-height: 42px !important;
+  padding: 0 0 0 12px !important;
+  border: 1px solid var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-editor-field="category"] > div:has(input[role="combobox"]) > div:has(input[role="combobox"]):focus-within,
+#nc-root [data-admin-editor-field="series"] > div:has(input[role="combobox"]) > div:has(input[role="combobox"]):focus-within {
+  border-color: var(--cms-line-strong) !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-editor-field="category"] > div:has(input[role="combobox"]) > div:has(input[role="combobox"]) > div:first-child,
+#nc-root [data-admin-editor-field="series"] > div:has(input[role="combobox"]) > div:has(input[role="combobox"]) > div:first-child {
+  min-height: 40px !important;
+  padding: 0 !important;
+}
+
+#nc-root [data-admin-editor-field="category"] div:has(> [class*="-singleValue"]) > div[data-value] input,
+#nc-root [data-admin-editor-field="series"] div:has(> [class*="-singleValue"]) > div[data-value] input {
+  opacity: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] [class*="-ValueContainer"],
+#nc-root [class*=EditorContainer] [class*="-valueContainer"] {
+  min-height: 40px !important;
+  padding: 0 12px !important;
+}
+
+#nc-root [class*=EditorContainer] [class*="-singleValue"],
+#nc-root [class*=EditorContainer] [class*="-SingleValue"] {
+  margin: 0 !important;
+  color: var(--cms-text) !important;
+  line-height: 1.4 !important;
+}
+
+#nc-root [class*=EditorContainer] [class*="-Input"],
+#nc-root [class*=EditorContainer] [class*="-input"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--cms-text) !important;
+}
+
+#nc-root [class*=EditorContainer] [class*="-menu"],
+#nc-root [class*=EditorContainer] [class*="-Menu"],
+#nc-root [class*=EditorContainer] [role=listbox] {
+  overflow: hidden !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: var(--cms-menu-shadow) !important;
+}
+
+#nc-root [class*=EditorContainer] [role=listbox] [role=option],
+#nc-root [class*=EditorContainer] [class*="-option"],
+#nc-root [class*=EditorContainer] [class*="-Option"] {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 38px !important;
+  padding: 0 12px !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  font: inherit !important;
+}
+
+#nc-root [class*=EditorContainer] [role=listbox] [role=option]:hover,
+#nc-root [class*=EditorContainer] [role=listbox] [role=option]:focus,
+#nc-root [class*=EditorContainer] [role=listbox] [role=option][aria-selected="true"],
+#nc-root [class*=EditorContainer] [class*="-option"]:hover,
+#nc-root [class*=EditorContainer] [class*="-option"]:focus,
+#nc-root [class*=EditorContainer] [class*="-Option"]:hover,
+#nc-root [class*=EditorContainer] [class*="-Option"]:focus {
+  outline: 0 !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand-strong) !important;
+  box-shadow: none !important;
+}
+
+#nc-root .cms-tag-selector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 5px 8px;
+  border: 1px solid var(--cms-line-strong);
+  border-radius: var(--cms-radius);
+  background: var(--cms-panel);
+}
+
+#nc-root .cms-tag-selector:focus-within {
+  border-color: var(--cms-line-strong);
+  box-shadow: none;
+}
+
+#nc-root .cms-tag-selector__selected {
+  display: contents;
+}
+
+#nc-root .cms-tag-selector input[type="search"] {
+  box-sizing: border-box !important;
+  flex: 1 1 150px;
+  width: auto !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 4px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+  font: var(--cms-control-font-size)/1.4 inherit !important;
+}
+
+#nc-root [class*=EditorContainer] .cms-tag-selector__tag,
+#nc-root [class*=EditorContainer] .cms-tag-selector__suggestion[role="option"] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px !important;
+  gap: 5px;
+  padding: 0 8px !important;
+  border-color: var(--cms-line) !important;
+  border-radius: 4px !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+}
+
+#nc-root [class*=EditorContainer] .cms-tag-selector__tag {
+  padding-right: 5px !important;
+}
+
+#nc-root .cms-tag-selector__remove {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: var(--cms-muted) !important;
+  font-size: 0 !important;
+  line-height: 18px;
+}
+
+#nc-root .cms-tag-selector__remove::before {
+  content: "\00d7";
+  font-size: 15px;
+  line-height: 1;
+}
+
+#nc-root [class*=EditorContainer] .cms-tag-selector__suggestions[role="listbox"] {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 0 100%;
+  gap: 6px;
+  margin-top: 3px;
+  overflow: visible !important;
+  padding: 8px 1px 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--cms-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] .cms-tag-selector__suggestion[role="option"] {
+  line-height: 1.2;
+}
+
+#nc-root [class*=EditorContainer] .cms-tag-selector__suggestion[role="option"].cms-tag-selector__suggestion--create {
+  border-style: solid !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
+  font-weight: inherit !important;
+}
+
+#nc-root [class*=EditorContainer] .cms-tag-selector__suggestion[role="option"]:hover,
+#nc-root [class*=EditorContainer] .cms-tag-selector__suggestion[role="option"].cms-tag-selector__suggestion--active {
+  border-color: var(--cms-line) !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+}
+
+#nc-root .cms-tag-selector__status,
+#nc-root .cms-tag-selector__pending,
+#nc-root .cms-tag-selector__error {
+  flex: 1 0 100%;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="publishedAt"],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="updatedAt"] {
+  box-sizing: border-box;
+  display: inline-block;
+  vertical-align: top;
+  width: calc(50% - 8px);
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="publishedAt"] {
+  margin-right: 16px;
+}
+
+#nc-root [data-admin-editor-field="publishedAt"] > div:has(input[type="date"]),
+#nc-root [data-admin-editor-field="updatedAt"] > div:has(input[type="date"]) {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  gap: 8px !important;
+  padding: 4px 8px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-editor-field="publishedAt"] > div:has(input[type="date"]) > div,
+#nc-root [data-admin-editor-field="updatedAt"] > div:has(input[type="date"]) > div {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 0 !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="publishedAt"] input,
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="updatedAt"] input {
+  width: 136px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 8px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="publishedAt"] button,
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="updatedAt"] button {
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 8px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+#nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] [class*=ControlContainer] > div:has(input[type="date"]) {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  gap: 8px !important;
+  padding: 4px 8px !important;
+  border: 1px solid var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] [class*=ControlContainer] > div:has(input[type="date"]) > div {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 0 !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] input[type="date"] {
+  width: 136px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 8px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] [class*=ControlContainer] > div:has(input[type="date"]) button {
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 8px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="references"],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="changelog"],
+#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] {
+  clear: both;
+  display: block;
+  width: 100%;
+}
+
+#nc-root [data-admin-editor-field="references"] > div[id^="references-field-"],
+#nc-root [data-admin-editor-field="changelog"] > div[id^="changelog-field-"] {
+  overflow: hidden;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-editor-field="references"] > div[id^="references-field-"] > div:first-child,
+#nc-root [data-admin-editor-field="changelog"] > div[id^="changelog-field-"] > div:first-child {
+  min-height: 38px !important;
+  padding: 4px 8px 4px 10px !important;
+  border: 0 !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-empty-list="true"] > div[id^="references-field-"] > div:not(:first-child),
+#nc-root [data-admin-empty-list="true"] > div[id^="changelog-field-"] > div:not(:first-child) {
+  display: none !important;
+}
+
+#nc-root [data-admin-empty-list="true"] > div[id^="references-field-"],
+#nc-root [data-admin-empty-list="true"] > div[id^="changelog-field-"] {
+  padding-bottom: 0 !important;
+}
+
+#nc-root [data-admin-editor-field="references"] button[data-testid="expand-button"],
+#nc-root [data-admin-editor-field="changelog"] button[data-testid="expand-button"] {
+  width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+#nc-root [data-admin-editor-field="references"] button[class*=AddButton],
+#nc-root [data-admin-editor-field="changelog"] button[class*=AddButton] {
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 9px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=SortableListItem],
+#nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] {
+  box-sizing: border-box !important;
+  margin: 12px 0 0 !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  overflow: hidden !important;
+  background: var(--cms-panel) !important;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar],
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 4px 6px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--cms-line) !important;
+  background: var(--cms-soft) !important;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > button,
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > [role="button"],
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > button,
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > [role="button"] {
+  box-sizing: border-box !important;
+  display: grid !important;
+  flex: 0 0 30px !important;
+  place-items: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  color: var(--cms-muted) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > [role="button"],
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > [role="button"] {
+  margin-left: auto !important;
+  cursor: grab;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > button:last-child,
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > button:last-child {
+  margin-left: 4px !important;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > button:hover,
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > [role="button"]:hover,
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > button:hover,
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > [role="button"]:hover {
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand-strong) !important;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > button span,
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > [role="button"] span,
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > button span,
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > [role="button"] span {
+  display: grid !important;
+  place-items: center !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] svg,
+#nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=SortableListItem] > div:last-child,
+#nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] > div:last-child {
+  box-sizing: border-box !important;
+  padding: 14px !important;
+  border: 0 !important;
+  background: var(--cms-panel) !important;
+}
+
+#nc-root [data-admin-editor-field="references"] [class*=SortableListItem] > div:last-child > div > [class*=ControlContainer]:first-child,
+#nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] > div:last-child > div > [class*=ControlContainer]:first-child {
+  margin-top: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] {
+  display: flex !important;
+  flex: 0 0 50px !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  width: 50px !important;
+  gap: 0 !important;
+  margin-left: 0 !important;
+  padding: 0 10px 0 6px !important;
+  border-left: 0 !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=RefreshPreviewButton],
+#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=AvatarDropdownButton] {
+  box-sizing: border-box !important;
+  display: inline-grid !important;
+  flex: 0 0 34px !important;
+  place-items: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  margin: 0 !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-muted) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=RefreshPreviewButton],
+#nc-root [class*=EditorContainer] [data-admin-refresh-preview] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 70px !important;
+  gap: 6px !important;
+  padding: 0 10px !important;
+  color: var(--cms-text) !important;
+  font-size: var(--cms-control-font-size) !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-refresh-preview] svg {
+  order: -1;
+  flex: 0 0 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+  color: inherit !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-publish-trigger] {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  min-width: 86px !important;
+  padding: 0 28px 0 12px !important;
+  border: 1px solid var(--cms-line-strong) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  font-size: var(--cms-control-font-size) !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-publish-menu] {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-publish-menu] > ul {
+  box-sizing: border-box !important;
+  width: 208px !important;
+  min-width: 208px !important;
+  max-width: 208px !important;
+  overflow: hidden !important;
+  padding: 4px 0 !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: var(--cms-menu-shadow) !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-publish-item] {
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  height: var(--cms-control-height) !important;
+  min-height: var(--cms-control-height) !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  font-size: var(--cms-control-font-size) !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-publish-item] > span:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-publish-icon] {
+  display: grid !important;
+  flex: 0 0 16px !important;
+  place-items: center !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-height: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--cms-muted) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-publish-icon] svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-publish-item]:hover,
+#nc-root [class*=EditorContainer] [data-admin-publish-item]:focus-visible {
+  outline: 0 !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand-strong) !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-publish-item]:hover [data-admin-publish-icon],
+#nc-root [class*=EditorContainer] [data-admin-publish-item]:focus-visible [data-admin-publish-icon] {
+  color: inherit !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=AvatarDropdownButton] svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-preview-toggle] {
+  position: fixed !important;
+  z-index: 80 !important;
+  top: 14px !important;
+  right: 126px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  width: 70px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding: 0 9px !important;
+  border: 1px solid var(--cms-line) !important;
+  border-radius: var(--cms-radius) !important;
+  background: var(--cms-panel) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  font-size: var(--cms-control-font-size) !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-preview-toggle] svg {
+  flex: 0 0 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-preview-toggle][aria-pressed="true"] {
+  border-color: var(--cms-brand) !important;
+  background: var(--cms-brand-soft) !important;
+  color: var(--cms-brand-strong) !important;
+}
+
+#nc-root [class*=EditorContainer] [class*=ScrollSyncButton],
+#nc-root [class*=EditorContainer] button[title="同步滚动"] {
+  display: none !important;
 }
 
 @media (max-width: 900px) {
