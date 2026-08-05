@@ -1,16 +1,16 @@
 ---
-title: 小团队 Git 工作流：什么时候 merge，什么时候 rebase
+title: 小团队 Git 工作流：什么时候 merge，什么时候
 description: 结合功能分支、紧急修复和发布分支三个场景，说明如何选择合并策略。
-publishedAt: 2026-07-08
 category: 工程实践
 tags:
   - Git
   - 团队协作
   - 工作流
-cover: /images/posts/小团队%20Git%20工作流：什么时候%20merge，什么时候%20rebase/cover.webp
-coverAlt: Git 工作流草稿封面
+publishedAt: 2026-07-08
 draft: true
 featured: false
+cover: /images/posts/小团队%20Git%20工作流：什么时候%20merge，什么时候/cover.webp
+coverAlt: Git 工作流草稿封面
 ---
 
 ## 草稿说明
