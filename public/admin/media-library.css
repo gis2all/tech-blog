@@ -310,6 +310,14 @@ body.cms-media-open {
   font-weight: 600;
 }
 
+.cms-media__refresh {
+  padding: 6px 12px;
+  border: 1px solid #cfd7dd;
+  border-radius: 6px;
+  background: transparent;
+  color: #5d6670;
+}
+
 .cms-media__upload-target {
   padding: 7px 10px;
   border: 1px dashed #cfd7dd;

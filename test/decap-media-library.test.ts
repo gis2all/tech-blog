@@ -15,9 +15,9 @@ describe("Decap custom article media library", () => {
     const config = parse(configSource) as { media_library?: { name?: string } };
 
     expect(config.media_library?.name).toBe("article_media");
-    expect(index).toContain('href="/admin/media-library.css?v=4"');
+    expect(index).toContain('href="/admin/media-library.css?v=5"');
     expect(index).toContain('src="/admin/media-domain.js?v=2"');
-    expect(index).toContain('src="/admin/media-library.js?v=9"');
+    expect(index).toContain('src="/admin/media-library.js?v=10"');
     expect(library).toContain("CMS.registerMediaLibrary");
     expect(library).toContain("enableStandalone");
   });
@@ -157,5 +157,10 @@ describe("Decap custom article media library", () => {
       'state.currentCover = state.collection === "posts" ? null : currentCoverFromEntry()',
     );
     expect(source).toContain('"cms-media__upload-target"');
+    expect(source).toContain("requiredRoots");
+    expect(source).toContain("rootCache");
+    expect(source).toContain("articlesCache");
+    expect(source).toContain("function refreshLibrary");
+    expect(source).toContain('element("button", "cms-media__refresh", "刷新")');
   });
 });

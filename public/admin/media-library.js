@@ -23,6 +23,8 @@
     collection: "posts",
     view: "posts",
     currentCover: null,
+    rootCache: Object.create(null),
+    articlesCache: false,
   };
   var overlay = null;
   var modalPanel = null;
@@ -163,15 +165,13 @@
     return [];
   }
 
-  async function loadFiles(backend) {
-    var posts = await listRoot(backend, MEDIA_ROOT);
-    var uploads = [];
-    try {
-      uploads = await listRoot(backend, UPLOADS_MEDIA_ROOT);
-    } catch (_error) {}
-    var files = posts.concat(uploads);
-    if (state.currentCover) files.push(state.currentCover);
-    return files;
+  function requiredRoots() {
+    if (mode === "page") {
+      return [state.view === "posts" ? MEDIA_ROOT : UPLOADS_MEDIA_ROOT];
+    }
+    return state.collection === "posts"
+      ? [MEDIA_ROOT]
+      : [UPLOADS_MEDIA_ROOT];
   }
 
   function activePanel() {
@@ -248,14 +248,34 @@
     state.message = "";
     render();
     try {
-      await loadArticles(backend);
-      state.files = normalizedFiles(await loadFiles(backend));
+      if (!state.articlesCache) {
+        await loadArticles(backend);
+        state.articlesCache = true;
+      }
+      var roots = requiredRoots();
+      var files = [];
+      for (var index = 0; index < roots.length; index += 1) {
+        var root = roots[index];
+        if (!state.rootCache[root]) {
+          state.rootCache[root] = await listRoot(backend, root);
+        }
+        files = files.concat(state.rootCache[root]);
+      }
+      if (state.currentCover) files.push(state.currentCover);
+      state.files = normalizedFiles(files);
     } catch (error) {
       state.message = error.message || "媒体库加载失败。";
     } finally {
       state.loading = false;
       render();
     }
+  }
+
+  function refreshLibrary() {
+    state.rootCache = Object.create(null);
+    state.articlesCache = false;
+    state.message = "";
+    loadLibrary();
   }
 
   function currentTitle() {
@@ -416,6 +436,11 @@
       });
       state.uploadFile = null;
       state.message = "上传完成。";
+      var cachedRoot = uploadRoot === UPLOADS_MEDIA_ROOT ||
+        uploadRoot.indexOf(UPLOADS_MEDIA_ROOT + "/") === 0
+        ? UPLOADS_MEDIA_ROOT
+        : MEDIA_ROOT;
+      delete state.rootCache[cachedRoot];
       await loadLibrary();
     } catch (uploadError) {
       state.loading = false;
@@ -439,6 +464,7 @@
         "Delete unused article media",
       );
       state.selectedForDeletion.clear();
+      state.rootCache = Object.create(null);
       await loadLibrary();
     } catch (error) {
       state.loading = false;
@@ -499,6 +525,11 @@
       updateSelectAllControl(activePanel());
     });
     toolbar.appendChild(search);
+
+    var refreshButton = element("button", "cms-media__refresh", "刷新");
+    refreshButton.type = "button";
+    refreshButton.addEventListener("click", refreshLibrary);
+    toolbar.appendChild(refreshButton);
 
     if (isPostsUploadContext()) {
       var articleOptions = [["all", "全部文章"]];
@@ -722,6 +753,7 @@
     state.article = "all";
     state.uploadTitle = view === "uploads" ? "" : currentTitle();
     render();
+    loadLibrary();
   }
 
   function mediaTitle() {
