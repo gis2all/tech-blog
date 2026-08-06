@@ -170,7 +170,7 @@ seriesOrder: 1
 主要规则：
 
 - `title`、`description`、`publishedAt` 和 `category` 必填
-- `tags` 默认为空数组，`draft` 和 `featured` 默认为 `false`
+- `tags` 和 `changelog` 默认为空数组，`draft` 和 `featured` 默认为 `false`
 - `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 可选；有封面时应提供准确的 `coverAlt`
 - `draft: true` 的文章不会进入生产页面、RSS 和搜索索引
 - 分类为单值，标签为多值，专题文章通过 `seriesOrder` 排序
