@@ -14,6 +14,8 @@
   var routeSnapshot = null;
   var routeSettleTimer = null;
   var routeMutationVersion = 0;
+  var routeStartedAt = 0;
+  var MAX_ROUTE_SETTLE_MS = 600;
   var TAG_LIBRARY_PATH = "src/data/tag-library.json";
   var MEDIA_ROUTE = "#/collections/posts?view=media";
   var LEGACY_MEDIA_ROUTE = "#/media-library";
@@ -156,14 +158,14 @@
   }
 
   function routeSettleDelay(route) {
-    if (route === MEDIA_ROUTE) return 240;
+    if (route === MEDIA_ROUTE) return 60;
     var page = domain.pageProfile(route);
-    if (!page) return 80;
+    if (!page) return 40;
     if (page.collection === "posts") {
       var draftRoute = /[?&]view=drafts(?:&|$)/;
-      return page.view === "drafts" || draftRoute.test(renderedRoute) ? 320 : 80;
+      return page.view === "drafts" || draftRoute.test(renderedRoute) ? 60 : 40;
     }
-    return page.collection === "tags" ? 240 : 180;
+    return page.collection === "tags" ? 60 : 40;
   }
 
   function finishRouteTransition() {
@@ -189,23 +191,17 @@
     var mutationVersion = routeMutationVersion;
     routeSettleTimer = global.setTimeout(function () {
       routeSettleTimer = null;
+      if (pendingRoute !== route || global.location.hash !== route) return;
       if (
-        pendingRoute !== route ||
-        global.location.hash !== route ||
-        routeMutationVersion !== mutationVersion
+        routeMutationVersion !== mutationVersion &&
+        Date.now() - routeStartedAt < MAX_ROUTE_SETTLE_MS
       ) {
         return;
       }
       global.requestAnimationFrame(function () {
-        global.requestAnimationFrame(function () {
-          if (
-            pendingRoute === route &&
-            global.location.hash === route &&
-            routeMutationVersion === mutationVersion
-          ) {
-            finishRouteTransition();
-          }
-        });
+        if (pendingRoute === route && global.location.hash === route) {
+          finishRouteTransition();
+        }
       });
     }, routeSettleDelay(route));
   }
@@ -224,9 +220,16 @@
       cancelRouteSettle();
       createRouteSnapshot();
       var links = entries();
+      var previousPage = domain.pageProfile(renderedRoute);
+      var nextPage = domain.pageProfile(route);
       pendingRoute = route;
       pendingList = listFromEntries(links);
-      pendingListSignature = entryListSignature(links);
+      pendingListSignature = previousPage && nextPage &&
+        previousPage.collection === nextPage.collection &&
+        previousPage.view !== nextPage.view
+        ? entryListSignature(links)
+        : "";
+      routeStartedAt = Date.now();
       document.body.setAttribute("data-admin-route-pending", "true");
       var main = adminMain();
       if (main) main.setAttribute("aria-busy", "true");
@@ -1512,7 +1515,13 @@
   function scheduleSync() {
     if (syncScheduled) return;
     syncScheduled = true;
-    global.setTimeout(sync, 0);
+    var schedule = global.requestAnimationFrame || function (callback) {
+      global.setTimeout(callback, 0);
+    };
+    schedule(function () {
+      syncScheduled = false;
+      sync();
+    });
   }
 
   function searchPosts(query) {

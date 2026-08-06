@@ -4,6 +4,7 @@
   var TAG_LIBRARY_ROUTE = "#/collections/tags/entries/library";
   var observer = null;
   var syncing = false;
+  var navigationSyncScheduled = false;
   var filterOpening = false;
   var filterClosing = false;
   var filterOpenedByShortcut = false;
@@ -615,6 +616,18 @@
     }
   }
 
+  function scheduleNavigationSync() {
+    if (navigationSyncScheduled) return;
+    navigationSyncScheduled = true;
+    var schedule = window.requestAnimationFrame || function (callback) {
+      window.setTimeout(callback, 0);
+    };
+    schedule(function () {
+      navigationSyncScheduled = false;
+      syncNavigation();
+    });
+  }
+
   function start() {
     if (observer) return;
 
@@ -622,7 +635,7 @@
     bindThemeControl();
     bindGlobalSearch();
     bindEditorPreviewRefresh();
-    observer = new MutationObserver(syncNavigation);
+    observer = new MutationObserver(scheduleNavigationSync);
     observer.observe(document.body, {
       attributes: true,
       attributeFilter: ["aria-current", "class"],
