@@ -73,6 +73,17 @@ describe("production metadata", () => {
     expect(layout).toContain('name="twitter:description"');
   });
 
+  test("restores the dark theme before the first stylesheet is loaded", async () => {
+    const layout = await readFile(`${root}src/layouts/BaseLayout.astro`, "utf8");
+    const themeRestore = layout.indexOf('localStorage.getItem("theme")');
+    const firstStylesheet = layout.indexOf('<link rel="stylesheet"');
+
+    expect(themeRestore).toBeGreaterThan(-1);
+    expect(firstStylesheet).toBeGreaterThan(-1);
+    expect(themeRestore).toBeLessThan(firstStylesheet);
+    expect(layout).toContain('document.documentElement.dataset.theme = "dark"');
+  });
+
   test("loads Umami Cloud only through the production environment setting", async () => {
     const [layout, environmentExample] = await Promise.all([
       readFile(`${root}src/layouts/BaseLayout.astro`, "utf8"),
@@ -346,7 +357,7 @@ describe("Decap CMS schema", () => {
       search_fields: ["tags.*"],
       multiple: true,
     });
-    expect(adminIndex).toContain('src="/admin/tag-selector.js"');
+    expect(adminIndex).toContain('src="/admin/tag-selector.js?v=1"');
     expect(tagSelector).toContain('CMS.registerWidget("tag_selector"');
     expect(tagSelector).toContain("loadTagLibrary");
     expect(tagSelector).toContain("selectTag");
@@ -392,7 +403,7 @@ describe("Decap CMS schema", () => {
     runInNewContext(navigationSource, context);
 
     expect(postsCollections).toHaveLength(1);
-    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=24"');
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=26"');
     expect(
       (context.DecapAdminNavigation as { isDraftRoute: () => boolean })
         .isDraftRoute(),
