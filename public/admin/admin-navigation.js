@@ -123,7 +123,8 @@
   }
 
   function prependLucideIcon(element, name) {
-    if (!element || element.dataset.adminIcon === name) return;
+    if (!element) return;
+    if (element.querySelector('svg[data-admin-icon="' + name + '"]')) return;
     Array.from(element.querySelectorAll("span[class*=IconWrapper]")).forEach(function (wrapper) {
       wrapper.remove();
     });
@@ -135,7 +136,8 @@
   }
 
   function replaceWithLucideIcon(element, name) {
-    if (!element || element.dataset.adminIcon === name) return;
+    if (!element) return;
+    if (element.querySelector('svg[data-admin-icon="' + name + '"]')) return;
     element.replaceChildren(createLucideIcon(name));
     element.dataset.adminIcon = name;
   }
@@ -272,11 +274,18 @@
 
   function ensureEditorRefreshButton(editor) {
     var refresh = editor.querySelector(
-      "[data-admin-refresh-preview], [class*=RefreshPreviewButton]",
+      ".cms-editor-refresh[data-admin-refresh-preview]",
     );
     if (refresh) return refresh;
 
-    var target = editor.querySelector("[class*=ToolbarSubSectionLast]");
+    Array.from(editor.querySelectorAll("[class*=RefreshPreviewButton]")).forEach(
+      function (button) {
+        button.setAttribute("data-admin-native-refresh", "true");
+      },
+    );
+
+    var target = editor.querySelector("[class*=ToolbarSectionMeta]") ||
+      editor.querySelector("[class*=ToolbarSubSectionLast]");
     if (!target) return null;
 
     refresh = document.createElement("button");
