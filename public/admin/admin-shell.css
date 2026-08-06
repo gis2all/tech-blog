@@ -367,7 +367,7 @@ body:has(#nc-root [class*=LoginButton]) > .cms-global-search {
   border: 1px solid var(--cms-line);
   border-radius: var(--cms-radius);
   background: var(--cms-panel);
-  color: var(--cms-muted);
+  color: var(--cms-text);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
@@ -389,8 +389,10 @@ body:has(#nc-root [class*=LoginButton]) > .cms-global-search {
 }
 
 .cms-back-to-site svg {
-  width: 16px;
-  height: 16px;
+  width: 18px !important;
+  height: 18px !important;
+  fill: none !important;
+  stroke: currentColor !important;
 }
 
 .cms-theme-toggle:hover {
@@ -639,8 +641,9 @@ body:has(#nc-root [class*=LoginButton]) .cms-global-search {
 }
 
 #nc-root > header [class*=AvatarDropdownButton] svg {
-  width: 16px !important;
-  height: 16px !important;
+  width: 18px !important;
+  height: 18px !important;
+  fill: none !important;
 }
 
 #nc-root > [class*=AppMainContainer] {
@@ -3239,13 +3242,14 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
 }
 
 #nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=AvatarDropdownButton] svg {
-  width: 16px !important;
-  height: 16px !important;
+  width: 18px !important;
+  height: 18px !important;
+  fill: none !important;
 }
 
 #nc-root > header [class*=AvatarDropdownButton],
 #nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=AvatarDropdownButton] {
-  color: var(--cms-muted) !important;
+  color: var(--cms-text) !important;
 }
 
 #nc-root > header [class*=AvatarDropdownButton] svg,
@@ -3254,6 +3258,10 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
 #nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=AvatarDropdownButton] svg * {
   color: inherit !important;
   stroke: currentColor !important;
+  fill: none !important;
+  stroke-width: 2 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
 }
 
 #nc-root [class*=EditorContainer] [data-admin-preview-toggle] {
