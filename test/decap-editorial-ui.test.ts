@@ -14,7 +14,7 @@ describe("Decap phase-two editorial UI", () => {
       readFile(root + "public/admin/admin-shell.css", "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=37"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=56"');
     expect(html).toContain('data-cms-theme-toggle');
     expect(html).toContain('data-cms-global-search');
     expect(html.indexOf("/admin/admin-shell.css")).toBeLessThan(
@@ -145,7 +145,7 @@ describe("Decap phase-two editorial UI", () => {
     ]);
 
     expect(html).toContain('src="/admin/admin-shell-domain.js"');
-    expect(html).toContain('src="/admin/admin-shell.js?v=21"');
+    expect(html).toContain('src="/admin/admin-shell.js?v=33"');
     expect(html.indexOf("/admin/cms-init.js")).toBeLessThan(
       html.indexOf("/admin/admin-shell.js"),
     );
@@ -157,6 +157,34 @@ describe("Decap phase-two editorial UI", () => {
     expect(shellScript).not.toContain("pendingPostSearch");
     expect(shellScript).not.toContain("search.value =");
     expect(shellScript).not.toContain(".focus();");
+  });
+
+  test("hides stale collection content until the target admin route is ready", async () => {
+    const [shell, shellScript] = await Promise.all([
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.js", "utf8"),
+    ]);
+
+    expect(shellScript).toContain("function beginRouteTransition");
+    expect(shellScript).toContain("function bindRouteTransition");
+    expect(shellScript).toContain("function finishRouteTransition");
+    expect(shellScript).toContain("function createRouteSnapshot");
+    expect(shellScript).toContain("function routeSettleDelay");
+    expect(shellScript).toContain("function settleRouteTransition");
+    expect(shellScript).toContain("function routeEntriesReady");
+    expect(shellScript).toContain("pendingListSignature");
+    expect(shellScript).toContain('setAttribute("data-admin-route-pending", "true")');
+    expect(shellScript).toContain('setAttribute("aria-busy", "true")');
+    expect(shellScript).toContain('global.addEventListener("hashchange", function ()');
+    expect(shellScript).toContain("beginRouteTransition(global.location.hash);");
+    expect(shellScript).toContain('origin.closest(\'#nc-root aside a[href*="#/collections/"]\')');
+    expect(shellScript).toContain('document.addEventListener("click"');
+    expect(shellScript).toContain("}, true);");
+    expect(shell).toMatch(
+      /body\[data-admin-route-pending="true"\] #nc-root main:not\(\[data-admin-route-snapshot-main\]\) > \*\s*\{[^}]*visibility:\s*hidden\s*!important;[^}]*pointer-events:\s*none\s*!important;/s,
+    );
+    expect(shell).toContain("[data-admin-route-snapshot]");
+    expect(shellScript).toContain("function adminMain");
   });
 
   test("redirects the initial admin route to the posts collection after login", async () => {
@@ -208,17 +236,17 @@ describe("Decap phase-two editorial UI", () => {
     expect(shell).toContain("height: 100% !important;");
     expect(shell).toContain("overflow-y: auto !important;");
     expect(shell).toMatch(
-      /\.Pane1 > \[class\*=ControlPaneContainer\][^{]*\{[^}]*overflow:\s*clip\s*!important;/s,
+      /\[data-admin-editor-control-shell\][^{]*\{[^}]*overflow:\s*clip\s*!important;/s,
     );
     expect(shell).toContain(
-      ".Pane1 > [class*=ControlPaneContainer] > [class*=ControlPaneContainer]",
+      "[data-admin-editor-control-shell] > [data-admin-editor-control-pane]",
     );
     expect(shell).toContain(".Pane2 [class*=PreviewPaneContainer]");
     expect(shell).toContain(".Pane2 [class*=PreviewPaneFrame]");
     expect(shell).not.toContain("#nc-root [class*=PreviewPaneContainer] {");
     expect(shell).toContain("height: 100% !important;");
     expect(shell).toMatch(
-      /> \[class\*=ControlPaneContainer\] > \[class\*=ControlPaneContainer\][^{]*\{[^}]*padding:\s*0\s*!important;/s,
+      /\[data-admin-editor-control-shell\][^{]*\{[^}]*padding:\s*0\s*!important;/s,
     );
     expect(shell).toMatch(
       /\[data-admin-editor-heading\][^{]*\{[^}]*margin:\s*0 0 16px;/s,
@@ -232,6 +260,34 @@ describe("Decap phase-two editorial UI", () => {
     expect(shell).toContain("padding: 32px !important;");
   });
 
+  test("keeps editor decoration and dark surfaces stable when preview is hidden", async () => {
+    const [shell, shellScript] = await Promise.all([
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.js", "utf8"),
+    ]);
+
+    expect(shellScript).toContain("function editorControlPane");
+    expect(shellScript).toContain('setAttribute("data-admin-editor-control-pane", "true")');
+    expect(shellScript).toContain('setAttribute("data-admin-editor-control-shell", "true")');
+    expect(shellScript).not.toContain(
+      'document.querySelector("#nc-root .Pane1 [class*=ControlPaneContainer]")',
+    );
+    expect(shell).toContain("[data-admin-editor-control-pane]");
+    expect(shell).toContain("[data-admin-editor-control-shell]");
+    expect(shell).not.toContain(
+      '.Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field=',
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-root\][^{]*\{[^}]*background:\s*var\(--cms-canvas\)\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-control-pane\][^{]*\{[^}]*width:\s*min\(960px, 100%\)[^}]*background:\s*var\(--cms-canvas\)\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[class\*=FieldLabel\]::after\s*\{[^}]*content:\s*none\s*!important;/s,
+    );
+  });
+
   test("uses split editor surfaces and lets the article preview fill its pane", async () => {
     const [shell, previewCss] = await Promise.all([
       readFile(root + "public/admin/admin-shell.css", "utf8"),
@@ -239,7 +295,7 @@ describe("Decap phase-two editorial UI", () => {
     ]);
 
     expect(shell).toMatch(
-      /\.Pane1 > \[class\*=ControlPaneContainer\][^{]*\{[^}]*background:\s*var\(--cms-canvas\)\s*!important;/s,
+      /\[data-admin-editor-control-shell\][^{]*\{[^}]*background:\s*var\(--cms-canvas\)\s*!important;/s,
     );
     expect(shell).toMatch(
       /\.Pane2 \[class\*=PreviewPaneFrame\][^{]*\{[^}]*padding:\s*0\s*!important;/s,
@@ -360,8 +416,8 @@ describe("Decap phase-two editorial UI", () => {
       readFile(root + "public/admin/admin-shell.js", "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=37"');
-    expect(html).toContain('src="/admin/admin-navigation.js?v=24"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=56"');
+    expect(html).toContain('src="/admin/admin-navigation.js?v=26"');
     expect(navigation).toContain("function bindEditorPreviewRefresh");
     expect(navigation).toContain("function ensureEditorRefreshButton");
     expect(navigation).toContain("data-admin-preview-toggle");

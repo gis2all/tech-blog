@@ -4,6 +4,8 @@
   --cms-soft: var(--surface-soft, #f8fafc);
   --cms-line: var(--border-default, #e3e7eb);
   --cms-line-strong: var(--border-strong, #cfd7dd);
+  --cms-editor-divider: #d4dae0;
+  --cms-scroll-thumb: rgb(136 146 157 / 44%);
   --cms-text: var(--text-primary, #20242b);
   --cms-muted: var(--text-muted, #5d6670);
   --cms-faint: var(--text-faint, #8a939c);
@@ -32,6 +34,8 @@
   --cms-soft: var(--surface-soft, #20252d);
   --cms-line: var(--border-default, #2c333d);
   --cms-line-strong: var(--border-strong, #3b4550);
+  --cms-editor-divider: #20252b;
+  --cms-scroll-thumb: rgb(255 255 255 / 10%);
   --cms-text: var(--text-primary, #e8ebef);
   --cms-muted: var(--text-muted, #aeb6bf);
   --cms-faint: var(--text-faint, #8995a2);
@@ -740,7 +744,8 @@ body:has(#nc-root [class*=LoginButton]) .cms-global-search {
   content: "内容组织";
 }
 
-#nc-root aside a[href*="#/collections/"] {
+#nc-root aside a[href*="#/collections/"],
+#nc-root [data-admin-route-snapshot] aside a {
   display: flex !important;
   align-items: center !important;
   min-height: 35px !important;
@@ -757,7 +762,8 @@ body:has(#nc-root [class*=LoginButton]) .cms-global-search {
   line-height: 1.45 !important;
 }
 
-#nc-root aside a[href*="#/collections/"] svg {
+#nc-root aside a[href*="#/collections/"] svg,
+#nc-root [data-admin-route-snapshot] aside a svg {
   flex: 0 0 17px;
   width: 17px !important;
   height: 17px !important;
@@ -769,7 +775,8 @@ body:has(#nc-root [class*=LoginButton]) .cms-global-search {
   color: var(--cms-text) !important;
 }
 
-#nc-root aside a[href*="#/collections/"][aria-current="page"] {
+#nc-root aside a[href*="#/collections/"][aria-current="page"],
+#nc-root [data-admin-route-snapshot] aside a[aria-current="page"] {
   border-left: 2px solid var(--cms-brand) !important;
   border-radius: 0 !important;
   background: var(--cms-brand-soft) !important;
@@ -777,7 +784,8 @@ body:has(#nc-root [class*=LoginButton]) .cms-global-search {
   font-weight: 600 !important;
 }
 
-#nc-root aside a[href*="#/collections/"][aria-current="page"] svg {
+#nc-root aside a[href*="#/collections/"][aria-current="page"] svg,
+#nc-root [data-admin-route-snapshot] aside a[aria-current="page"] svg {
   color: var(--cms-brand) !important;
 }
 
@@ -1080,10 +1088,22 @@ body.cms-media-page #nc-root aside [data-admin-media-shortcut] button svg,
 }
 
 #nc-root main > div > ul > li[data-admin-entry-row] > a[data-admin-entry-source] {
+  box-sizing: border-box !important;
   display: block !important;
   min-width: 0;
   min-height: 0 !important;
-  padding: 10px 12px 10px 0 !important;
+  padding: 10px 0 !important;
+}
+
+#nc-root main > div > ul > li[data-admin-entry-row]:hover,
+#nc-root main > div > ul > li[data-admin-entry-row]:focus-within {
+  background: var(--cms-soft) !important;
+}
+
+#nc-root main > div > ul > li[data-admin-entry-row] > a[data-admin-entry-source]:hover,
+#nc-root main > div > ul > li[data-admin-entry-row] > a[data-admin-entry-source]:focus-visible {
+  outline: 0 !important;
+  background: transparent !important;
 }
 
 #nc-root main > div > ul > li[data-admin-entry-row] h2 {
@@ -1281,9 +1301,25 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   gap: 10px !important;
   padding: 0 18px !important;
   border-right: 1px solid var(--cms-line) !important;
-  color: var(--cms-ink) !important;
+  color: var(--cms-muted) !important;
+  background: var(--cms-panel) !important;
   font-size: 13px !important;
   font-weight: 400 !important;
+  text-decoration: none !important;
+}
+
+#nc-root [class*=ToolbarSectionBackLink]:hover,
+#nc-root [class*=ToolbarSectionBackLink]:focus,
+#nc-root [class*=ToolbarSectionBackLink]:focus-visible,
+#nc-root [class*=ToolbarSectionBackLink]:focus-within {
+  outline: 0 !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
+}
+
+#nc-root [class*=ToolbarSectionBackLink] > * {
+  background: transparent !important;
 }
 
 #nc-root [class*=ToolbarSectionBackLink] [class*=BackArrow] {
@@ -1295,13 +1331,13 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   height: 16px !important;
   margin: 0 !important;
   overflow: visible !important;
-  color: var(--cms-ink) !important;
+  color: var(--cms-muted) !important;
   font-size: 20px !important;
   line-height: 16px !important;
 }
 
 #nc-root [class*=ToolbarSectionBackLink] [class*=BackCollection] {
-  color: var(--cms-ink) !important;
+  color: var(--cms-text) !important;
   font-size: 13px !important;
   font-weight: 400 !important;
   line-height: 19.5px !important;
@@ -1409,7 +1445,7 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   min-height: 0 !important;
   min-width: 0 !important;
   overflow: hidden !important;
-  border-right: 1px solid var(--cms-line) !important;
+  border-right: 0 !important;
   background: var(--cms-canvas) !important;
 }
 
@@ -1463,6 +1499,53 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 
 #nc-root [data-admin-media-native-hidden] {
   display: none !important;
+}
+
+body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapshot-main]) > * {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#nc-root [data-admin-route-snapshot] {
+  position: fixed !important;
+  z-index: 70 !important;
+  top: var(--admin-route-snapshot-top) !important;
+  left: var(--admin-route-snapshot-left) !important;
+  box-sizing: border-box !important;
+  width: var(--admin-route-snapshot-width) !important;
+  min-width: 0 !important;
+  height: var(--admin-route-snapshot-height) !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  visibility: visible !important;
+  background: var(--cms-canvas) !important;
+  pointer-events: none !important;
+}
+
+#nc-root [data-admin-route-snapshot] * {
+  animation: none !important;
+  transition: none !important;
+  caret-color: transparent !important;
+}
+
+#nc-root [data-admin-route-snapshot][class*=CollectionContainer] {
+  display: grid !important;
+  grid-template-columns: 232px minmax(0, 1fr) !important;
+  gap: 16px !important;
+}
+
+#nc-root [data-admin-route-snapshot] aside {
+  position: fixed !important;
+  top: var(--admin-sidebar-snapshot-top, var(--admin-route-snapshot-top)) !important;
+  left: var(--admin-sidebar-snapshot-left, var(--admin-route-snapshot-left)) !important;
+  width: 232px !important;
+  margin: 0 !important;
+}
+
+#nc-root [data-admin-route-snapshot] main {
+  grid-column: 2 !important;
+  min-width: 0 !important;
 }
 
 #nc-root [data-admin-media-page] {
@@ -1699,50 +1782,67 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   background: var(--cms-canvas) !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] {
-  max-width: none;
+#nc-root [data-admin-editor-control-pane] {
   box-sizing: border-box;
+  width: min(960px, 100%) !important;
+  max-width: 960px !important;
   height: 100% !important;
   min-height: 0 !important;
+  margin: 0 auto !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
+  scrollbar-gutter: stable !important;
   padding: 32px !important;
+  background: var(--cms-canvas) !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 > [class*=ControlPaneContainer] {
+#nc-root [class*=EditorContainer] .Pane1 [data-admin-editor-control-pane] {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+#nc-root [data-admin-editor-control-shell] {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
   overflow: clip !important;
   background: var(--cms-canvas) !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 > [class*=ControlPaneContainer] > [class*=ControlPaneContainer] {
+#nc-root [data-admin-editor-control-shell] > [data-admin-editor-control-pane] {
   height: 100% !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
-  padding: 0 !important;
+  scrollbar-gutter: stable !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [class*=ControlContainer] {
+#nc-root [data-admin-editor-control-pane] > [class*=ControlContainer] {
   margin: 0 0 18px;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] {
   height: auto !important;
   min-height: 0 !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=RawEditorContainer],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-raw {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] [class*=RawEditorContainer],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] .cms-editor-raw {
   height: auto !important;
   min-height: 0 !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=RawEditorContainer] > *,
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-raw > * {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] [class*=RawEditorContainer] > *,
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] .cms-editor-raw > * {
   height: auto !important;
   min-height: 0 !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-visual {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] .cms-editor-visual {
   position: relative !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1753,7 +1853,7 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   overflow: visible !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-visual [class*=EditorControlBar] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] .cms-editor-visual [class*=EditorControlBar] {
   position: relative !important;
   top: auto !important;
   z-index: 2 !important;
@@ -1761,7 +1861,7 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   margin: 0 !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] .cms-editor-visual [class*=EditorControlBar] + * {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] .cms-editor-visual [class*=EditorControlBar] + * {
   position: relative !important;
   z-index: 1 !important;
   height: auto !important;
@@ -1770,39 +1870,39 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   overflow: auto !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=EditorControlBar] ~ *,
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=RawEditorContainer] > * > * {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] [class*=EditorControlBar] ~ *,
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] [class*=RawEditorContainer] > * > * {
   height: auto !important;
   min-height: 0 !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=EditorControlBar],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=RawEditorContainer] [class*=ToolbarContainer] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] [class*=EditorControlBar],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] [class*=RawEditorContainer] [class*=ToolbarContainer] {
   flex: 0 0 auto !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=CodeMirror],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] [class*=CodeMirror-scroll] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] [class*=CodeMirror],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] [class*=CodeMirror-scroll] {
   height: auto !important;
   min-height: 360px !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="category"],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="series"],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="draft"],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="featured"] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="category"],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="series"],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="draft"],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="featured"] {
   box-sizing: border-box;
   display: inline-block;
   vertical-align: top;
   width: calc(50% - 8px);
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="category"],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="draft"] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="category"],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="draft"] {
   margin-right: 16px;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="tags"] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="tags"] {
   width: 100%;
 }
 
@@ -1835,7 +1935,7 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
-  color: var(--cms-ink) !important;
+  color: var(--cms-text) !important;
   font-size: 12px !important;
   font-weight: 700 !important;
   box-shadow: none !important;
@@ -1843,6 +1943,10 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 
 #nc-root [class*=FieldLabel] + * {
   margin-top: 0 !important;
+}
+
+[data-theme="dark"] #nc-root [class*=FieldLabel] {
+  color: var(--cms-text) !important;
 }
 
 #nc-root [class*=FieldLabel] ~ p,
@@ -1898,6 +2002,53 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   color: var(--cms-muted) !important;
 }
 
+#nc-root [data-admin-editor-field="body"] [class*=EditorControlBar] button svg,
+#nc-root [data-admin-editor-field="body"] [class*=EditorControlBar] button svg * {
+  color: inherit !important;
+  stroke: currentColor !important;
+}
+
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror],
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror-scroll],
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror-sizer],
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror-lines],
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror-code],
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror-line],
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror-line] span {
+  color: var(--cms-text) !important;
+}
+
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror] * {
+  opacity: 1 !important;
+}
+
+/* Keep both Decap body editors readable on the dark canvas. */
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=RawEditorContainer],
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] .cms-editor-raw,
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror],
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [class*=CodeMirror] *,
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [contenteditable="true"],
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] [contenteditable="true"] *,
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] textarea {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] .cm-link,
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] .cm-url {
+  color: var(--cms-brand-strong) !important;
+}
+
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] .CodeMirror-cursor {
+  border-left-color: var(--cms-text) !important;
+}
+
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] .CodeMirror-selected,
+[data-theme="dark"] #nc-root [data-admin-editor-field="body"] .CodeMirror-focused .CodeMirror-selected {
+  background: var(--cms-brand-soft) !important;
+}
+
 #nc-root [class*=EditorContainer] .Pane2 [class*=PreviewPaneContainer] {
   box-sizing: border-box;
   height: 100% !important;
@@ -1906,9 +2057,17 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   background: var(--cms-panel) !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane2 [class*=PreviewPaneFrame] {
+#nc-root [data-admin-editor-root] [class*=ControlHint],
+#nc-root [data-admin-editor-root] [class*=ControlContainer]:focus-within [class*=ControlHint] {
+  color: var(--cms-muted) !important;
+}
+
+#nc-root [class*=EditorContainer] .Pane2 [class*=PreviewPaneFrame],
+#nc-root [class*=EditorContainer] .Pane2 iframe {
   display: block !important;
   border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
   box-sizing: border-box;
   width: 100% !important;
   height: 100% !important;
@@ -1985,12 +2144,23 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   color: var(--cms-text) !important;
 }
 
+#nc-root [data-admin-editor-root],
+#nc-root [data-admin-editor-root] > [class*=Editor],
+#nc-root [data-admin-editor-root] > [class*=Editor] > div {
+  background: var(--cms-canvas) !important;
+}
+
 .cms-media__toolbar input[type="search"]:focus {
   border-color: var(--cms-line-strong) !important;
   outline: 0;
   background: var(--cms-panel) !important;
   color: var(--cms-text) !important;
   box-shadow: none !important;
+}
+
+#nc-root [class*=FieldLabel]::after {
+  content: none !important;
+  display: none !important;
 }
 
 .cms-media__upload input:focus {
@@ -2386,8 +2556,22 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 }
 
 #nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=ToolbarToggleLabel] {
+  color: var(--cms-muted) !important;
   font-size: 12px !important;
   line-height: 20px !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [role="switch"][aria-checked="true"] + [class*=ToolbarToggleLabel],
+#nc-root [class*=EditorContainer] [data-admin-editor-field="body"] [class*=ToolbarToggleLabel]:has(+ [role="switch"][aria-checked="false"]) {
+  color: var(--cms-brand-strong) !important;
+}
+
+#nc-root [data-admin-editor-root] [role="switch"][aria-checked="true"] [class*=ToggleBackground] {
+  background: var(--cms-brand) !important;
+}
+
+#nc-root [data-admin-editor-root] [role="switch"] [class*=ToggleHandle] {
+  background: var(--cms-panel) !important;
 }
 
 #nc-root [class*=EditorContainer] [data-admin-editor-field="body"] .cms-editor-raw [class*=EditorControlBar] {
@@ -2625,15 +2809,15 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   flex: 1 0 100%;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="publishedAt"],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="updatedAt"] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="publishedAt"],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="updatedAt"] {
   box-sizing: border-box;
   display: inline-block;
   vertical-align: top;
   width: calc(50% - 8px);
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="publishedAt"] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="publishedAt"] {
   margin-right: 16px;
 }
 
@@ -2642,10 +2826,10 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   box-sizing: border-box !important;
   display: flex !important;
   align-items: center !important;
-  height: 42px !important;
-  min-height: 42px !important;
-  gap: 8px !important;
-  padding: 4px 8px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  gap: 4px !important;
+  padding: 3px 6px !important;
   border: 1px solid var(--cms-line) !important;
   border-radius: var(--cms-radius) !important;
   background: var(--cms-panel) !important;
@@ -2657,35 +2841,42 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   display: flex !important;
   align-items: center !important;
   min-height: 0 !important;
-  gap: 8px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  gap: 4px !important;
   padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="publishedAt"] input,
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="updatedAt"] input {
-  width: 136px !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  padding: 0 8px !important;
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="publishedAt"] input,
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="updatedAt"] input {
+  flex: 1 1 96px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 6px !important;
   border: 0 !important;
   background: transparent !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="publishedAt"] button,
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="updatedAt"] button {
-  height: 28px !important;
-  min-height: 28px !important;
-  padding: 0 8px !important;
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="publishedAt"] button,
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="updatedAt"] button {
+  flex: 0 0 auto !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  padding: 0 6px !important;
   border: 1px solid var(--cms-line) !important;
   border-radius: var(--cms-radius) !important;
   background: var(--cms-soft) !important;
   color: var(--cms-text) !important;
   box-shadow: none !important;
   font-size: 12px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
 }
 
 #nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] [class*=ControlContainer] > div:has(input[type="date"]) {
@@ -2736,9 +2927,9 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   font-weight: 700 !important;
 }
 
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="references"],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="changelog"],
-#nc-root [class*=EditorContainer] .Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field="body"] {
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="references"],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="changelog"],
+#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] {
   clear: both;
   display: block;
   width: 100%;
@@ -2892,11 +3083,12 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 
 #nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] {
   display: flex !important;
-  flex: 0 0 50px !important;
+  flex: 0 0 auto !important;
   align-items: center !important;
   justify-content: flex-end !important;
-  width: 50px !important;
-  gap: 0 !important;
+  width: auto !important;
+  min-width: 34px !important;
+  gap: 6px !important;
   margin-left: 0 !important;
   padding: 0 10px 0 6px !important;
   border-left: 0 !important;
@@ -2919,8 +3111,16 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   box-shadow: none !important;
 }
 
-#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=RefreshPreviewButton],
+#nc-root [class*=EditorContainer] [class*=RefreshPreviewButton],
+#nc-root [class*=EditorContainer] [data-admin-native-refresh] {
+  display: none !important;
+}
+
 #nc-root [class*=EditorContainer] [data-admin-refresh-preview] {
+  position: fixed !important;
+  z-index: 80 !important;
+  top: 14px !important;
+  right: 50px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2933,6 +3133,15 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   font-size: var(--cms-control-font-size) !important;
   font-weight: 600 !important;
   line-height: 1 !important;
+}
+
+#nc-root [class*=EditorContainer] [data-admin-refresh-preview]:hover,
+#nc-root [class*=EditorContainer] [data-admin-refresh-preview]:focus-visible {
+  outline: 0 !important;
+  border-color: var(--cms-line-strong) !important;
+  background: var(--cms-soft) !important;
+  color: var(--cms-text) !important;
+  box-shadow: none !important;
 }
 
 #nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] svg {
@@ -3054,6 +3263,19 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
   height: 16px !important;
 }
 
+#nc-root > header [class*=AvatarDropdownButton],
+#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=AvatarDropdownButton] {
+  color: var(--cms-muted) !important;
+}
+
+#nc-root > header [class*=AvatarDropdownButton] svg,
+#nc-root > header [class*=AvatarDropdownButton] svg *,
+#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=AvatarDropdownButton] svg,
+#nc-root [class*=EditorContainer] [class*=ToolbarSectionMeta] [class*=AvatarDropdownButton] svg * {
+  color: inherit !important;
+  stroke: currentColor !important;
+}
+
 #nc-root [class*=EditorContainer] [data-admin-preview-toggle] {
   position: fixed !important;
   z-index: 80 !important;
@@ -3094,6 +3316,57 @@ body:has(#nc-root [class*=EditorContainer]) > .cms-theme-toggle {
 
 #nc-root [class*=EditorContainer] [class*=ScrollSyncButton],
 #nc-root [class*=EditorContainer] button[title="同步滚动"] {
+  display: none !important;
+}
+
+#nc-root [data-admin-editor-root] * {
+  scrollbar-color: var(--cms-scroll-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+#nc-root [data-admin-editor-root] *::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+#nc-root [data-admin-editor-root] *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#nc-root [data-admin-editor-root] *::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+  display: none;
+  background: transparent;
+}
+
+#nc-root [data-admin-editor-root] *::-webkit-scrollbar-thumb {
+  border: 0 solid transparent;
+  border-radius: 999px;
+  background: var(--cms-scroll-thumb);
+  background-clip: padding-box;
+}
+
+#nc-root [class*=EditorContainer] .Resizer.vertical,
+#nc-root [class*=EditorContainer] .Resizer.vertical:hover,
+#nc-root [class*=EditorContainer] .Resizer.vertical:active {
+  z-index: 20 !important;
+  box-sizing: border-box !important;
+  flex: 0 0 6px !important;
+  width: 6px !important;
+  min-width: 6px !important;
+  margin: 0 -3px !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: var(--cms-editor-divider) !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  cursor: col-resize !important;
+}
+
+#nc-root [class*=EditorContainer] .Resizer.vertical::before,
+#nc-root [class*=EditorContainer] .Resizer.vertical::after {
+  content: none !important;
   display: none !important;
 }
 

@@ -7,6 +7,13 @@
   var syncScheduled = false;
   var headerPostSearch = "";
   var tagMessageTimer = null;
+  var renderedRoute = "";
+  var pendingRoute = "";
+  var pendingList = null;
+  var pendingListSignature = "";
+  var routeSnapshot = null;
+  var routeSettleTimer = null;
+  var routeMutationVersion = 0;
   var TAG_LIBRARY_PATH = "src/data/tag-library.json";
   var MEDIA_ROUTE = "#/collections/posts?view=media";
   var LEGACY_MEDIA_ROUTE = "#/media-library";
@@ -45,12 +52,12 @@
 
   function entries() {
     var decorated = Array.from(
-      document.querySelectorAll('#nc-root main a[data-admin-entry-source]'),
+      document.querySelectorAll('#nc-root main:not([data-admin-route-snapshot-main]) a[data-admin-entry-source]'),
     );
     if (decorated.length) return decorated;
 
     return Array.from(
-      document.querySelectorAll('#nc-root main a[href*="/entries/"]'),
+      document.querySelectorAll('#nc-root main:not([data-admin-route-snapshot-main]) a[href*="/entries/"]'),
     ).filter(function (link) {
       return !link.hasAttribute("data-admin-entry-action");
     });
@@ -65,6 +72,205 @@
     return links.some(function (link) {
       return String(link.getAttribute("href") || "").includes(route);
     });
+  }
+
+  function adminMain() {
+    return document.querySelector("#nc-root main:not([data-admin-route-snapshot-main])");
+  }
+
+  function adminAside() {
+    var root = document.querySelector("#nc-root");
+    if (!root) return null;
+    return Array.from(root.querySelectorAll("aside")).find(function (aside) {
+      return !closest(aside, "[data-admin-route-snapshot]");
+    }) || null;
+  }
+
+  function entryListSignature(links) {
+    return links.map(function (link) {
+      return String(link.getAttribute("href") || "") + "|" +
+        String(link.textContent || "").trim();
+    }).join("\n");
+  }
+
+  function removeRouteSnapshot() {
+    if (routeSnapshot) routeSnapshot.remove();
+    routeSnapshot = null;
+  }
+
+  function createRouteSnapshot() {
+    if (routeSnapshot) return;
+    var root = document.querySelector("#nc-root");
+    var main = adminMain();
+    if (!root || !main) return;
+
+    var parent = main.parentElement;
+    var layout = main.closest ? main.closest("[class*=AppMainContainer]") : null;
+    var source = layout && layout.querySelector("aside")
+      ? layout
+      : parent && parent.querySelector(":scope > aside")
+        ? parent
+        : main;
+    var host = root;
+    var bounds = source.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+
+    var snapshot = source.cloneNode(true);
+    snapshot.setAttribute("data-admin-route-snapshot", "true");
+    snapshot.setAttribute("aria-hidden", "true");
+    snapshot.removeAttribute("id");
+    snapshot.style.setProperty("--admin-route-snapshot-top", bounds.top + "px");
+    snapshot.style.setProperty("--admin-route-snapshot-left", bounds.left + "px");
+    snapshot.style.setProperty("--admin-route-snapshot-width", bounds.width + "px");
+    snapshot.style.setProperty("--admin-route-snapshot-height", bounds.height + "px");
+    if ("inert" in snapshot) snapshot.inert = true;
+
+    var snapshotMain = snapshot.matches("main") ? snapshot : snapshot.querySelector("main");
+    if (snapshotMain) snapshotMain.setAttribute("data-admin-route-snapshot-main", "true");
+
+    var aside = source.querySelector("aside");
+    if (aside) {
+      var asideBounds = aside.getBoundingClientRect();
+      snapshot.style.setProperty("--admin-sidebar-snapshot-top", asideBounds.top + "px");
+      snapshot.style.setProperty("--admin-sidebar-snapshot-left", asideBounds.left + "px");
+    }
+
+    Array.from(snapshot.querySelectorAll("[id]")).forEach(function (element) {
+      element.removeAttribute("id");
+    });
+    Array.from(snapshot.querySelectorAll("input, button, select, textarea")).forEach(function (control) {
+      control.setAttribute("tabindex", "-1");
+    });
+    Array.from(snapshot.querySelectorAll("a[href]")).forEach(function (link) {
+      link.removeAttribute("href");
+      link.setAttribute("tabindex", "-1");
+    });
+
+    host.appendChild(snapshot);
+    routeSnapshot = snapshot;
+  }
+
+  function cancelRouteSettle() {
+    if (routeSettleTimer !== null) global.clearTimeout(routeSettleTimer);
+    routeSettleTimer = null;
+  }
+
+  function routeSettleDelay(route) {
+    if (route === MEDIA_ROUTE) return 240;
+    var page = domain.pageProfile(route);
+    if (!page) return 80;
+    if (page.collection === "posts") {
+      var draftRoute = /[?&]view=drafts(?:&|$)/;
+      return page.view === "drafts" || draftRoute.test(renderedRoute) ? 320 : 80;
+    }
+    return page.collection === "tags" ? 240 : 180;
+  }
+
+  function finishRouteTransition() {
+    cancelRouteSettle();
+    renderedRoute = global.location.hash;
+    pendingRoute = "";
+    pendingList = null;
+    pendingListSignature = "";
+    document.body.removeAttribute("data-admin-route-pending");
+    var main = adminMain();
+    if (main) main.removeAttribute("aria-busy");
+    removeRouteSnapshot();
+  }
+
+  function settleRouteTransition() {
+    if (!pendingRoute) {
+      finishRouteTransition();
+      return;
+    }
+
+    cancelRouteSettle();
+    var route = pendingRoute;
+    var mutationVersion = routeMutationVersion;
+    routeSettleTimer = global.setTimeout(function () {
+      routeSettleTimer = null;
+      if (
+        pendingRoute !== route ||
+        global.location.hash !== route ||
+        routeMutationVersion !== mutationVersion
+      ) {
+        return;
+      }
+      global.requestAnimationFrame(function () {
+        global.requestAnimationFrame(function () {
+          if (
+            pendingRoute === route &&
+            global.location.hash === route &&
+            routeMutationVersion === mutationVersion
+          ) {
+            finishRouteTransition();
+          }
+        });
+      });
+    }, routeSettleDelay(route));
+  }
+
+  function beginRouteTransition(nextRoute) {
+    var route = String(nextRoute || global.location.hash);
+    var isCollectionRoute = Boolean(domain.pageProfile(route)) || route === MEDIA_ROUTE;
+    if (!isCollectionRoute) {
+      if (route === global.location.hash) {
+        finishRouteTransition();
+        scheduleSync();
+      }
+      return;
+    }
+    if (route !== renderedRoute && pendingRoute !== route) {
+      cancelRouteSettle();
+      createRouteSnapshot();
+      var links = entries();
+      pendingRoute = route;
+      pendingList = listFromEntries(links);
+      pendingListSignature = entryListSignature(links);
+      document.body.setAttribute("data-admin-route-pending", "true");
+      var main = adminMain();
+      if (main) main.setAttribute("aria-busy", "true");
+    }
+    if (route === global.location.hash) scheduleSync();
+  }
+
+  function bindRouteTransition() {
+    document.addEventListener("click", function (event) {
+      if (
+        (event.button !== undefined && event.button !== 0) ||
+        event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+      ) {
+        return;
+      }
+      var origin = event.target;
+      if (!origin || typeof origin.closest !== "function") return;
+      var link = origin.closest('#nc-root aside a[href*="#/collections/"]');
+      var headerLink = origin.closest('#nc-root > header nav a[href^="#"]');
+      var mediaButton = origin.closest("#nc-root aside [data-admin-media-shortcut] button");
+      var route = link
+        ? String(link.hash || "")
+        : headerLink
+          ? String(headerLink.hash || headerLink.getAttribute("href") || "")
+          : mediaButton
+            ? MEDIA_ROUTE
+            : "";
+      if (!route || route === global.location.hash) return;
+      beginRouteTransition(route);
+    }, true);
+  }
+
+  function routeEntriesReady(links, page) {
+    if (!links.length || !entriesMatchPage(links, page)) return false;
+    if (pendingRoute !== global.location.hash) return true;
+
+    var previousPage = domain.pageProfile(renderedRoute);
+    var sameCollectionViewChange = previousPage &&
+      previousPage.collection === page.collection &&
+      previousPage.view !== page.view;
+    if (!sameCollectionViewChange) return true;
+
+    return listFromEntries(links) !== pendingList ||
+      entryListSignature(links) !== pendingListSignature;
   }
 
   function summaryFor(link, page) {
@@ -163,7 +369,7 @@
 
   function ensureTableHead(list, page) {
     if (!list || !list.parentElement) return;
-    var existing = document.querySelector("[data-admin-entry-table-head]");
+    var existing = list.parentElement.querySelector("[data-admin-entry-table-head]");
     if (existing && existing.dataset.adminCollection !== page.collection) {
       existing.remove();
       existing = null;
@@ -196,7 +402,8 @@
   }
 
   function tagPage() {
-    return document.querySelector("[data-admin-tag-page]");
+    var main = adminMain();
+    return main && main.querySelector("[data-admin-tag-page]");
   }
 
   function hideNativeTagPageChildren(main) {
@@ -211,7 +418,9 @@
   }
 
   function restoreNativeTagPageChildren() {
-    Array.from(document.querySelectorAll("[data-admin-tag-native-hidden]"))
+    var main = adminMain();
+    if (!main) return;
+    Array.from(main.querySelectorAll("[data-admin-tag-native-hidden]"))
       .forEach(function (child) {
         child.hidden = child.dataset.adminTagNativeWasHidden === "true";
         delete child.dataset.adminTagNativeHidden;
@@ -833,7 +1042,8 @@
   }
 
   function mediaPage() {
-    return document.querySelector("[data-admin-media-page]");
+    var main = adminMain();
+    return main && main.querySelector("[data-admin-media-page]");
   }
 
   function redirectLegacyMediaRoute() {
@@ -860,7 +1070,9 @@
   }
 
   function restoreNativeMediaPageChildren() {
-    Array.from(document.querySelectorAll("[data-admin-media-native-hidden]"))
+    var main = adminMain();
+    if (!main) return;
+    Array.from(main.querySelectorAll("[data-admin-media-native-hidden]"))
       .forEach(function (child) {
         child.hidden = child.dataset.adminMediaNativeWasHidden === "true";
         delete child.dataset.adminMediaNativeHidden;
@@ -869,14 +1081,17 @@
   }
 
   function setMediaShortcutCurrent(isCurrent) {
-    var button = document.querySelector("[data-admin-media-shortcut] button");
+    var aside = adminAside();
+    var button = aside && aside.querySelector("[data-admin-media-shortcut] button");
     if (!button) return;
     if (isCurrent) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   }
 
   function clearNativeSidebarCurrent() {
-    Array.from(document.querySelectorAll('#nc-root aside a[href*="#/collections/"][aria-current="page"]'))
+    var aside = adminAside();
+    if (!aside) return;
+    Array.from(aside.querySelectorAll('a[href*="#/collections/"][aria-current="page"]'))
       .forEach(function (link) {
         link.removeAttribute("aria-current");
       });
@@ -898,7 +1113,7 @@
   }
 
   function ensureMediaPage() {
-    var main = document.querySelector("#nc-root main");
+    var main = adminMain();
     if (!main) return;
     main.dataset.adminCollection = "media";
     main.dataset.adminView = "all";
@@ -927,7 +1142,7 @@
   }
 
   function ensureTagPage(page) {
-    var main = document.querySelector("#nc-root main");
+    var main = adminMain();
     if (!main) return;
     main.dataset.adminCollection = "tags";
     main.dataset.adminView = "all";
@@ -990,7 +1205,8 @@
       item.card.hidden = false;
     });
 
-    var summary = document.querySelector("[data-admin-list-summary]");
+    var main = adminMain();
+    var summary = main && main.querySelector("[data-admin-list-summary]");
     if (!summary) return;
     var stateKey = [rows.length, page.collection, page.view].join(":");
     if (summary.dataset.adminListSummaryState === stateKey) return;
@@ -1006,7 +1222,7 @@
 
   function ensureListSummary(list) {
     if (!list || !list.parentElement) return null;
-    var existing = document.querySelector("[data-admin-list-summary]");
+    var existing = list.parentElement.querySelector("[data-admin-list-summary]");
     if (existing) return existing;
     var summary = document.createElement("div");
     summary.setAttribute("data-admin-list-summary", "");
@@ -1015,7 +1231,7 @@
   }
 
   function ensureMediaShortcut() {
-    var aside = document.querySelector("#nc-root aside");
+    var aside = adminAside();
     var list = aside && aside.querySelector("ul");
     if (!list || list.querySelector("[data-admin-media-shortcut]")) return;
 
@@ -1038,7 +1254,7 @@
 
   function ensureToolbar(list, page) {
     if (!list || !list.parentElement) return;
-    var existing = document.querySelector("[data-admin-list-toolbar]");
+    var existing = list.parentElement.querySelector("[data-admin-list-toolbar]");
     if (existing && existing.dataset.adminCollection !== page.collection) {
       existing.remove();
       existing = null;
@@ -1093,11 +1309,14 @@
       applyToolbar(toolbar, list, page);
     });
 
-    list.parentElement.insertBefore(toolbar, document.querySelector("[data-admin-entry-table-head]") || list);
+    list.parentElement.insertBefore(
+      toolbar,
+      list.parentElement.querySelector("[data-admin-entry-table-head]") || list,
+    );
   }
 
   function ensurePageHeading(page) {
-    var main = document.querySelector("#nc-root main");
+    var main = adminMain();
     if (!main) return;
     if (main.dataset.adminCollection !== page.collection) {
       main.dataset.adminCollection = page.collection;
@@ -1116,14 +1335,40 @@
     }
   }
 
+  function editorControlPane(editor) {
+    if (!editor) return null;
+    var controls = Array.from(editor.querySelectorAll("[class*=ControlPaneContainer]"));
+    var control = controls.find(function (candidate) {
+      return Array.from(candidate.children).some(function (child) {
+        return String(child.className || "").includes("ControlContainer");
+      });
+    });
+    if (!control) return null;
+
+    editor.setAttribute("data-admin-editor-root", "true");
+    control.setAttribute("data-admin-editor-control-pane", "true");
+    var shell = control.parentElement;
+    if (shell && String(shell.className || "").includes("ControlPaneContainer")) {
+      shell.setAttribute("data-admin-editor-control-shell", "true");
+    }
+    return control;
+  }
+
   function ensureEditorHeading() {
     var page = domain.editorProfile(global.location.hash);
     var editor = document.querySelector("#nc-root [class*=EditorContainer]");
-    var control = document.querySelector("#nc-root .Pane1 [class*=ControlPaneContainer]");
     var existing = document.querySelector("[data-admin-editor-heading]");
-    if (!page || !editor || !control || control.querySelector(".cms-tag-manager")) {
+    if (!page || !editor) {
       if (existing) existing.remove();
       if (editor) delete editor.dataset.adminEditor;
+      return;
+    }
+
+    var control = editorControlPane(editor);
+    if (!control) return;
+    if (control.querySelector(".cms-tag-manager")) {
+      if (existing) existing.remove();
+      delete editor.dataset.adminEditor;
       return;
     }
 
@@ -1178,7 +1423,7 @@
 
   function ensureEditorFields() {
     var editor = document.querySelector("#nc-root [class*=EditorContainer]");
-    var control = document.querySelector("#nc-root .Pane1 [class*=ControlPaneContainer]");
+    var control = editorControlPane(editor);
     if (!editor || !control) return;
 
     var fieldNames = {
@@ -1227,6 +1472,7 @@
     if (global.location.hash === MEDIA_ROUTE) {
       removeTagPage();
       ensureMediaPage();
+      settleRouteTransition();
       return;
     }
 
@@ -1237,26 +1483,30 @@
       ensureEditorToolbar();
       ensureEditorHeading();
       ensureEditorFields();
+      finishRouteTransition();
       return;
     }
 
     if (page.collection === "tags") {
       ensureTagPage(page);
+      settleRouteTransition();
       return;
     }
 
     removeTagPage();
 
     var links = entries();
-    if (!links.length || !entriesMatchPage(links, page)) return;
+    if (!routeEntriesReady(links, page)) return;
     ensurePageHeading(page);
     var list = listFromEntries(links);
     links.forEach(function (link) { decorateEntry(link, page); });
     ensureTableHead(list, page);
     ensureToolbar(list, page);
     ensureListSummary(list);
-    var toolbar = document.querySelector("[data-admin-list-toolbar]");
+    var activeMain = adminMain();
+    var toolbar = activeMain && activeMain.querySelector("[data-admin-list-toolbar]");
     applyToolbar(toolbar, list, page);
+    settleRouteTransition();
   }
 
   function scheduleSync() {
@@ -1275,9 +1525,15 @@
 
   function start() {
     if (observer) return;
-    observer = new MutationObserver(scheduleSync);
+    observer = new MutationObserver(function () {
+      if (pendingRoute) routeMutationVersion += 1;
+      scheduleSync();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
-    global.addEventListener("hashchange", scheduleSync);
+    bindRouteTransition();
+    global.addEventListener("hashchange", function () {
+      beginRouteTransition(global.location.hash);
+    });
     scheduleSync();
   }
 
