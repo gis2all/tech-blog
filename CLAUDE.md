@@ -105,7 +105,7 @@ Pagefind              → indexed 104 pages
 - `/search/?q=Agent` 可加载 Pagefind 并返回文章结果。
 - `/admin/` GitHub OAuth 登录已验证，可进入 Decap CMS 后台。
 - Decap CMS 后台发布闭环已验证：新建测试文章会写入 GitHub commit，并触发 Netlify 自动部署到前台。
-- Decap CMS 媒体上传闭环已验证：后台上传图片会写入对应的 `public/images/posts/<文章标题>/`，并可通过 Netlify 静态 URL 访问。
+- Decap CMS 媒体上传闭环已验证：文章图片写入 `public/images/posts/<文章标题>/`，专题/项目图片写入 `public/images/uploads/`，并可通过 Netlify 静态 URL 访问。
 - 2026-07-28 的测试文章和测试图片仅用于验证链路，验证后已从生产内容和线上站点中清理。
 - `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
 - 从迁移文章正文点击本站文章引用后，地址保持在 `/posts/<编码后的文章标题>/`，不会再跳转到本人旧 CSDN 页面。
@@ -264,7 +264,7 @@ Markdown / images / config
 - 标签使用 `src/data/tag-library.json` 作为全局标签库。文章内可以搜索已有标签或创建多个新标签，保存文章时新增标签与文章通过同一次持久化操作写入。
 - 标签只能从全局标签页删除；使用中标签禁删，未使用标签二次确认后删除。重命名按合并处理，会先展示影响文章并原子更新文章和标签库。
 - 文章媒体位于 `public/images/posts/<文章标题>/`；专题、项目或其他通用媒体仍使用 `public/images/uploads` 作为全局回退目录。
-- 文章媒体库支持按文章或文件搜索、文章筛选、仅未使用筛选、尺寸与引用状态、路径/Markdown 复制、图片放大、选择文章标题、上传压缩和确认后批量删除未使用文件。
+- 文章媒体库支持按文章或文件搜索、文章筛选、仅未使用筛选、尺寸与引用状态、路径/Markdown 复制、图片放大、选择文章标题、上传压缩和确认后批量删除未使用文件；专题/项目媒体弹窗显示当前封面与全局上传目录，独立媒体库支持文章媒体/全局上传两个视图。
 - 草稿和已发布文章使用独立入口；编辑页未保存时，站内导航和浏览器离开都会提醒。
 
 当前工作树正在实现但尚未提交的第三阶段能力：
@@ -307,7 +307,7 @@ Markdown / images / config
 | 专题 | `/admin/#/collections/series` | 管理专题资料、草稿状态和前台排序 |
 | 项目 | `/admin/#/collections/projects` | 管理项目资料、展示状态和前台排序 |
 | 标签 | `/admin/#/collections/tags` | 在后台主区域中搜索、筛选、重命名/合并和删除全局标签 |
-| 媒体库 | `/admin/#/collections/posts?view=media` | 在后台主区域中查询、预览、上传、压缩和清理文章媒体 |
+| 媒体库 | `/admin/#/collections/posts?view=media` | 在后台主区域中查询、预览、上传、压缩和清理文章媒体与全局上传目录 |
 | 内容编辑 | `/admin/#/collections/<集合>/new`、`entries/<条目>` | 使用 Decap 字段控件和 Markdown 编辑器编辑文章、专题或项目 |
 
 ## 8. 核心页面规格

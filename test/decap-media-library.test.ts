@@ -15,9 +15,9 @@ describe("Decap custom article media library", () => {
     const config = parse(configSource) as { media_library?: { name?: string } };
 
     expect(config.media_library?.name).toBe("article_media");
-    expect(index).toContain('href="/admin/media-library.css?v=3"');
+    expect(index).toContain('href="/admin/media-library.css?v=4"');
     expect(index).toContain('src="/admin/media-domain.js?v=2"');
-    expect(index).toContain('src="/admin/media-library.js?v=8"');
+    expect(index).toContain('src="/admin/media-library.js?v=9"');
     expect(library).toContain("CMS.registerMediaLibrary");
     expect(library).toContain("enableStandalone");
   });
@@ -143,5 +143,19 @@ describe("Decap custom article media library", () => {
     expect(css).toContain('cursor: url("data:image/svg+xml');
     expect(css).not.toContain("cursor: zoom-in;");
     expect(css).not.toContain("cursor: zoom-out;");
+  });
+
+  test("routes uploads by collection and includes the global uploads directory", async () => {
+    const source = await readFile(root + "public/admin/media-library.js", "utf8");
+
+    expect(source).toContain("UPLOADS_MEDIA_ROOT");
+    expect(source).toContain("function collectionFromRoute");
+    expect(source).toContain("function isCoverField");
+    expect(source).toContain("function currentCoverFromEntry");
+    expect(source).toContain("state.collection = collectionFromRoute()");
+    expect(source).toContain(
+      'state.currentCover = state.collection === "posts" ? null : currentCoverFromEntry()',
+    );
+    expect(source).toContain('"cms-media__upload-target"');
   });
 });

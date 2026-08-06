@@ -294,3 +294,26 @@ body.cms-media-open {
     flex-basis: auto;
   }
 }
+
+.cms-media__view {
+  padding: 6px 12px;
+  border: 1px solid #cfd7dd;
+  border-radius: 6px;
+  background: transparent;
+  color: #5d6670;
+}
+
+.cms-media__view.is-active {
+  border-color: #0969da;
+  background: rgba(9, 105, 218, 0.1);
+  color: #0969da;
+  font-weight: 600;
+}
+
+.cms-media__upload-target {
+  padding: 7px 10px;
+  border: 1px dashed #cfd7dd;
+  border-radius: 6px;
+  color: #5d6670;
+  font-size: 12px;
+}
