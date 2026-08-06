@@ -2927,7 +2927,6 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   font-weight: 700 !important;
 }
 
-#nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="references"],
 #nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="changelog"],
 #nc-root [data-admin-editor-control-pane] > [data-admin-editor-field="body"] {
   clear: both;
@@ -2935,7 +2934,6 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   width: 100%;
 }
 
-#nc-root [data-admin-editor-field="references"] > div[id^="references-field-"],
 #nc-root [data-admin-editor-field="changelog"] > div[id^="changelog-field-"] {
   overflow: hidden;
   border: 1px solid var(--cms-line) !important;
@@ -2944,7 +2942,6 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   box-shadow: none !important;
 }
 
-#nc-root [data-admin-editor-field="references"] > div[id^="references-field-"] > div:first-child,
 #nc-root [data-admin-editor-field="changelog"] > div[id^="changelog-field-"] > div:first-child {
   min-height: 38px !important;
   padding: 4px 8px 4px 10px !important;
@@ -2954,17 +2951,14 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   box-shadow: none !important;
 }
 
-#nc-root [data-admin-empty-list="true"] > div[id^="references-field-"] > div:not(:first-child),
 #nc-root [data-admin-empty-list="true"] > div[id^="changelog-field-"] > div:not(:first-child) {
   display: none !important;
 }
 
-#nc-root [data-admin-empty-list="true"] > div[id^="references-field-"],
 #nc-root [data-admin-empty-list="true"] > div[id^="changelog-field-"] {
   padding-bottom: 0 !important;
 }
 
-#nc-root [data-admin-editor-field="references"] button[data-testid="expand-button"],
 #nc-root [data-admin-editor-field="changelog"] button[data-testid="expand-button"] {
   width: 28px !important;
   height: 28px !important;
@@ -2974,7 +2968,6 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   background: transparent !important;
 }
 
-#nc-root [data-admin-editor-field="references"] button[class*=AddButton],
 #nc-root [data-admin-editor-field="changelog"] button[class*=AddButton] {
   height: 30px !important;
   min-height: 30px !important;
@@ -2988,7 +2981,6 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   font-weight: 600 !important;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=SortableListItem],
 #nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] {
   box-sizing: border-box !important;
   margin: 12px 0 0 !important;
@@ -2998,7 +2990,6 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   background: var(--cms-panel) !important;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar],
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] {
   box-sizing: border-box !important;
   display: flex !important;
@@ -3013,8 +3004,6 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   background: var(--cms-soft) !important;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > button,
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > [role="button"],
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > button,
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > [role="button"] {
   box-sizing: border-box !important;
@@ -3033,27 +3022,21 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   box-shadow: none !important;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > [role="button"],
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > [role="button"] {
   margin-left: auto !important;
   cursor: grab;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > button:last-child,
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > button:last-child {
   margin-left: 4px !important;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > button:hover,
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > [role="button"]:hover,
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > button:hover,
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > [role="button"]:hover {
   background: var(--cms-brand-soft) !important;
   color: var(--cms-brand-strong) !important;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > button span,
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] > [role="button"] span,
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > button span,
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] > [role="button"] span {
   display: grid !important;
@@ -3062,13 +3045,11 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   height: 16px !important;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=StyledListItemTopBar] svg,
 #nc-root [data-admin-editor-field="changelog"] [class*=StyledListItemTopBar] svg {
   width: 16px !important;
   height: 16px !important;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=SortableListItem] > div:last-child,
 #nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] > div:last-child {
   box-sizing: border-box !important;
   padding: 14px !important;
@@ -3076,7 +3057,6 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   background: var(--cms-panel) !important;
 }
 
-#nc-root [data-admin-editor-field="references"] [class*=SortableListItem] > div:last-child > div > [class*=ControlContainer]:first-child,
 #nc-root [data-admin-editor-field="changelog"] [class*=SortableListItem] > div:last-child > div > [class*=ControlContainer]:first-child {
   margin-top: 0 !important;
 }

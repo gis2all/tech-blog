@@ -6,7 +6,6 @@
   "image": "/images/projects/tech-blog.webp",
   "imageAlt": "tech-blog 个人技术博客首页",
   "order": 3,
-  "featured": true,
   "publishedAt": "2026-07-28",
   "draft": false
 }

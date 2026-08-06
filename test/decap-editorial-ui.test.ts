@@ -14,7 +14,7 @@ describe("Decap phase-two editorial UI", () => {
       readFile(root + "public/admin/admin-shell.css", "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=56"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=57"');
     expect(html).toContain('data-cms-theme-toggle');
     expect(html).toContain('data-cms-global-search');
     expect(html.indexOf("/admin/admin-shell.css")).toBeLessThan(
@@ -145,7 +145,7 @@ describe("Decap phase-two editorial UI", () => {
     ]);
 
     expect(html).toContain('src="/admin/admin-shell-domain.js"');
-    expect(html).toContain('src="/admin/admin-shell.js?v=33"');
+    expect(html).toContain('src="/admin/admin-shell.js?v=37"');
     expect(html.indexOf("/admin/cms-init.js")).toBeLessThan(
       html.indexOf("/admin/admin-shell.js"),
     );
@@ -416,8 +416,8 @@ describe("Decap phase-two editorial UI", () => {
       readFile(root + "public/admin/admin-shell.js", "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=56"');
-    expect(html).toContain('src="/admin/admin-navigation.js?v=26"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=57"');
+    expect(html).toContain('src="/admin/admin-navigation.js?v=27"');
     expect(navigation).toContain("function bindEditorPreviewRefresh");
     expect(navigation).toContain("function ensureEditorRefreshButton");
     expect(navigation).toContain("data-admin-preview-toggle");
@@ -454,7 +454,6 @@ describe("Decap phase-two editorial UI", () => {
     expect(shell).toMatch(
       /\[data-admin-editor-field="publishedAt"\][^{]*\{[^}]*margin-right:\s*16px;/s,
     );
-    expect(shell).toContain('> div[id^="references-field-"]');
     expect(shell).toContain('> div[id^="changelog-field-"]');
     expect(shell).toContain('[data-admin-empty-list="true"]');
     expect(shellScript).toContain('new RegExp("0\\\\s*" + itemLabel)');
@@ -678,7 +677,6 @@ describe("Decap phase-two editorial UI", () => {
       "tags",
       "series",
       "updatedAt",
-      "references",
       "SeriesPreview",
       "ProjectPreview",
     ]) {

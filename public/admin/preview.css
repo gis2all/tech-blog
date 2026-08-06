@@ -21,7 +21,6 @@
 [data-theme="dark"] .cms-post-preview__body h2,
 [data-theme="dark"] .cms-post-preview__body h3,
 [data-theme="dark"] .cms-post-preview__body h4,
-[data-theme="dark"] .cms-post-preview__references h2,
 [data-theme="dark"] .cms-entity-preview h1 {
   color: #e7edf2;
 }
@@ -223,18 +222,6 @@ body {
 .cms-post-preview__body img {
   max-width: 100%;
   height: auto;
-}
-
-.cms-post-preview__references {
-  margin-top: 40px;
-  padding-top: 28px;
-  border-top: 1px solid #d9e2ec;
-}
-
-.cms-post-preview__references h2 {
-  margin: 0 0 14px;
-  color: #102a43;
-  font-size: 20px;
 }
 
 @media (max-width: 640px) {

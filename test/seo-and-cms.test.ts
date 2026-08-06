@@ -215,7 +215,7 @@ describe("Decap CMS schema", () => {
       summary: "{{title}} · {{publishedAt}} · {{draft}}",
       sortable_fields: ["order", "publishedAt", "title"],
       view_filters: expect.arrayContaining([
-        expect.objectContaining({ field: "featured", pattern: true }),
+        expect.objectContaining({ field: "draft", pattern: true }),
       ]),
     });
     expect(getField(posts, "category")).toMatchObject({
@@ -254,14 +254,9 @@ describe("Decap CMS schema", () => {
       "featured",
       "cover",
       "coverAlt",
-      "repoUrl",
-      "references",
       "changelog",
       "body",
     ]);
-    expect(postFieldNames.indexOf("references")).toBeLessThan(
-      postFieldNames.indexOf("changelog"),
-    );
     expect(postFieldNames.indexOf("changelog")).toBeLessThan(
       postFieldNames.indexOf("body"),
     );
@@ -270,7 +265,7 @@ describe("Decap CMS schema", () => {
     expect(adminIndex).toContain(
       'src="https://unpkg.com/decap-cms@3.15.1/dist/decap-cms.js"',
     );
-    expect(adminIndex).toContain('src="/admin/preview.js?v=2"');
+    expect(adminIndex).toContain('src="/admin/preview.js?v=3"');
     const previewRegistrations: {
       styles: string[];
       templates: Array<{ collection: string; template: unknown }>;
@@ -292,7 +287,7 @@ describe("Decap CMS schema", () => {
       h: () => null,
     });
 
-    expect(previewRegistrations.styles).toContain("/admin/preview.css?v=2");
+    expect(previewRegistrations.styles).toContain("/admin/preview.css?v=3");
     expect(previewRegistrations.templates.map((item) => item.collection)).toEqual([
       "posts",
       "series",
@@ -403,7 +398,7 @@ describe("Decap CMS schema", () => {
     runInNewContext(navigationSource, context);
 
     expect(postsCollections).toHaveLength(1);
-    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=26"');
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=27"');
     expect(
       (context.DecapAdminNavigation as { isDraftRoute: () => boolean })
         .isDraftRoute(),

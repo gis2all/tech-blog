@@ -55,34 +55,12 @@
     return PUBLIC_POSTS_ROOT + trimmedText(title) + "/";
   }
 
-  function isValidHttpUrl(value) {
-    if (!trimmedText(value)) return false;
-
-    try {
-      var url = new URL(value);
-      return url.protocol === "http:" || url.protocol === "https:";
-    } catch (_error) {
-      return false;
-    }
-  }
-
   function isFutureDate(value) {
     var text = trimmedText(value);
     if (!text) return false;
 
     var date = new Date(text + (text.length === 10 ? "T00:00:00" : ""));
     return !Number.isNaN(date.getTime()) && date.getTime() > Date.now();
-  }
-
-  function validateReferences(references, errors) {
-    if (!Array.isArray(references)) return;
-
-    references.forEach(function (reference, index) {
-      var item = reference || {};
-      if (!trimmedText(item.title) || !isValidHttpUrl(item.url)) {
-        errors.push("第 " + (index + 1) + " 条参考资料需要有效的标题和 HTTP(S) 地址");
-      }
-    });
   }
 
   function validatePost(data) {
@@ -137,15 +115,8 @@
         errors.push("更新日期不能早于发布日期");
       }
     }
-    if (trimmedText(post.repoUrl) && !isValidHttpUrl(post.repoUrl)) {
-      errors.push("示例仓库地址必须是有效的 HTTP(S) 地址");
-    }
-    validateReferences(post.references, errors);
     if (!trimmedText(post.cover)) {
       warnings.push("文章尚未设置封面");
-    }
-    if (!Array.isArray(post.references) || post.references.length === 0) {
-      warnings.push("文章尚未填写参考资料");
     }
 
     return { errors: errors, warnings: warnings };

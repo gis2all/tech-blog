@@ -260,7 +260,7 @@ Markdown / images / config
 - 文章标题是唯一身份来源；Markdown 文件名、公开地址和文章媒体目录使用去除首尾空白后的标题，不维护独立 slug、旧 URL 兼容路由或改名跳转。
 - 已发布文章标题锁定；需要改名时先转为草稿并确认重命名。草稿重命名会在同一工作流中更新 Markdown 路径、文章引用和媒体目录。
 - 保存前校验标题唯一性、发布必填字段、日期、专题顺序、链接和图片替代文本；草稿允许暂时缺少发布所需内容，但会显示建议。
-- 编辑态文章预览显示封面、分类、发布时间、更新时间、标签、专题、摘要、正文、参考资料、更新记录以及最终 Markdown 路径、公开地址和媒体目录；不复制前台评论、阅读历史或完整导航交互。
+- 编辑态文章预览显示封面、分类、发布时间、更新时间、标签、专题、摘要、正文、更新记录以及最终 Markdown 路径、公开地址和媒体目录；不复制前台评论、阅读历史或完整导航交互。
 - 标签使用 `src/data/tag-library.json` 作为全局标签库。文章内可以搜索已有标签或创建多个新标签，保存文章时新增标签与文章通过同一次持久化操作写入。
 - 标签只能从全局标签页删除；使用中标签禁删，未使用标签二次确认后删除。重命名按合并处理，会先展示影响文章并原子更新文章和标签库。
 - 文章媒体位于 `public/images/posts/<文章标题>/`；专题、项目或其他通用媒体仍使用 `public/images/uploads` 作为全局回退目录。
@@ -361,7 +361,7 @@ Markdown / images / config
 - Astro Markdown 渲染、H2/H3 锚点和自动目录。
 - 行内代码、代码块横向滚动和复制按钮。
 - Markdown 引用、列表、表格、链接和图片。
-- Frontmatter 中存在数据时展示参考资料和更新记录。
+- Frontmatter 中存在数据时展示更新记录。
 - 4 篇相关文章、上一篇、下一篇、作者说明和 Giscus 评论区。
 
 ### 8.4 内容目录页
@@ -413,8 +413,8 @@ seriesOrder: 1
 
 - `title`、`description`、`publishedAt` 和 `category` 必填。
 - 文章 URL 标识由去除首尾空白后的标题生成，不接受独立 `slug` frontmatter。
-- `tags`、`references` 和 `changelog` 默认为空数组；`draft` 和 `featured` 默认为 `false`。
-- `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 和 `repoUrl` 可选；有封面时应提供准确的 `coverAlt`。
+- `tags` 和 `changelog` 默认为空数组；`draft` 和 `featured` 默认为 `false`。
+- `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 可选；有封面时应提供准确的 `coverAlt`。
 - 生产构建排除 `draft: true`。
 - 日期统一使用 `YYYY-MM-DD`，构建失败时给出具体文件和字段。
 - 分类是单值主分类，标签是多值；专题是有顺序的连续内容。

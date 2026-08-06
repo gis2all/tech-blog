@@ -91,9 +91,7 @@ describe("Decap editorial domain", () => {
         expect.stringContaining("更新日期"),
       ]),
     );
-    expect(result.warnings).toEqual(
-      expect.arrayContaining([expect.stringContaining("参考资料")]),
-    );
+    expect(result.warnings).toEqual([]);
   });
 
   test("allows drafts to stay incomplete and reports publishing advice", async () => {
@@ -110,27 +108,6 @@ describe("Decap editorial domain", () => {
       expect.arrayContaining([
         expect.stringContaining("精选"),
         expect.stringContaining("未来"),
-      ]),
-    );
-  });
-
-  test("requires valid optional URLs when publishing", async () => {
-    const domain = await loadDomain();
-    const result = domain.validatePost({
-      title: "链接文章",
-      description: "摘要",
-      body: "正文",
-      category: "DevOps",
-      publishedAt: "2026-08-03",
-      draft: false,
-      repoUrl: "not-a-url",
-      references: [{ title: "资料", url: "broken" }],
-    });
-
-    expect(result.errors).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining("示例仓库"),
-        expect.stringContaining("参考资料"),
       ]),
     );
   });
@@ -152,7 +129,6 @@ describe("Decap editorial domain", () => {
     expect(result.warnings).toEqual(
       expect.arrayContaining([
         expect.stringContaining("封面"),
-        expect.stringContaining("参考资料"),
       ]),
     );
   });

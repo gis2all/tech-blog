@@ -116,14 +116,6 @@ const articleJsonLd = {
       <div class="prose" data-pagefind-body>
         <slot />
       </div>
-      {"references" in post.data && Array.isArray(post.data.references) && post.data.references.length > 0 && (
-        <section class="references">
-          <h2>参考资料与源码</h2>
-          <ul>
-            {post.data.references.map((item) => <li><a href={item.url}>{item.title}</a></li>)}
-          </ul>
-        </section>
-      )}
       {"changelog" in post.data && Array.isArray(post.data.changelog) && post.data.changelog.length > 0 && (
         <section class="changelog">
           <h2>更新记录</h2>

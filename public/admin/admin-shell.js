@@ -1443,8 +1443,6 @@
       "精选": "featured",
       "封面": "cover",
       "封面替代文本": "coverAlt",
-      "示例仓库": "repoUrl",
-      "参考资料": "references",
       "更新记录": "changelog",
     };
 
@@ -1456,8 +1454,8 @@
       if (!name) return;
       container.setAttribute("data-admin-editor-field", name);
 
-      if (name === "references" || name === "changelog") {
-        var itemLabel = name === "references" ? "参考资料" : "更新记录";
+      if (name === "changelog") {
+        var itemLabel = "更新记录";
         var empty = new RegExp("0\\s*" + itemLabel).test(
           String(container.textContent || ""),
         );
