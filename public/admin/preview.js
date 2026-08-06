@@ -43,23 +43,17 @@ var PostPreview = createClass({
     var updatedAt = entry.getIn(["data", "updatedAt"]);
     var tags = entry.getIn(["data", "tags"]);
     var series = entry.getIn(["data", "series"]);
-    var references = entry.getIn(["data", "references"]);
     var cover = entry.getIn(["data", "cover"]);
     var coverAlt = entry.getIn(["data", "coverAlt"]) || "";
     var coverUrl = cover ? this.props.getAsset(cover).toString() : "";
     if (tags && typeof tags.toJS === "function") tags = tags.toJS();
-    if (references && typeof references.toJS === "function") references = references.toJS();
     tags = Array.isArray(tags) ? tags : [];
-    references = Array.isArray(references) ? references : [];
     var metadata = [
       category,
       publishedAt ? "发布 " + publishedAt : "",
       updatedAt ? "更新 " + updatedAt : "",
       series ? "专题 " + (this.state.seriesTitle || series) : "",
     ].filter(Boolean).join(" · ");
-    var publicArticlePath = DecapEditorialDomain.publicArticlePath(title);
-    var mediaFolder = DecapEditorialDomain.mediaFolder(title) + "/";
-
     return h(
       "article",
       { className: "cms-post-preview" },
@@ -86,14 +80,6 @@ var PostPreview = createClass({
               description,
             )
           : null,
-        h(
-          "dl",
-          { className: "cms-post-preview__destinations" },
-          h("dt", null, "公开地址"),
-          h("dd", null, publicArticlePath),
-          h("dt", null, "媒体目录"),
-          h("dd", null, mediaFolder),
-        ),
         coverUrl
           ? h("img", {
               className: "cms-post-preview__cover",
@@ -107,28 +93,6 @@ var PostPreview = createClass({
         { className: "cms-post-preview__body" },
         this.props.widgetFor("body"),
       ),
-      references.length
-        ? h(
-            "section",
-            { className: "cms-post-preview__references" },
-            h("h2", null, "参考资料"),
-            h(
-              "ol",
-              null,
-              references.map(function (reference, index) {
-                return h(
-                  "li",
-                  { key: reference.url || index },
-                  h(
-                    "a",
-                    { href: reference.url, target: "_blank", rel: "noreferrer" },
-                    reference.title || reference.url,
-                  ),
-                );
-              }),
-            ),
-          )
-        : null,
     );
   },
 });
@@ -182,7 +146,6 @@ var ProjectPreview = createClass({
     var projectUrl = entry.getIn(["data", "url"]) || "";
     var repoUrl = entry.getIn(["data", "repoUrl"]) || "";
     var publishedAt = entry.getIn(["data", "publishedAt"]) || "未填写";
-    var featured = entry.getIn(["data", "featured"]);
     var draft = entry.getIn(["data", "draft"]);
     var tech = previewList(entry, "tech");
     var image = previewAsset(this.props, "image");
@@ -195,7 +158,7 @@ var ProjectPreview = createClass({
       h(
         "p",
         { className: "cms-entity-preview__eyebrow" },
-        (featured ? "精选项目" : "项目") + (tech.length ? " · " + tech.join(" / ") : ""),
+        "项目" + (tech.length ? " · " + tech.join(" / ") : ""),
       ),
       h("h1", null, title),
       description ? h("p", { className: "cms-entity-preview__description" }, description) : null,
@@ -209,13 +172,13 @@ var ProjectPreview = createClass({
         h("dt", null, "发布日期"),
         h("dd", null, publishedAt),
         h("dt", null, "状态"),
-        h("dd", null, (draft ? "草稿" : "已发布") + (featured ? " · 精选" : "")),
+        h("dd", null, (draft ? "草稿" : "已发布")),
       ),
     );
   },
 });
 
-CMS.registerPreviewStyle("/admin/preview.css");
+CMS.registerPreviewStyle("/admin/preview.css?v=3");
 CMS.registerPreviewTemplate("posts", PostPreview);
 CMS.registerPreviewTemplate("series", SeriesPreview);
 CMS.registerPreviewTemplate("projects", ProjectPreview);

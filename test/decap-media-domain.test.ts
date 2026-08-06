@@ -20,6 +20,16 @@ async function loadDomain() {
       path: string;
       referenced: boolean;
     }>;
+    normalizeMediaReference(value: string): string;
+    deletionSelectionState(
+      files: Array<{ path: string; referenced: boolean }>,
+      selectedPaths: string[],
+    ): { paths: string[]; checked: boolean; indeterminate: boolean };
+    toggleDeletionSelection(
+      selectedPaths: string[],
+      files: Array<{ path: string; referenced: boolean }>,
+      checked: boolean,
+    ): string[];
   };
 }
 
@@ -81,5 +91,83 @@ describe("Decap article media domain", () => {
       { path: "public/images/posts/A/cover.webp", referenced: true },
       { path: "public/images/posts/B/image-01.webp", referenced: false },
     ]);
+  });
+
+  test("matches equivalent encoded and unencoded article media paths", async () => {
+    const domain = await loadDomain();
+
+    expect(domain.normalizeMediaReference(
+      "/images/posts/A%20%2B%20B/image-01.webp",
+    )).toBe("/images/posts/A + B/image-01.webp");
+    expect(domain.classifyMedia(
+      [{ path: "public/images/posts/A + B/image-01.webp" }],
+      ["/images/posts/A%20+%20B/image-01.webp"],
+    )).toEqual([
+      { path: "public/images/posts/A + B/image-01.webp", referenced: true },
+    ]);
+  });
+
+  test("summarizes selection across visible unused media", async () => {
+    const domain = await loadDomain();
+    const files = [
+      { path: "public/images/posts/A/image-01.webp", referenced: false },
+      { path: "public/images/posts/A/image-02.webp", referenced: false },
+      { path: "public/images/posts/A/cover.webp", referenced: true },
+    ];
+
+    expect(domain.deletionSelectionState(files, [])).toEqual({
+      paths: [
+        "public/images/posts/A/image-01.webp",
+        "public/images/posts/A/image-02.webp",
+      ],
+      checked: false,
+      indeterminate: false,
+    });
+    expect(domain.deletionSelectionState(
+      files,
+      ["public/images/posts/A/image-01.webp"],
+    )).toEqual({
+      paths: [
+        "public/images/posts/A/image-01.webp",
+        "public/images/posts/A/image-02.webp",
+      ],
+      checked: false,
+      indeterminate: true,
+    });
+    expect(domain.deletionSelectionState(
+      files,
+      [
+        "public/images/posts/A/image-01.webp",
+        "public/images/posts/A/image-02.webp",
+      ],
+    )).toEqual({
+      paths: [
+        "public/images/posts/A/image-01.webp",
+        "public/images/posts/A/image-02.webp",
+      ],
+      checked: true,
+      indeterminate: false,
+    });
+  });
+
+  test("toggles only visible unused media while preserving hidden selections", async () => {
+    const domain = await loadDomain();
+    const files = [
+      { path: "public/images/posts/A/image-01.webp", referenced: false },
+      { path: "public/images/posts/A/image-02.webp", referenced: false },
+      { path: "public/images/posts/A/cover.webp", referenced: true },
+    ];
+    const hidden = "public/images/posts/B/image-01.webp";
+
+    expect(domain.toggleDeletionSelection([hidden], files, true)).toEqual([
+      hidden,
+      "public/images/posts/A/image-01.webp",
+      "public/images/posts/A/image-02.webp",
+    ]);
+    expect(domain.toggleDeletionSelection([
+      hidden,
+      "public/images/posts/A/image-01.webp",
+      "public/images/posts/A/image-02.webp",
+    ], files, false)).toEqual([hidden]);
   });
 });

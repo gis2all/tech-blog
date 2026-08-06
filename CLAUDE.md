@@ -36,7 +36,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 
 ## 3. 当前实际状态
 
-截至 2026-08-05，当前开发分支为 `decap`。远端 `origin/main` 已通过 PR #6 合并 Decap 第一、第二阶段增强；当前工作树正在继续实现第三阶段的自定义后台壳层，相关修改尚未提交：
+截至 2026-08-07，后台自定义壳层、媒体库和路由优化已基本完成并分批提交到本地；项目不强调具体开发分支，以当前工作区和 Git 状态为准。远端 `origin/main` 已合并 Decap 第一、二阶段增强及此前的页面、SEO、CI 和阅读体验更新：
 
 - `origin/main` 已包含页面重构、真实专题与项目数据、标题直出文章 URL、文章阅读控件、迁移文章内链治理、CI/覆盖率门禁、README/许可证、正式域名、SEO、Giscus 评论和 Decap 第一、第二阶段增强。
 - 本地 `main` 可能落后于 `origin/main`；判断已合并状态时先检查远端跟踪分支，不根据本地 `main` 的旧提交误判。
@@ -49,7 +49,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - Decap CMS 的文章、专题和项目字段已与 Content Collections 必填字段对齐。
 - 已完成 Decap CMS 第一阶段配置增强：中文 locale、列表摘要/筛选/排序/分组、受控文章分类、专题 relation、字段提示和接近真实文章页的轻量预览。
 - 已完成 Decap CMS 第二阶段编辑增强：草稿独立入口、标题驱动的中文文章文件名/公开地址/媒体目录、保存前校验、未保存离开提醒、增强预览、标签搜索筛选排序与重命名合并、独立文章媒体库、未使用媒体检查和图片压缩转换。
-- Decap CMS 第三阶段正在开发：以网站视觉变量和内容宽度为基础重构后台壳层、登录页、内容列表、编辑页、嵌入式标签页和嵌入式媒体页；当前不能仅凭原型或局部测试宣称整阶段完成。
+- Decap CMS 后台自定义壳层、登录页、内容列表、编辑页、标签页和媒体页已基本完成；仍以浏览器实测为准，不凭原型或截图宣称全部交互完成。
 - 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
 - 正式站点 URL 已统一为 `https://blog.gis2all.top`，Astro `site`、站内 canonical、RSS、站点地图和 `robots.txt` 均以该域名为准。
 - Netlify 使用 `npm run build` 进行生产构建，随后由 `postbuild` 自动生成 Pagefind 索引并发布 `dist/`。
@@ -63,29 +63,29 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - 已将 25 个指向本人旧 CSDN 文章的链接替换为本站文章链接；8 个外部作者的 CSDN 引用继续保留。
 - 已补齐 Twitter Card、Open Graph URL、文章页 `BlogPosting` JSON-LD 和公开 `robots.txt`。
 - 已接入 Umami Cloud 访问统计，仅在 Astro 生产构建模式且配置 `PUBLIC_UMAMI_WEBSITE_ID` 时加载；`npm run dev` 和未配置环境不加载，本地生产预览或 Netlify Deploy Preview 若提供同一变量也会产生统计数据。
-- Vitest 覆盖率任务生成 HTML 报告和 `coverage/coverage-summary.json`；本地 Node.js 脚本读取真实行覆盖率并生成 `coverage/badge.svg`，GitHub Actions 在 `main` 验证通过后将徽章和报告发布到 GitHub Pages，不依赖第三方覆盖率服务。
+- Vitest 覆盖率任务生成 HTML 报告和 `coverage/coverage-summary.json`；本地 Node.js 脚本读取真实行覆盖率并生成 `coverage/badge.svg`，GitHub Actions 在 `main` 验证通过后将徽章和报告发布到 GitHub Pages，不依赖第三方覆盖率服务。GitHub Pages 发布前需在仓库 `Settings → Pages → Source` 选择 `GitHub Actions` 一次，之后由 CI 自动发布。
 - 文章页显示 4 篇相关文章，优先级依次为同专题、共同标签、同分类和发布时间。
 - 阅读历史保存在浏览器 `localStorage`，记录最近 20 篇及阅读进度；首页桌面右栏、移动端文章列表前和正文桌面右栏均最多显示 3 篇并使用 `01` 至 `03` 编号，正文排除当前文章，最近阅读卡片不展示进度或清空操作。
 - 已开启 GitHub Discussions，并在文章详情页通过 Giscus 接入评论；当前使用 `gis2all/tech-blog` 仓库、`Announcements` 分类、`pathname` 映射，开发和生产环境均加载 Giscus 外部脚本；Giscus GitHub App 已授权到该仓库，本地已验证评论区可加载。
 
 后续会话不得根据原型截图宣称功能已完成。必须以仓库代码、构建结果和浏览器验证为准。
 
-最近验证结果（2026-08-01）：
+最近验证结果（2026-08-07）：
 
 ```text
-npm run check         → 76 files checked, 0 errors, 0 warnings, 0 hints
-npm test              → 19 test files passed, 91 tests passed
+npm run check         → 111 files checked, 0 errors, 0 warnings, 0 hints
+npm test              → 30 test files passed, 256 tests passed
 npm run test:coverage → statements 96.36%, branches 83.33%, functions 100%, lines 99.47%
 npm run test:e2e      → 33 tests passed
 npm run build         → 435 pages built
 Pagefind              → indexed 104 pages
 ```
 
-以上结果是第三阶段自定义后台壳层开始前的最近一次完整代码验证基线，不覆盖当前未提交的后台修改。2026-08-05 已运行后台壳层、媒体库相关的 3 个 Vitest 文件，33 个测试通过；仍需在第三阶段收口时统一运行完整检查、构建和关键浏览器流程。
+以上是最近一次完整代码验证结果：Astro/TypeScript 检查 111 个文件 0 错误；Vitest 30 个文件 256 个测试通过；Playwright 33 个场景通过；生产构建 435 页，Pagefind 索引 104 页。后台相关改动已分批提交到本地。
 
 浏览器验证：
 
-以下记录是前台与 CMS 发布链路的已完成基线；第三阶段后台页面的视觉和交互仍在开发，不继承这些记录作为当前验收结论。
+以下记录是前台与 CMS 发布链路及后台关键交互的已验证基线；后续改动仍按风险重新验证。
 
 - Astro 本地开发固定且仅使用 `http://127.0.0.1:4321/`；不要同时保留多个开发服务，也不要临时切到 4323 等其他端口。若 4321 被占用，先确认并停止/复用该服务，再继续。
 - 本地运行分为开发态和生产预览态：开发态使用 `npm run dev -- --host 127.0.0.1 --port 4321`，用于页面和样式快速开发；生产预览态先运行 `npm run build`，再运行 `npm run preview -- --host 127.0.0.1 --port 4321`，用于验证 `dist/`、Pagefind 搜索、RSS 和站点地图。
@@ -105,7 +105,7 @@ Pagefind              → indexed 104 pages
 - `/search/?q=Agent` 可加载 Pagefind 并返回文章结果。
 - `/admin/` GitHub OAuth 登录已验证，可进入 Decap CMS 后台。
 - Decap CMS 后台发布闭环已验证：新建测试文章会写入 GitHub commit，并触发 Netlify 自动部署到前台。
-- Decap CMS 媒体上传闭环已验证：后台上传图片会写入对应的 `public/images/posts/<文章标题>/`，并可通过 Netlify 静态 URL 访问。
+- Decap CMS 媒体上传闭环已验证：文章图片写入 `public/images/posts/<文章标题>/`，专题/项目图片写入 `public/images/uploads/`，并可通过 Netlify 静态 URL 访问。
 - 2026-07-28 的测试文章和测试图片仅用于验证链路，验证后已从生产内容和线上站点中清理。
 - `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
 - 从迁移文章正文点击本站文章引用后，地址保持在 `/posts/<编码后的文章标题>/`，不会再跳转到本人旧 CSDN 页面。
@@ -260,14 +260,15 @@ Markdown / images / config
 - 文章标题是唯一身份来源；Markdown 文件名、公开地址和文章媒体目录使用去除首尾空白后的标题，不维护独立 slug、旧 URL 兼容路由或改名跳转。
 - 已发布文章标题锁定；需要改名时先转为草稿并确认重命名。草稿重命名会在同一工作流中更新 Markdown 路径、文章引用和媒体目录。
 - 保存前校验标题唯一性、发布必填字段、日期、专题顺序、链接和图片替代文本；草稿允许暂时缺少发布所需内容，但会显示建议。
-- 编辑态文章预览显示封面、分类、发布时间、更新时间、标签、专题、摘要、正文、参考资料、更新记录以及最终 Markdown 路径、公开地址和媒体目录；不复制前台评论、阅读历史或完整导航交互。
+- 编辑态文章预览显示封面、分类、发布时间、更新时间、标签、专题、摘要、正文、更新记录以及最终 Markdown 路径、公开地址和媒体目录；不复制前台评论、阅读历史或完整导航交互。
 - 标签使用 `src/data/tag-library.json` 作为全局标签库。文章内可以搜索已有标签或创建多个新标签，保存文章时新增标签与文章通过同一次持久化操作写入。
 - 标签只能从全局标签页删除；使用中标签禁删，未使用标签二次确认后删除。重命名按合并处理，会先展示影响文章并原子更新文章和标签库。
 - 文章媒体位于 `public/images/posts/<文章标题>/`；专题、项目或其他通用媒体仍使用 `public/images/uploads` 作为全局回退目录。
-- 文章媒体库支持按文章或文件搜索、文章筛选、仅未使用筛选、尺寸与引用状态、路径/Markdown 复制、图片放大、选择文章标题、上传压缩和确认后批量删除未使用文件。
+- 文章媒体库支持按文章或文件搜索、文章筛选、仅未使用筛选、尺寸与引用状态、路径/Markdown 复制、图片放大、选择文章标题、上传压缩和确认后批量删除未使用文件；专题/项目媒体弹窗显示当前封面与全局上传目录，独立媒体库支持文章媒体/全局上传两个视图。
+- 后台路由切换使用快照遮罩避免旧内容/白屏闪动；媒体库按文章/专题/项目路由，只加载当前上下文所需目录并做会话内缓存；头部“回到网站 / 切换模式 / 个人”图标已统一。
 - 草稿和已发布文章使用独立入口；编辑页未保存时，站内导航和浏览器离开都会提醒。
 
-当前工作树正在实现但尚未提交的第三阶段能力：
+后台第三阶段已基本完成并分批提交，主要能力包括：
 
 - 网站一致的后台顶部栏、Logo、内容宽度、颜色变量、字体、深色模式、图标、按钮和选中状态。
 - 生产登录页采用无后台顶栏的居中布局；本地开发默认绕过登录页。
@@ -307,7 +308,7 @@ Markdown / images / config
 | 专题 | `/admin/#/collections/series` | 管理专题资料、草稿状态和前台排序 |
 | 项目 | `/admin/#/collections/projects` | 管理项目资料、展示状态和前台排序 |
 | 标签 | `/admin/#/collections/tags` | 在后台主区域中搜索、筛选、重命名/合并和删除全局标签 |
-| 媒体库 | `/admin/#/collections/posts?view=media` | 在后台主区域中查询、预览、上传、压缩和清理文章媒体 |
+| 媒体库 | `/admin/#/collections/posts?view=media` | 在后台主区域中查询、预览、上传、压缩和清理文章媒体与全局上传目录 |
 | 内容编辑 | `/admin/#/collections/<集合>/new`、`entries/<条目>` | 使用 Decap 字段控件和 Markdown 编辑器编辑文章、专题或项目 |
 
 ## 8. 核心页面规格
@@ -361,7 +362,7 @@ Markdown / images / config
 - Astro Markdown 渲染、H2/H3 锚点和自动目录。
 - 行内代码、代码块横向滚动和复制按钮。
 - Markdown 引用、列表、表格、链接和图片。
-- Frontmatter 中存在数据时展示参考资料和更新记录。
+- Frontmatter 中存在数据时展示更新记录。
 - 4 篇相关文章、上一篇、下一篇、作者说明和 Giscus 评论区。
 
 ### 8.4 内容目录页
@@ -413,8 +414,8 @@ seriesOrder: 1
 
 - `title`、`description`、`publishedAt` 和 `category` 必填。
 - 文章 URL 标识由去除首尾空白后的标题生成，不接受独立 `slug` frontmatter。
-- `tags`、`references` 和 `changelog` 默认为空数组；`draft` 和 `featured` 默认为 `false`。
-- `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 和 `repoUrl` 可选；有封面时应提供准确的 `coverAlt`。
+- `tags` 和 `changelog` 默认为空数组；`draft` 和 `featured` 默认为 `false`。
+- `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 可选；有封面时应提供准确的 `coverAlt`。
 - 生产构建排除 `draft: true`。
 - 日期统一使用 `YYYY-MM-DD`，构建失败时给出具体文件和字段。
 - 分类是单值主分类，标签是多值；专题是有顺序的连续内容。
@@ -534,7 +535,7 @@ public/images/posts/
 
 ## 15. 当前路线图
 
-1. 完成当前 `decap` 工作树中的第三阶段后台壳层：逐页对齐网站视觉，修正内容列表、标签、媒体、编辑和登录页面的真实交互问题。
+1. 后台第三阶段已基本完成；剩余收口以浏览器实测为准：逐页复核导航、搜索、筛选、编辑、标签、媒体、弹窗、浅色/深色和移动端。
 2. 收口时统一验证本地免登录写入、生产登录、文章/草稿互斥、搜索筛选、标签合并、媒体上传压缩、未保存提醒、浅色/深色和桌面/移动，再分批提交并创建 PR。
 3. 在 Netlify 生产环境配置 `PUBLIC_UMAMI_WEBSITE_ID`，并完成正式域名、统计、搜索、RSS、站点地图、robots 和后台生产登录验收。
 4. 部署后在线上验证文章评论加载、GitHub 登录评论闭环、首次评论自动创建 Discussion 和主题同步。
@@ -557,6 +558,7 @@ public/images/posts/
 - 不把 OpenDesign 或截图中的模拟数据复制进生产代码来追求表面一致。
 - 页面逐项开发期间优先运行语法检查、相关 Vitest 或直接代码核对，不为每个微调重复完整构建、全量浏览器自动化和多轮截图。
 - 一个页面或阶段收口后再统一运行与风险相称的检查；第三阶段完成前至少运行 `npm run check`、相关 Vitest、`npm run build`，并用真实浏览器验证后台导航、搜索、筛选、编辑、标签、媒体、弹窗、浅色/深色和本地保存流程。生产 OAuth 与远端发布只在明确需要时验证。
+- 覆盖率徽章由 `npm run coverage:badge` 生成，读取 `coverage/coverage-summary.json` 并输出 `coverage/badge.svg`。
 - 若新增或替换 CMS、部署平台、评论、统计或搜索服务，更新本文的架构、环境变量和迁移说明。
 
 ## 17. 待确认事项

@@ -110,6 +110,7 @@
     }]);
     return persist({ dataFiles: dataFiles, assets: [] }, {
       commitMessage: "Merge tag " + plan.source + " into " + plan.target,
+      useWorkflow: false,
     });
   }
 

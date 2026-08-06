@@ -1,4 +1,5 @@
 import "./reading-history";
+import "./article-image-zoom";
 
 const root = document.documentElement;
 const storedTheme = localStorage.getItem("theme");

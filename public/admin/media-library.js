@@ -2,6 +2,10 @@
   "use strict";
 
   var MEDIA_ROOT = "public/images/posts";
+  var UPLOADS_MEDIA_ROOT = "public/images/uploads";
+  var SERIES_MEDIA_ROOT = "public/images/series";
+  var PROJECTS_MEDIA_ROOT = "public/images/projects";
+  var ALL_MEDIA_ROOTS = [MEDIA_ROOT, UPLOADS_MEDIA_ROOT, SERIES_MEDIA_ROOT, PROJECTS_MEDIA_ROOT];
   var state = {
     files: [],
     articles: [],
@@ -16,6 +20,11 @@
     showOptions: {},
     uploadFile: null,
     uploadTitle: "",
+    collection: "posts",
+    view: "posts",
+    currentCover: null,
+    rootCache: Object.create(null),
+    articlesCache: false,
   };
   var overlay = null;
   var modalPanel = null;
@@ -32,10 +41,7 @@
   }
 
   function publicPath(file) {
-    var relative = String(file.path || "").replace(MEDIA_ROOT + "/", "");
-    var parts = relative.split("/");
-    var article = parts.shift() || "";
-    return "/images/posts/" + DecapMediaDomain.urlTitleSegment(article) + "/" + parts.join("/");
+    return "/" + String(file.path || "").replace(/^public\//, "").replace(/^\/+/, "");
   }
 
   function isStaticRaster(path) {
@@ -47,7 +53,12 @@
   }
 
   function articleFromPath(filePath) {
-    return String(filePath || "").replace(MEDIA_ROOT + "/", "").split("/")[0] || "未归类";
+    var path = String(filePath || "");
+    if (path.indexOf(UPLOADS_MEDIA_ROOT + "/") === 0) return "全局上传目录";
+    if (path.indexOf(SERIES_MEDIA_ROOT + "/") === 0 || path.indexOf(PROJECTS_MEDIA_ROOT + "/") === 0) {
+      return "当前封面";
+    }
+    return path.replace(MEDIA_ROOT + "/", "").split("/")[0] || "未归类";
   }
 
   function formatSize(size) {
@@ -70,17 +81,25 @@
   }
 
   function referenceSet() {
-    return new Set(state.references);
+    return new Set(state.references.map(function (reference) {
+      return DecapMediaDomain.normalizeMediaReference(reference);
+    }));
   }
 
   function normalizedFiles(files) {
     var references = referenceSet();
     return (files || [])
-      .filter(function (file) { return String(file.path || "").startsWith(MEDIA_ROOT + "/"); })
+      .filter(function (file) {
+        return ALL_MEDIA_ROOTS.some(function (root) {
+          return String(file.path || "").indexOf(root + "/") === 0;
+        });
+      })
       .map(function (file) {
         return Object.assign({}, file, {
           article: articleFromPath(file.path),
-          referenced: references.has(publicPath(file)),
+          referenced: references.has(
+            DecapMediaDomain.normalizeMediaReference(publicPath(file)),
+          ),
         });
       });
   }
@@ -95,36 +114,104 @@
       return {
         title: filePath ? filePath.split("/").pop().replace(/\.md$/, "") : "",
         raw: typeof entry.data === "string" ? entry.data : "",
+        cover: entry.data && typeof entry.data === "object" ? entry.data.cover : "",
       };
     }).filter(function (article) { return article.title; });
     state.articles = articles.sort(function (left, right) {
       return left.title.localeCompare(right.title, "zh-CN");
     });
-    state.references = Array.from(new Set(articles.flatMap(function (article) {
-      return DecapEditorialDomain.findMediaReferences(article.raw);
-    })));
+    var references = [];
+    articles.forEach(function (article) {
+      references.push.apply(references, DecapEditorialDomain.findMediaReferences(article.raw));
+      if (article.cover) references.push(article.cover);
+    });
+    var seriesEntries = [];
+    try {
+      seriesEntries = await loader("src/content/series", "json", 100);
+    } catch (_error) {}
+    (seriesEntries || []).forEach(function (entry) {
+      var image = entry.data && entry.data.image;
+      if (image) references.push(image);
+    });
+    var projectEntries = [];
+    try {
+      projectEntries = await loader("src/content/projects", "json", 100);
+    } catch (_error) {}
+    (projectEntries || []).forEach(function (entry) {
+      var image = entry.data && entry.data.image;
+      if (image) references.push(image);
+    });
+    state.references = Array.from(new Set(
+      references.map(DecapMediaDomain.normalizeMediaReference),
+    ));
   }
 
-  async function loadFiles(backend) {
+  async function listRoot(backend, root) {
     if (backend.api && typeof backend.api.listFiles === "function") {
-      return backend.api.listFiles(MEDIA_ROOT, { depth: 100 });
+      return backend.api.listFiles(root, { depth: 100 });
     }
+    if (typeof backend.getMedia === "function") {
+      var rootFiles = await backend.getMedia(root);
+      if (rootFiles && rootFiles.length) return rootFiles;
+    }
+    if (root === MEDIA_ROOT && typeof backend.getMedia === "function") {
+      var groups = await Promise.all(state.articles.map(function (article) {
+        return backend.getMedia(MEDIA_ROOT + "/" + article.title).catch(function () {
+          return [];
+        });
+      }));
+      return groups.flat();
+    }
+    return [];
+  }
 
-    var rootFiles = typeof backend.getMedia === "function"
-      ? await backend.getMedia(MEDIA_ROOT)
-      : [];
-    if (rootFiles && rootFiles.length) return rootFiles;
-
-    var groups = await Promise.all(state.articles.map(function (article) {
-      return backend.getMedia(MEDIA_ROOT + "/" + article.title).catch(function () {
-        return [];
-      });
-    }));
-    return groups.flat();
+  function requiredRoots() {
+    if (mode === "page") {
+      return [state.view === "posts" ? MEDIA_ROOT : UPLOADS_MEDIA_ROOT];
+    }
+    return state.collection === "posts"
+      ? [MEDIA_ROOT]
+      : [UPLOADS_MEDIA_ROOT];
   }
 
   function activePanel() {
     return mode === "page" ? standalonePanel : modalPanel;
+  }
+
+  function collectionFromRoute() {
+    var hash = String(window.location.hash || "");
+    if (/^#\/collections\/series(?:\/|\?|$)/.test(hash)) return "series";
+    if (/^#\/collections\/projects(?:\/|\?|$)/.test(hash)) return "projects";
+    return "posts";
+  }
+
+  function currentFieldName() {
+    var field = state.showOptions.field;
+    if (field && typeof field.get === "function") return String(field.get("name") || "");
+    return String(state.showOptions.id || "");
+  }
+
+  function isCoverField() {
+    var name = currentFieldName();
+    return name !== "body" && /(cover|image)/i.test(name);
+  }
+
+  function currentCoverFromEntry() {
+    var entry = state.showOptions.entry;
+    if (!entry || typeof entry.getIn !== "function") return null;
+    var image = entry.getIn(["data", "image"]);
+    if (!image) return null;
+    return {
+      path: "public/" + String(image).replace(/^\/+/, ""),
+      name: String(image).split("/").pop(),
+      size: 0,
+      current: true,
+    };
+  }
+
+  function isPostsUploadContext() {
+    if (state.collection !== "posts") return false;
+    return mode !== "page" || state.view === "posts";
   }
 
   function articleTitleExists(title) {
@@ -133,6 +220,7 @@
   }
 
   function uploadTitleError(title) {
+    if (!isPostsUploadContext()) return "";
     var normalized = String(title || "").trim();
     var error = titleError(normalized);
     if (error) return error;
@@ -160,14 +248,34 @@
     state.message = "";
     render();
     try {
-      await loadArticles(backend);
-      state.files = normalizedFiles(await loadFiles(backend));
+      if (!state.articlesCache) {
+        await loadArticles(backend);
+        state.articlesCache = true;
+      }
+      var roots = requiredRoots();
+      var files = [];
+      for (var index = 0; index < roots.length; index += 1) {
+        var root = roots[index];
+        if (!state.rootCache[root]) {
+          state.rootCache[root] = await listRoot(backend, root);
+        }
+        files = files.concat(state.rootCache[root]);
+      }
+      if (state.currentCover) files.push(state.currentCover);
+      state.files = normalizedFiles(files);
     } catch (error) {
       state.message = error.message || "媒体库加载失败。";
     } finally {
       state.loading = false;
       render();
     }
+  }
+
+  function refreshLibrary() {
+    state.rootCache = Object.create(null);
+    state.articlesCache = false;
+    state.message = "";
+    loadLibrary();
   }
 
   function currentTitle() {
@@ -184,10 +292,35 @@
     return errors[0] || "";
   }
 
+  function fileRoot(filePath) {
+    var path = String(filePath || "");
+    if (path.indexOf(MEDIA_ROOT + "/") === 0) return "posts";
+    if (path.indexOf(UPLOADS_MEDIA_ROOT + "/") === 0) return "uploads";
+    if (path.indexOf(SERIES_MEDIA_ROOT + "/") === 0) return "series";
+    if (path.indexOf(PROJECTS_MEDIA_ROOT + "/") === 0) return "projects";
+    return "";
+  }
+
+  function visibleFiles() {
+    if (mode === "page") {
+      return state.files.filter(function (file) {
+        var root = fileRoot(file.path);
+        return state.view === "posts" ? root === "posts" : root === "uploads";
+      });
+    }
+    if (state.collection === "posts") {
+      return state.files.filter(function (file) { return fileRoot(file.path) === "posts"; });
+    }
+    return state.files.filter(function (file) {
+      var root = fileRoot(file.path);
+      return file.current || root === "uploads" || root === "series" || root === "projects";
+    });
+  }
+
   function filteredFiles() {
     var term = state.query.trim().toLocaleLowerCase();
-    var coverControl = /cover/i.test(String(state.showOptions.id || ""));
-    return state.files.filter(function (file) {
+    var coverControl = isCoverField();
+    return visibleFiles().filter(function (file) {
       if (state.showOptions.imagesOnly && !isImage(file.path)) return false;
       if (coverControl && !isStaticRaster(file.path)) return false;
       if (state.article !== "all" && file.article !== state.article) return false;
@@ -260,8 +393,10 @@
 
   async function upload() {
     var backend = window.DecapArticleMediaBackend;
-    var title = state.uploadTitle.trim();
-    var error = uploadTitleError(title);
+    var uploadRoot = isPostsUploadContext()
+      ? MEDIA_ROOT + "/" + state.uploadTitle.trim()
+      : UPLOADS_MEDIA_ROOT;
+    var error = uploadTitleError(state.uploadTitle);
     if (error || !state.uploadFile) {
       state.message = error || "请选择文件。";
       render();
@@ -271,7 +406,7 @@
     state.message = "正在处理并上传...";
     render();
     try {
-      var cover = /cover/i.test(String(state.showOptions.id || ""));
+      var cover = isCoverField();
       var processed = await DecapMediaProcessor.processFile(state.uploadFile, cover);
       if (processed.size > 500 * 1024) {
         var accepted = window.confirm(
@@ -280,7 +415,9 @@
         if (!accepted) throw new Error("已取消上传。");
       }
       var existing = state.files
-        .filter(function (file) { return file.article === title; })
+        .filter(function (file) {
+          return String(file.path || "").indexOf(uploadRoot + "/") === 0;
+        })
         .map(function (file) { return file.name; });
       var extension = DecapMediaDomain.targetExtension(processed);
       var name = DecapMediaDomain.nextFileName(existing, cover, extension);
@@ -289,16 +426,21 @@
         lastModified: processed.lastModified || Date.now(),
       });
       var asset = {
-        path: MEDIA_ROOT + "/" + title + "/" + name,
+        path: uploadRoot + "/" + name,
         fileObj: finalFile,
         url: window.URL.createObjectURL(finalFile),
         toBase64: function () { return fileToBase64(finalFile); },
       };
       await backend.persistMedia(asset, {
-        commitMessage: "Upload article media " + asset.path,
+        commitMessage: "Upload media " + asset.path,
       });
       state.uploadFile = null;
       state.message = "上传完成。";
+      var cachedRoot = uploadRoot === UPLOADS_MEDIA_ROOT ||
+        uploadRoot.indexOf(UPLOADS_MEDIA_ROOT + "/") === 0
+        ? UPLOADS_MEDIA_ROOT
+        : MEDIA_ROOT;
+      delete state.rootCache[cachedRoot];
       await loadLibrary();
     } catch (uploadError) {
       state.loading = false;
@@ -322,6 +464,7 @@
         "Delete unused article media",
       );
       state.selectedForDeletion.clear();
+      state.rootCache = Object.create(null);
       await loadLibrary();
     } catch (error) {
       state.loading = false;
@@ -338,6 +481,19 @@
     button.disabled = state.selectedForDeletion.size === 0 || state.loading;
   }
 
+  function updateSelectAllControl(container) {
+    if (!container) return;
+    var selectAll = container.querySelector("[data-media-select-all]");
+    if (!selectAll) return;
+    var selection = DecapMediaDomain.deletionSelectionState(
+      filteredFiles(),
+      Array.from(state.selectedForDeletion),
+    );
+    selectAll.disabled = !state.unusedOnly || selection.paths.length === 0 || state.loading;
+    selectAll.checked = state.unusedOnly && selection.checked;
+    selectAll.indeterminate = state.unusedOnly && selection.indeterminate;
+  }
+
   function updateUploadButton(container) {
     if (!container) return;
     var button = container.querySelector(".cms-media__upload-button");
@@ -347,29 +503,57 @@
 
   function renderToolbar(container) {
     var toolbar = element("div", "cms-media__toolbar");
+    if (mode === "page") {
+      var postsView = element("button", "cms-media__view" + (state.view === "posts" ? " is-active" : ""), "文章媒体");
+      postsView.type = "button";
+      postsView.addEventListener("click", function () { setPageView("posts"); });
+      var uploadsView = element("button", "cms-media__view" + (state.view === "uploads" ? " is-active" : ""), "全局上传");
+      uploadsView.type = "button";
+      uploadsView.addEventListener("click", function () { setPageView("uploads"); });
+      toolbar.appendChild(postsView);
+      toolbar.appendChild(uploadsView);
+    }
+
     var search = element("input");
     search.type = "search";
-    search.placeholder = "搜索文章或文件";
+    search.placeholder = "搜索图片";
     search.value = state.query;
-    search.setAttribute("aria-label", "搜索文章或文件");
+    search.setAttribute("aria-label", "搜索图片");
     search.addEventListener("input", function () {
       state.query = search.value;
       renderMediaContent(activePanel());
+      updateSelectAllControl(activePanel());
     });
     toolbar.appendChild(search);
 
-    var article = element("select");
-    article.setAttribute("aria-label", "按文章筛选");
-    article.appendChild(new Option("全部文章", "all"));
-    Array.from(new Set(state.files.map(function (file) { return file.article; })))
-      .sort(function (left, right) { return left.localeCompare(right, "zh-CN"); })
-      .forEach(function (title) { article.appendChild(new Option(title, title)); });
-    article.value = state.article;
-    article.addEventListener("change", function () {
-      state.article = article.value;
-      renderMediaContent(activePanel());
-    });
-    toolbar.appendChild(article);
+    var refreshButton = element("button", "cms-media__refresh", "刷新");
+    refreshButton.type = "button";
+    refreshButton.addEventListener("click", refreshLibrary);
+    toolbar.appendChild(refreshButton);
+
+    if (isPostsUploadContext()) {
+      var articleOptions = [["all", "全部文章"]];
+      Array.from(new Set(
+        state.files
+          .filter(function (file) { return fileRoot(file.path) === "posts"; })
+          .map(function (file) { return file.article; }),
+      ))
+        .sort(function (left, right) { return left.localeCompare(right, "zh-CN"); })
+        .forEach(function (title) { articleOptions.push([title, title]); });
+      var article = window.DecapAdminControls.createSelect({
+        label: "按文章筛选",
+        options: articleOptions,
+        value: state.article,
+      });
+      article.classList.add("cms-media__article-filter");
+      article.value = state.article;
+      article.addEventListener("change", function () {
+        state.article = article.value;
+        renderMediaContent(activePanel());
+        updateSelectAllControl(activePanel());
+      });
+      toolbar.appendChild(article);
+    }
 
     var unusedLabel = element("label", "cms-media__check");
     var unused = element("input");
@@ -378,9 +562,27 @@
     unused.addEventListener("change", function () {
       state.unusedOnly = unused.checked;
       renderMediaContent(activePanel());
+      updateSelectAllControl(activePanel());
     });
     unusedLabel.append(unused, document.createTextNode("仅未使用"));
     toolbar.appendChild(unusedLabel);
+
+    var selectAllLabel = element("label", "cms-media__check cms-media__check--select-all");
+    var selectAll = element("input");
+    selectAll.type = "checkbox";
+    selectAll.setAttribute("data-media-select-all", "");
+    selectAll.addEventListener("change", function () {
+      state.selectedForDeletion = new Set(DecapMediaDomain.toggleDeletionSelection(
+        Array.from(state.selectedForDeletion),
+        filteredFiles(),
+        selectAll.checked,
+      ));
+      renderMediaContent(activePanel());
+      updateDeleteButton(activePanel());
+      updateSelectAllControl(activePanel());
+    });
+    selectAllLabel.append(selectAll, document.createTextNode("选择全部"));
+    toolbar.appendChild(selectAllLabel);
 
     var deleteButton = element(
       "button",
@@ -391,29 +593,36 @@
     deleteButton.addEventListener("click", deleteSelected);
     toolbar.appendChild(deleteButton);
     updateDeleteButton(toolbar);
+    updateSelectAllControl(toolbar);
     container.appendChild(toolbar);
   }
 
   function renderUpload(container) {
     var uploadArea = element("section", "cms-media__upload");
-    var title = element("input", "cms-media__article-title");
-    title.type = "text";
-    title.placeholder = "文章标题";
-    title.value = state.uploadTitle;
-    title.setAttribute("aria-label", "上传目标文章标题");
-    title.setAttribute("list", "cms-media-article-options");
-    title.addEventListener("input", function () {
-      state.uploadTitle = title.value;
-      updateUploadButton(uploadArea);
-    });
-    var datalist = element("datalist");
-    datalist.id = "cms-media-article-options";
-    state.articles.forEach(function (article) {
-      datalist.appendChild(new Option(article.title, article.title));
-    });
+    if (isPostsUploadContext()) {
+      var title = element("input", "cms-media__article-title");
+      title.type = "text";
+      title.placeholder = "文章标题";
+      title.value = state.uploadTitle;
+      title.setAttribute("aria-label", "上传目标文章标题");
+      title.setAttribute("list", "cms-media-article-options");
+      title.addEventListener("input", function () {
+        state.uploadTitle = title.value;
+        updateUploadButton(uploadArea);
+      });
+      var datalist = element("datalist");
+      datalist.id = "cms-media-article-options";
+      state.articles.forEach(function (article) {
+        datalist.appendChild(new Option(article.title, article.title));
+      });
+      uploadArea.appendChild(title);
+      uploadArea.appendChild(datalist);
+    } else {
+      uploadArea.appendChild(element("span", "cms-media__upload-target", "public/images/uploads/"));
+    }
     var file = element("input");
     file.type = "file";
-    file.accept = /cover/i.test(String(state.showOptions.id || ""))
+    file.accept = isCoverField()
       ? "image/jpeg,image/png,image/webp"
       : "image/jpeg,image/png,image/webp,image/gif,image/svg+xml,video/mp4";
     file.addEventListener("change", function () {
@@ -423,7 +632,8 @@
     var button = element("button", "cms-media__upload-button", "上传并压缩");
     button.type = "button";
     button.addEventListener("click", upload);
-    uploadArea.append(title, datalist, file, button);
+    uploadArea.appendChild(file);
+    uploadArea.appendChild(button);
     updateUploadButton(uploadArea);
     container.appendChild(uploadArea);
   }
@@ -469,7 +679,7 @@
     ));
 
     var actions = element("div", "cms-media__actions");
-    if (state.showOptions.id) {
+    if (mode !== "page" && (state.showOptions.id || state.showOptions.field)) {
       var select = element("button", "", "选择");
       select.type = "button";
       select.addEventListener("click", function () { insert(file); });
@@ -494,6 +704,7 @@
       if (checkbox.checked) state.selectedForDeletion.add(file.path);
       else state.selectedForDeletion.delete(file.path);
       updateDeleteButton(activePanel());
+      updateSelectAllControl(activePanel());
     });
     deletion.append(checkbox, document.createTextNode("删除"));
     actions.appendChild(deletion);
@@ -537,14 +748,41 @@
     container.appendChild(content);
   }
 
+  function setPageView(view) {
+    state.view = view;
+    state.article = "all";
+    state.uploadTitle = view === "uploads" ? "" : currentTitle();
+    render();
+    loadLibrary();
+  }
+
+  function mediaTitle() {
+    if (mode === "page") return state.view === "posts" ? "文章媒体库" : "全局上传媒体库";
+    if (state.collection === "series") return "专题媒体库";
+    if (state.collection === "projects") return "项目媒体库";
+    return "文章媒体库";
+  }
+
+  function mediaSubtitle() {
+    if (mode === "page") {
+      return state.view === "posts"
+        ? "按文章目录整理封面和正文图片"
+        : "专题和项目图片统一上传到全局 uploads 目录";
+    }
+    if (state.collection === "series" || state.collection === "projects") {
+      return "当前封面 + 全局上传目录";
+    }
+    return "按文章目录整理封面和正文图片";
+  }
+
   function render() {
     var panel = activePanel();
     if (!panel) return;
     panel.replaceChildren();
     var header = element("header", "cms-media__header");
     var heading = element("div", "cms-media__heading");
-    heading.appendChild(element("h2", "", "文章媒体库"));
-    heading.appendChild(element("p", "", "按文章目录整理封面和正文图片"));
+    heading.appendChild(element("h2", "", mediaTitle()));
+    heading.appendChild(element("p", "", mediaSubtitle()));
     header.appendChild(heading);
     if (mode !== "page") {
       var close = element("button", "cms-media__close", "x");
@@ -589,6 +827,9 @@
     mode = "modal";
     previousFocus = document.activeElement;
     state.showOptions = options || {};
+    state.collection = collectionFromRoute();
+    state.currentCover = state.collection === "posts" ? null : currentCoverFromEntry();
+    state.article = "all";
     state.uploadTitle = currentTitle() || state.uploadTitle;
     state.message = "";
     overlay.hidden = false;
@@ -617,6 +858,9 @@
     standalonePanel.classList.add("cms-media__panel", "cms-media__panel--page");
     mode = "page";
     state.showOptions = { standalone: true };
+    state.collection = "posts";
+    state.view = "posts";
+    state.currentCover = null;
     state.uploadTitle = state.uploadTitle || currentTitle();
     state.message = "";
     render();

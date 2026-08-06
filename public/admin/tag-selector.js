@@ -12,14 +12,34 @@ var TagSelector = createClass({
 
   componentDidMount: function () {
     this.isMountedForTags = true;
-    this.loadTagLibrary();
+    this.tagLibraryRetryTimer = null;
+    this.loadTagLibrary(true);
   },
 
   componentWillUnmount: function () {
     this.isMountedForTags = false;
+    if (this.tagLibraryRetryTimer !== null) {
+      window.clearTimeout(this.tagLibraryRetryTimer);
+      this.tagLibraryRetryTimer = null;
+    }
   },
 
-  loadTagLibrary: function () {
+  handleTagLibraryLoadFailure: function (allowAutomaticRetry) {
+    var self = this;
+    if (!this.isMountedForTags) return;
+
+    if (allowAutomaticRetry) {
+      this.tagLibraryRetryTimer = window.setTimeout(function () {
+        self.tagLibraryRetryTimer = null;
+        if (self.isMountedForTags) self.loadTagLibrary(false);
+      }, 0);
+      return;
+    }
+
+    this.setState({ loading: false, loadError: true });
+  },
+
+  loadTagLibrary: function (allowAutomaticRetry) {
     var self = this;
     var collection = this.props.field.get("collection");
     var searchFields = this.props.field.get("search_fields");
@@ -33,9 +53,7 @@ var TagSelector = createClass({
       .query(this.props.forID, collection, searchFields, "", file)
       .then(function (result) {
         if (result.payload && result.payload.error) {
-          if (self.isMountedForTags) {
-            self.setState({ loading: false, loadError: true });
-          }
+          self.handleTagLibraryLoadFailure(allowAutomaticRetry);
           return;
         }
 
@@ -60,9 +78,7 @@ var TagSelector = createClass({
         }
       })
       .catch(function () {
-        if (self.isMountedForTags) {
-          self.setState({ loading: false, loadError: true });
-        }
+        self.handleTagLibraryLoadFailure(allowAutomaticRetry);
       });
   },
 
@@ -189,7 +205,7 @@ var TagSelector = createClass({
       activeIndex: 0,
       isOpen: true,
     });
-    this.loadTagLibrary();
+    this.loadTagLibrary(false);
   },
 
   removeTag: function (tag) {

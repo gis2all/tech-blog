@@ -73,12 +73,50 @@
     return !/<script\b|on\w+\s*=|javascript:|<foreignObject\b/i.test(String(source || ""));
   }
 
+  function normalizeMediaReference(value) {
+    var path = String(value || "").split(/[?#]/, 1)[0];
+    try {
+      return decodeURIComponent(path);
+    } catch (_error) {
+      return path;
+    }
+  }
+
   function classifyMedia(files, references) {
-    var known = Array.isArray(references) ? references : [];
+    var known = new Set((Array.isArray(references) ? references : []).map(normalizeMediaReference));
     return (Array.isArray(files) ? files : []).map(function (file) {
       var publicPath = "/" + String(file.path || "").replace(/^public\//, "");
-      return { path: file.path, referenced: known.indexOf(publicPath) !== -1 };
+      return { path: file.path, referenced: known.has(normalizeMediaReference(publicPath)) };
     });
+  }
+
+  function deletionPaths(files) {
+    return (Array.isArray(files) ? files : [])
+      .filter(function (file) { return file && file.referenced === false; })
+      .map(function (file) { return String(file.path || ""); })
+      .filter(Boolean);
+  }
+
+  function deletionSelectionState(files, selectedPaths) {
+    var paths = deletionPaths(files);
+    var selected = new Set(Array.isArray(selectedPaths) ? selectedPaths : []);
+    var selectedCount = paths.reduce(function (count, path) {
+      return count + (selected.has(path) ? 1 : 0);
+    }, 0);
+    return {
+      paths: paths,
+      checked: paths.length > 0 && selectedCount === paths.length,
+      indeterminate: selectedCount > 0 && selectedCount < paths.length,
+    };
+  }
+
+  function toggleDeletionSelection(selectedPaths, files, checked) {
+    var selected = new Set(Array.isArray(selectedPaths) ? selectedPaths : []);
+    deletionPaths(files).forEach(function (path) {
+      if (checked) selected.add(path);
+      else selected.delete(path);
+    });
+    return Array.from(selected);
   }
 
   function urlTitleSegment(title) {
@@ -97,6 +135,9 @@
     fitDimensions: fitDimensions,
     isSafeSvg: isSafeSvg,
     classifyMedia: classifyMedia,
+    normalizeMediaReference: normalizeMediaReference,
+    deletionSelectionState: deletionSelectionState,
+    toggleDeletionSelection: toggleDeletionSelection,
     urlTitleSegment: urlTitleSegment,
     isRaster: function (file) { return RASTER.test(extension(file && file.name)); },
   };

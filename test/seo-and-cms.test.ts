@@ -73,6 +73,17 @@ describe("production metadata", () => {
     expect(layout).toContain('name="twitter:description"');
   });
 
+  test("restores the dark theme before the first stylesheet is loaded", async () => {
+    const layout = await readFile(`${root}src/layouts/BaseLayout.astro`, "utf8");
+    const themeRestore = layout.indexOf('localStorage.getItem("theme")');
+    const firstStylesheet = layout.indexOf('<link rel="stylesheet"');
+
+    expect(themeRestore).toBeGreaterThan(-1);
+    expect(firstStylesheet).toBeGreaterThan(-1);
+    expect(themeRestore).toBeLessThan(firstStylesheet);
+    expect(layout).toContain('document.documentElement.dataset.theme = "dark"');
+  });
+
   test("loads Umami Cloud only through the production environment setting", async () => {
     const [layout, environmentExample] = await Promise.all([
       readFile(`${root}src/layouts/BaseLayout.astro`, "utf8"),
@@ -204,7 +215,7 @@ describe("Decap CMS schema", () => {
       summary: "{{title}} · {{publishedAt}} · {{draft}}",
       sortable_fields: ["order", "publishedAt", "title"],
       view_filters: expect.arrayContaining([
-        expect.objectContaining({ field: "featured", pattern: true }),
+        expect.objectContaining({ field: "draft", pattern: true }),
       ]),
     });
     expect(getField(posts, "category")).toMatchObject({
@@ -220,7 +231,7 @@ describe("Decap CMS schema", () => {
     });
     expect(getField(posts, "body")).toMatchObject({
       widget: "markdown",
-      modes: ["raw"],
+      modes: ["raw", "rich_text"],
     });
     expect(getField(posts, "series")).toMatchObject({
       widget: "relation",
@@ -229,10 +240,10 @@ describe("Decap CMS schema", () => {
       search_fields: ["title", "slug"],
       display_fields: ["title", "slug"],
     });
-    expect(getFieldNames(posts)).toEqual([
+    const postFieldNames = getFieldNames(posts);
+    expect(postFieldNames).toEqual([
       "title",
       "description",
-      "body",
       "category",
       "tags",
       "series",
@@ -243,16 +254,18 @@ describe("Decap CMS schema", () => {
       "featured",
       "cover",
       "coverAlt",
-      "repoUrl",
-      "references",
       "changelog",
+      "body",
     ]);
+    expect(postFieldNames.indexOf("changelog")).toBeLessThan(
+      postFieldNames.indexOf("body"),
+    );
     expect(getField(posts, "seriesOrder")).toHaveProperty("hint");
     expect(getField(posts, "coverAlt")).toHaveProperty("hint");
     expect(adminIndex).toContain(
       'src="https://unpkg.com/decap-cms@3.15.1/dist/decap-cms.js"',
     );
-    expect(adminIndex).toContain('src="/admin/preview.js"');
+    expect(adminIndex).toContain('src="/admin/preview.js?v=3"');
     const previewRegistrations: {
       styles: string[];
       templates: Array<{ collection: string; template: unknown }>;
@@ -274,7 +287,7 @@ describe("Decap CMS schema", () => {
       h: () => null,
     });
 
-    expect(previewRegistrations.styles).toContain("/admin/preview.css");
+    expect(previewRegistrations.styles).toContain("/admin/preview.css?v=3");
     expect(previewRegistrations.templates.map((item) => item.collection)).toEqual([
       "posts",
       "series",
@@ -339,7 +352,7 @@ describe("Decap CMS schema", () => {
       search_fields: ["tags.*"],
       multiple: true,
     });
-    expect(adminIndex).toContain('src="/admin/tag-selector.js"');
+    expect(adminIndex).toContain('src="/admin/tag-selector.js?v=1"');
     expect(tagSelector).toContain('CMS.registerWidget("tag_selector"');
     expect(tagSelector).toContain("loadTagLibrary");
     expect(tagSelector).toContain("selectTag");
@@ -385,7 +398,7 @@ describe("Decap CMS schema", () => {
     runInNewContext(navigationSource, context);
 
     expect(postsCollections).toHaveLength(1);
-    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=16"');
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=27"');
     expect(
       (context.DecapAdminNavigation as { isDraftRoute: () => boolean })
         .isDraftRoute(),

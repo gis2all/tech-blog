@@ -76,7 +76,7 @@ body.cms-media-open {
   min-width: 180px;
 }
 
-.cms-media__toolbar select {
+.cms-media__toolbar .cms-media__article-filter {
   width: 120px;
   min-width: 0;
   flex: 0 0 120px;
@@ -88,7 +88,7 @@ body.cms-media-open {
 }
 
 .cms-media__toolbar input,
-.cms-media__toolbar select,
+.cms-media__toolbar .cms-select__trigger,
 .cms-media__upload input,
 .cms-media__toolbar button,
 .cms-media__upload button,
@@ -189,7 +189,7 @@ body.cms-media-open {
 }
 
 .cms-media__visual--image {
-  cursor: zoom-in;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='8' cy='8' r='5' fill='white' stroke='%230b7285' stroke-width='1.5'/%3E%3Cpath d='M12 12l6 6' stroke='%230b7285' stroke-width='2.25' stroke-linecap='round'/%3E%3Cpath d='M8 5.5v5M5.5 8h5' stroke='%230b7285' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 8 8, pointer;
 }
 
 .cms-media__visual--image:focus-visible,
@@ -254,7 +254,7 @@ body.cms-media-open {
   place-items: center;
   padding: 32px;
   background: rgb(16 42 67 / 72%);
-  cursor: zoom-out;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='8' cy='8' r='5' fill='white' stroke='%230b7285' stroke-width='1.5'/%3E%3Cpath d='M12 12l6 6' stroke='%230b7285' stroke-width='2.25' stroke-linecap='round'/%3E%3Cpath d='M5.5 8h5' stroke='%230b7285' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 8 8, pointer;
 }
 
 .cms-media__zoom img {
@@ -289,8 +289,39 @@ body.cms-media-open {
     width: auto;
   }
 
-  .cms-media__toolbar select {
+  .cms-media__toolbar .cms-media__article-filter {
     width: auto;
     flex-basis: auto;
   }
+}
+
+.cms-media__view {
+  padding: 6px 12px;
+  border: 1px solid #cfd7dd;
+  border-radius: 6px;
+  background: transparent;
+  color: #5d6670;
+}
+
+.cms-media__view.is-active {
+  border-color: #0969da;
+  background: rgba(9, 105, 218, 0.1);
+  color: #0969da;
+  font-weight: 600;
+}
+
+.cms-media__refresh {
+  padding: 6px 12px;
+  border: 1px solid #cfd7dd;
+  border-radius: 6px;
+  background: transparent;
+  color: #5d6670;
+}
+
+.cms-media__upload-target {
+  padding: 7px 10px;
+  border: 1px dashed #cfd7dd;
+  border-radius: 6px;
+  color: #5d6670;
+  font-size: 12px;
 }

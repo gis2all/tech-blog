@@ -39,6 +39,15 @@ const umamiWebsiteId = getUmamiWebsiteId(
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>
+      (() => {
+        try {
+          if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.dataset.theme = "dark";
+          }
+        } catch {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
@@ -46,6 +55,7 @@ const umamiWebsiteId = getUmamiWebsiteId(
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#18324a" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles/design-system.css?v=1" />
     {umamiWebsiteId && (
       <script
         is:inline

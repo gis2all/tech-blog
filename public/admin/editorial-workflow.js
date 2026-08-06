@@ -13,7 +13,6 @@
     var fields = [
       "title", "description", "body", "category", "publishedAt", "updatedAt",
       "draft", "featured", "cover", "coverAlt", "series", "seriesOrder",
-      "repoUrl", "references",
     ];
     return fields.reduce(function (result, field) {
       result[field] = entry && entry.getIn && entry.getIn(["data", field]);

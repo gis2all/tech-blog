@@ -2,11 +2,6 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
-const referenceSchema = z.object({
-  title: z.string(),
-  url: z.url()
-});
-
 const changelogSchema = z.object({
   date: z.coerce.date(),
   note: z.string()
@@ -27,8 +22,6 @@ const posts = defineCollection({
     featured: z.boolean().default(false),
     series: z.string().optional(),
     seriesOrder: z.number().int().positive().optional(),
-    repoUrl: z.url().optional(),
-    references: z.array(referenceSchema).default([]),
     changelog: z.array(changelogSchema).default([])
   })
 });

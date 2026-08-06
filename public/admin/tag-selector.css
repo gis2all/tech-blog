@@ -128,7 +128,7 @@
 }
 
 .cms-tag-manager__toolbar input,
-.cms-tag-manager__toolbar select,
+.cms-tag-manager__toolbar .cms-select__trigger,
 .cms-tag-manager__merge input {
   min-width: 0;
   min-height: 36px;

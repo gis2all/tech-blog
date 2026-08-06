@@ -6,6 +6,16 @@
   var observer = null;
   var syncScheduled = false;
   var headerPostSearch = "";
+  var tagMessageTimer = null;
+  var renderedRoute = "";
+  var pendingRoute = "";
+  var pendingList = null;
+  var pendingListSignature = "";
+  var routeSnapshot = null;
+  var routeSettleTimer = null;
+  var routeMutationVersion = 0;
+  var routeStartedAt = 0;
+  var MAX_ROUTE_SETTLE_MS = 600;
   var TAG_LIBRARY_PATH = "src/data/tag-library.json";
   var MEDIA_ROUTE = "#/collections/posts?view=media";
   var LEGACY_MEDIA_ROUTE = "#/media-library";
@@ -26,6 +36,8 @@
     mergeTarget: "",
     mergePlan: null,
     merging: false,
+    addingTag: false,
+    newTag: "",
   };
 
   if (!document || !domain) return;
@@ -42,12 +54,12 @@
 
   function entries() {
     var decorated = Array.from(
-      document.querySelectorAll('#nc-root main a[data-admin-entry-source]'),
+      document.querySelectorAll('#nc-root main:not([data-admin-route-snapshot-main]) a[data-admin-entry-source]'),
     );
     if (decorated.length) return decorated;
 
     return Array.from(
-      document.querySelectorAll('#nc-root main a[href*="/entries/"]'),
+      document.querySelectorAll('#nc-root main:not([data-admin-route-snapshot-main]) a[href*="/entries/"]'),
     ).filter(function (link) {
       return !link.hasAttribute("data-admin-entry-action");
     });
@@ -62,6 +74,206 @@
     return links.some(function (link) {
       return String(link.getAttribute("href") || "").includes(route);
     });
+  }
+
+  function adminMain() {
+    return document.querySelector("#nc-root main:not([data-admin-route-snapshot-main])");
+  }
+
+  function adminAside() {
+    var root = document.querySelector("#nc-root");
+    if (!root) return null;
+    return Array.from(root.querySelectorAll("aside")).find(function (aside) {
+      return !closest(aside, "[data-admin-route-snapshot]");
+    }) || null;
+  }
+
+  function entryListSignature(links) {
+    return links.map(function (link) {
+      return String(link.getAttribute("href") || "") + "|" +
+        String(link.textContent || "").trim();
+    }).join("\n");
+  }
+
+  function removeRouteSnapshot() {
+    if (routeSnapshot) routeSnapshot.remove();
+    routeSnapshot = null;
+  }
+
+  function createRouteSnapshot() {
+    if (routeSnapshot) return;
+    var root = document.querySelector("#nc-root");
+    var main = adminMain();
+    if (!root || !main) return;
+
+    var parent = main.parentElement;
+    var layout = main.closest ? main.closest("[class*=AppMainContainer]") : null;
+    var source = layout && layout.querySelector("aside")
+      ? layout
+      : parent && parent.querySelector(":scope > aside")
+        ? parent
+        : main;
+    var host = root;
+    var bounds = source.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+
+    var snapshot = source.cloneNode(true);
+    snapshot.setAttribute("data-admin-route-snapshot", "true");
+    snapshot.setAttribute("aria-hidden", "true");
+    snapshot.removeAttribute("id");
+    snapshot.style.setProperty("--admin-route-snapshot-top", bounds.top + "px");
+    snapshot.style.setProperty("--admin-route-snapshot-left", bounds.left + "px");
+    snapshot.style.setProperty("--admin-route-snapshot-width", bounds.width + "px");
+    snapshot.style.setProperty("--admin-route-snapshot-height", bounds.height + "px");
+    if ("inert" in snapshot) snapshot.inert = true;
+
+    var snapshotMain = snapshot.matches("main") ? snapshot : snapshot.querySelector("main");
+    if (snapshotMain) snapshotMain.setAttribute("data-admin-route-snapshot-main", "true");
+
+    var aside = source.querySelector("aside");
+    if (aside) {
+      var asideBounds = aside.getBoundingClientRect();
+      snapshot.style.setProperty("--admin-sidebar-snapshot-top", asideBounds.top + "px");
+      snapshot.style.setProperty("--admin-sidebar-snapshot-left", asideBounds.left + "px");
+    }
+
+    Array.from(snapshot.querySelectorAll("[id]")).forEach(function (element) {
+      element.removeAttribute("id");
+    });
+    Array.from(snapshot.querySelectorAll("input, button, select, textarea")).forEach(function (control) {
+      control.setAttribute("tabindex", "-1");
+    });
+    Array.from(snapshot.querySelectorAll("a[href]")).forEach(function (link) {
+      link.removeAttribute("href");
+      link.setAttribute("tabindex", "-1");
+    });
+
+    host.appendChild(snapshot);
+    routeSnapshot = snapshot;
+  }
+
+  function cancelRouteSettle() {
+    if (routeSettleTimer !== null) global.clearTimeout(routeSettleTimer);
+    routeSettleTimer = null;
+  }
+
+  function routeSettleDelay(route) {
+    if (route === MEDIA_ROUTE) return 60;
+    var page = domain.pageProfile(route);
+    if (!page) return 40;
+    if (page.collection === "posts") {
+      var draftRoute = /[?&]view=drafts(?:&|$)/;
+      return page.view === "drafts" || draftRoute.test(renderedRoute) ? 60 : 40;
+    }
+    return page.collection === "tags" ? 60 : 40;
+  }
+
+  function finishRouteTransition() {
+    cancelRouteSettle();
+    renderedRoute = global.location.hash;
+    pendingRoute = "";
+    pendingList = null;
+    pendingListSignature = "";
+    document.body.removeAttribute("data-admin-route-pending");
+    var main = adminMain();
+    if (main) main.removeAttribute("aria-busy");
+    removeRouteSnapshot();
+  }
+
+  function settleRouteTransition() {
+    if (!pendingRoute) {
+      finishRouteTransition();
+      return;
+    }
+
+    cancelRouteSettle();
+    var route = pendingRoute;
+    var mutationVersion = routeMutationVersion;
+    routeSettleTimer = global.setTimeout(function () {
+      routeSettleTimer = null;
+      if (pendingRoute !== route || global.location.hash !== route) return;
+      if (
+        routeMutationVersion !== mutationVersion &&
+        Date.now() - routeStartedAt < MAX_ROUTE_SETTLE_MS
+      ) {
+        return;
+      }
+      global.requestAnimationFrame(function () {
+        if (pendingRoute === route && global.location.hash === route) {
+          finishRouteTransition();
+        }
+      });
+    }, routeSettleDelay(route));
+  }
+
+  function beginRouteTransition(nextRoute) {
+    var route = String(nextRoute || global.location.hash);
+    var isCollectionRoute = Boolean(domain.pageProfile(route)) || route === MEDIA_ROUTE;
+    if (!isCollectionRoute) {
+      if (route === global.location.hash) {
+        finishRouteTransition();
+        scheduleSync();
+      }
+      return;
+    }
+    if (route !== renderedRoute && pendingRoute !== route) {
+      cancelRouteSettle();
+      createRouteSnapshot();
+      var links = entries();
+      var previousPage = domain.pageProfile(renderedRoute);
+      var nextPage = domain.pageProfile(route);
+      pendingRoute = route;
+      pendingList = listFromEntries(links);
+      pendingListSignature = previousPage && nextPage &&
+        previousPage.collection === nextPage.collection &&
+        previousPage.view !== nextPage.view
+        ? entryListSignature(links)
+        : "";
+      routeStartedAt = Date.now();
+      document.body.setAttribute("data-admin-route-pending", "true");
+      var main = adminMain();
+      if (main) main.setAttribute("aria-busy", "true");
+    }
+    if (route === global.location.hash) scheduleSync();
+  }
+
+  function bindRouteTransition() {
+    document.addEventListener("click", function (event) {
+      if (
+        (event.button !== undefined && event.button !== 0) ||
+        event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+      ) {
+        return;
+      }
+      var origin = event.target;
+      if (!origin || typeof origin.closest !== "function") return;
+      var link = origin.closest('#nc-root aside a[href*="#/collections/"]');
+      var headerLink = origin.closest('#nc-root > header nav a[href^="#"]');
+      var mediaButton = origin.closest("#nc-root aside [data-admin-media-shortcut] button");
+      var route = link
+        ? String(link.hash || "")
+        : headerLink
+          ? String(headerLink.hash || headerLink.getAttribute("href") || "")
+          : mediaButton
+            ? MEDIA_ROUTE
+            : "";
+      if (!route || route === global.location.hash) return;
+      beginRouteTransition(route);
+    }, true);
+  }
+
+  function routeEntriesReady(links, page) {
+    if (!links.length || !entriesMatchPage(links, page)) return false;
+    if (pendingRoute !== global.location.hash) return true;
+
+    var previousPage = domain.pageProfile(renderedRoute);
+    var sameCollectionViewChange = previousPage &&
+      previousPage.collection === page.collection &&
+      previousPage.view !== page.view;
+    if (!sameCollectionViewChange) return true;
+
+    return listFromEntries(links) !== pendingList ||
+      entryListSignature(links) !== pendingListSignature;
   }
 
   function summaryFor(link, page) {
@@ -160,7 +372,7 @@
 
   function ensureTableHead(list, page) {
     if (!list || !list.parentElement) return;
-    var existing = document.querySelector("[data-admin-entry-table-head]");
+    var existing = list.parentElement.querySelector("[data-admin-entry-table-head]");
     if (existing && existing.dataset.adminCollection !== page.collection) {
       existing.remove();
       existing = null;
@@ -179,15 +391,10 @@
   }
 
   function selectControl(label, options) {
-    var select = document.createElement("select");
-    select.setAttribute("aria-label", label);
-    options.forEach(function (item) {
-      var option = document.createElement("option");
-      option.value = item[0];
-      option.textContent = item[1];
-      select.appendChild(option);
+    return global.DecapAdminControls.createSelect({
+      label: label,
+      options: options,
     });
-    return select;
   }
 
   function element(tag, className, text) {
@@ -198,7 +405,8 @@
   }
 
   function tagPage() {
-    return document.querySelector("[data-admin-tag-page]");
+    var main = adminMain();
+    return main && main.querySelector("[data-admin-tag-page]");
   }
 
   function hideNativeTagPageChildren(main) {
@@ -213,7 +421,9 @@
   }
 
   function restoreNativeTagPageChildren() {
-    Array.from(document.querySelectorAll("[data-admin-tag-native-hidden]"))
+    var main = adminMain();
+    if (!main) return;
+    Array.from(main.querySelectorAll("[data-admin-tag-native-hidden]"))
       .forEach(function (child) {
         child.hidden = child.dataset.adminTagNativeWasHidden === "true";
         delete child.dataset.adminTagNativeHidden;
@@ -291,9 +501,24 @@
     return tagState.loading || tagState.saving || tagState.merging || tagState.loadError;
   }
 
-  function setTagMessage(message) {
-    tagState.message = message || "";
+  function setTagMessage(message, autoDismissMs) {
+    if (tagMessageTimer !== null) {
+      global.clearTimeout(tagMessageTimer);
+      tagMessageTimer = null;
+    }
+
+    var nextMessage = message || "";
+    tagState.message = nextMessage;
     updateTagPage();
+
+    if (nextMessage && autoDismissMs > 0) {
+      tagMessageTimer = global.setTimeout(function () {
+        tagMessageTimer = null;
+        if (tagState.message !== nextMessage) return;
+        tagState.message = "";
+        updateTagPage();
+      }, autoDismissMs);
+    }
   }
 
   async function loadTagData(successMessage) {
@@ -343,7 +568,7 @@
           raw: JSON.stringify({ tags: tags }, null, 2) + "\n",
         }],
         assets: [],
-      }, { commitMessage: commitMessage });
+      }, { commitMessage: commitMessage, useWorkflow: false });
       tagState.tags = tags;
       tagState.loaded = true;
       tagState.message = "标签库已保存。";
@@ -401,6 +626,8 @@
 
   function startTagMerge(tag) {
     if (tagActionDisabled()) return;
+    tagState.addingTag = false;
+    tagState.newTag = "";
     tagState.mergingSource = tag;
     tagState.mergeTarget = "";
     tagState.mergePlan = null;
@@ -465,6 +692,50 @@
     }
   }
 
+  function startTagAdd() {
+    if (tagActionDisabled() || tagState.addingTag) return;
+    tagState.mergingSource = null;
+    tagState.mergeTarget = "";
+    tagState.mergePlan = null;
+    tagState.addingTag = true;
+    tagState.newTag = "";
+    tagState.message = "";
+    updateTagPage();
+  }
+
+  function cancelTagAdd() {
+    if (tagState.saving) return;
+    tagState.addingTag = false;
+    tagState.newTag = "";
+    tagState.message = "";
+    updateTagPage();
+  }
+
+  async function persistNewTag() {
+    var tag = global.DecapTagDomain.normalizeTag(tagState.newTag);
+    if (!tag) {
+      setTagMessage("请输入标签名称。");
+      return;
+    }
+    if (!global.DecapTagDomain.missingTags([tag], tagState.tags).length) {
+      setTagMessage("标签“" + tag + "”已存在。");
+      return;
+    }
+
+    try {
+      await persistTags(
+        global.DecapTagDomain.mergeTags(tagState.tags, [tag]),
+        "Add tag " + tag,
+      );
+      tagState.addingTag = false;
+      tagState.newTag = "";
+      setTagMessage("标签“" + tag + "”已添加。", 5000);
+    } catch (error) {
+      tagState.message = error.message || "新增标签失败，未写入任何修改。";
+      updateTagPage();
+    }
+  }
+
   function renderTagToolbar(container) {
     var toolbar = element("div", "cms-tag-manager__toolbar");
     toolbar.setAttribute("data-admin-tag-toolbar", "");
@@ -502,7 +773,11 @@
     });
     toolbar.appendChild(sort);
 
-    toolbar.appendChild(element("span", "cms-tag-manager__summary"));
+    var add = element("button", "cms-tag-manager__add", "新增标签");
+    add.type = "button";
+    add.setAttribute("aria-expanded", "false");
+    add.addEventListener("click", startTagAdd);
+    toolbar.appendChild(add);
     container.appendChild(toolbar);
   }
 
@@ -511,13 +786,19 @@
     container.className = "cms-tag-manager";
     var heading = element("header", "cms-tag-manager__heading");
     heading.appendChild(element("h1", "", "标签"));
-    heading.appendChild(element("p", "", page.description));
+    var description = element("p", "", page.description + "。");
+    description.appendChild(element("span", "cms-tag-manager__summary"));
+    heading.appendChild(description);
     container.appendChild(heading);
     renderTagToolbar(container);
 
     var status = element("div", "cms-tag-manager__status-area");
     status.setAttribute("data-admin-tag-status", "");
     container.appendChild(status);
+
+    var add = element("div", "cms-tag-manager__add-area");
+    add.setAttribute("data-admin-tag-add", "");
+    container.appendChild(add);
 
     var merge = element("div", "cms-tag-manager__merge-area");
     merge.setAttribute("data-admin-tag-merge", "");
@@ -619,6 +900,48 @@
     merge.appendChild(section);
   }
 
+  function renderTagAdd(container) {
+    var area = container.querySelector("[data-admin-tag-add]");
+    if (!area) return;
+    area.replaceChildren();
+    if (!tagState.addingTag) return;
+
+    var section = element("section", "cms-tag-manager__merge cms-tag-manager__add-form");
+    section.setAttribute("aria-label", "新增标签");
+    section.appendChild(element("p", "", "新增标签"));
+    var input = element("input");
+    input.type = "text";
+    input.value = tagState.newTag;
+    input.placeholder = "标签名称";
+    input.setAttribute("aria-label", "标签名称");
+    input.disabled = tagState.saving;
+    input.addEventListener("input", function () {
+      tagState.newTag = input.value;
+    });
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        persistNewTag();
+      } else if (event.key === "Escape") {
+        cancelTagAdd();
+      }
+    });
+    section.appendChild(input);
+
+    var actions = element("div", "cms-tag-manager__merge-actions");
+    var primary = element("button", "", tagState.saving ? "正在添加..." : "添加");
+    primary.type = "button";
+    primary.disabled = tagState.saving;
+    primary.addEventListener("click", persistNewTag);
+    var cancel = element("button", "", "取消");
+    cancel.type = "button";
+    cancel.disabled = tagState.saving;
+    cancel.addEventListener("click", cancelTagAdd);
+    actions.append(primary, cancel);
+    section.appendChild(actions);
+    area.appendChild(section);
+  }
+
   function renderTagRows(container) {
     var list = container.querySelector("[data-admin-tag-list]");
     if (!list) return;
@@ -683,28 +1006,34 @@
   }
 
   function renderTagPageState(container) {
+    var summary = container.querySelector(".cms-tag-manager__summary");
     var toolbar = container.querySelector("[data-admin-tag-toolbar]");
     if (toolbar) {
       var tagSearch = toolbar.querySelector('input[type="search"]');
       var filter = toolbar.querySelector('[data-admin-tag-filter="filter"]');
       var sort = toolbar.querySelector('[data-admin-tag-filter="sort"]');
-      var summary = toolbar.querySelector(".cms-tag-manager__summary");
+      var add = toolbar.querySelector(".cms-tag-manager__add");
       if (tagSearch && document.activeElement !== tagSearch && tagSearch.value !== tagState.query) {
         tagSearch.value = tagState.query;
       }
       if (filter && filter.value !== tagState.filter) filter.value = tagState.filter;
       if (sort && sort.value !== tagState.sort) sort.value = tagState.sort;
-      if (summary) {
-        var unused = tagState.tags.filter(function (tag) {
-          return !tagState.usage || !tagState.usage[tag];
-        }).length;
-        summary.textContent = tagState.loaded
-          ? "共 " + tagState.tags.length + " 个标签" +
-            (!tagState.loadError ? "，未使用 " + unused + " 个" : "")
-          : "正在准备标签库";
+      if (add) {
+        add.disabled = tagActionDisabled();
+        add.setAttribute("aria-expanded", tagState.addingTag ? "true" : "false");
       }
     }
+    if (summary) {
+      var unused = tagState.tags.filter(function (tag) {
+        return !tagState.usage || !tagState.usage[tag];
+      }).length;
+      summary.textContent = tagState.loaded
+        ? "共 " + tagState.tags.length + " 个标签" +
+          (!tagState.loadError ? "，未使用 " + unused + " 个" : "")
+        : "正在准备标签库";
+    }
     renderTagStatus(container);
+    renderTagAdd(container);
     renderTagMerge(container);
     renderTagRows(container);
   }
@@ -716,7 +1045,8 @@
   }
 
   function mediaPage() {
-    return document.querySelector("[data-admin-media-page]");
+    var main = adminMain();
+    return main && main.querySelector("[data-admin-media-page]");
   }
 
   function redirectLegacyMediaRoute() {
@@ -743,7 +1073,9 @@
   }
 
   function restoreNativeMediaPageChildren() {
-    Array.from(document.querySelectorAll("[data-admin-media-native-hidden]"))
+    var main = adminMain();
+    if (!main) return;
+    Array.from(main.querySelectorAll("[data-admin-media-native-hidden]"))
       .forEach(function (child) {
         child.hidden = child.dataset.adminMediaNativeWasHidden === "true";
         delete child.dataset.adminMediaNativeHidden;
@@ -752,14 +1084,17 @@
   }
 
   function setMediaShortcutCurrent(isCurrent) {
-    var button = document.querySelector("[data-admin-media-shortcut] button");
+    var aside = adminAside();
+    var button = aside && aside.querySelector("[data-admin-media-shortcut] button");
     if (!button) return;
     if (isCurrent) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   }
 
   function clearNativeSidebarCurrent() {
-    Array.from(document.querySelectorAll('#nc-root aside a[href*="#/collections/"][aria-current="page"]'))
+    var aside = adminAside();
+    if (!aside) return;
+    Array.from(aside.querySelectorAll('a[href*="#/collections/"][aria-current="page"]'))
       .forEach(function (link) {
         link.removeAttribute("aria-current");
       });
@@ -781,7 +1116,7 @@
   }
 
   function ensureMediaPage() {
-    var main = document.querySelector("#nc-root main");
+    var main = adminMain();
     if (!main) return;
     main.dataset.adminCollection = "media";
     main.dataset.adminView = "all";
@@ -810,7 +1145,7 @@
   }
 
   function ensureTagPage(page) {
-    var main = document.querySelector("#nc-root main");
+    var main = adminMain();
     if (!main) return;
     main.dataset.adminCollection = "tags";
     main.dataset.adminView = "all";
@@ -822,9 +1157,9 @@
       container.setAttribute("data-admin-tag-page", "");
       main.appendChild(container);
       renderTagShell(container, page);
+      renderTagPageState(container);
     }
 
-    renderTagPageState(container);
     if (!tagState.loaded && !tagState.loading) loadTagData();
   }
 
@@ -873,7 +1208,8 @@
       item.card.hidden = false;
     });
 
-    var summary = document.querySelector("[data-admin-list-summary]");
+    var main = adminMain();
+    var summary = main && main.querySelector("[data-admin-list-summary]");
     if (!summary) return;
     var stateKey = [rows.length, page.collection, page.view].join(":");
     if (summary.dataset.adminListSummaryState === stateKey) return;
@@ -889,7 +1225,7 @@
 
   function ensureListSummary(list) {
     if (!list || !list.parentElement) return null;
-    var existing = document.querySelector("[data-admin-list-summary]");
+    var existing = list.parentElement.querySelector("[data-admin-list-summary]");
     if (existing) return existing;
     var summary = document.createElement("div");
     summary.setAttribute("data-admin-list-summary", "");
@@ -898,7 +1234,7 @@
   }
 
   function ensureMediaShortcut() {
-    var aside = document.querySelector("#nc-root aside");
+    var aside = adminAside();
     var list = aside && aside.querySelector("ul");
     if (!list || list.querySelector("[data-admin-media-shortcut]")) return;
 
@@ -921,7 +1257,7 @@
 
   function ensureToolbar(list, page) {
     if (!list || !list.parentElement) return;
-    var existing = document.querySelector("[data-admin-list-toolbar]");
+    var existing = list.parentElement.querySelector("[data-admin-list-toolbar]");
     if (existing && existing.dataset.adminCollection !== page.collection) {
       existing.remove();
       existing = null;
@@ -976,11 +1312,14 @@
       applyToolbar(toolbar, list, page);
     });
 
-    list.parentElement.insertBefore(toolbar, document.querySelector("[data-admin-entry-table-head]") || list);
+    list.parentElement.insertBefore(
+      toolbar,
+      list.parentElement.querySelector("[data-admin-entry-table-head]") || list,
+    );
   }
 
   function ensurePageHeading(page) {
-    var main = document.querySelector("#nc-root main");
+    var main = adminMain();
     if (!main) return;
     if (main.dataset.adminCollection !== page.collection) {
       main.dataset.adminCollection = page.collection;
@@ -999,14 +1338,40 @@
     }
   }
 
+  function editorControlPane(editor) {
+    if (!editor) return null;
+    var controls = Array.from(editor.querySelectorAll("[class*=ControlPaneContainer]"));
+    var control = controls.find(function (candidate) {
+      return Array.from(candidate.children).some(function (child) {
+        return String(child.className || "").includes("ControlContainer");
+      });
+    });
+    if (!control) return null;
+
+    editor.setAttribute("data-admin-editor-root", "true");
+    control.setAttribute("data-admin-editor-control-pane", "true");
+    var shell = control.parentElement;
+    if (shell && String(shell.className || "").includes("ControlPaneContainer")) {
+      shell.setAttribute("data-admin-editor-control-shell", "true");
+    }
+    return control;
+  }
+
   function ensureEditorHeading() {
     var page = domain.editorProfile(global.location.hash);
     var editor = document.querySelector("#nc-root [class*=EditorContainer]");
-    var control = document.querySelector("#nc-root .Pane1 [class*=ControlPaneContainer]");
     var existing = document.querySelector("[data-admin-editor-heading]");
-    if (!page || !editor || !control || control.querySelector(".cms-tag-manager")) {
+    if (!page || !editor) {
       if (existing) existing.remove();
       if (editor) delete editor.dataset.adminEditor;
+      return;
+    }
+
+    var control = editorControlPane(editor);
+    if (!control) return;
+    if (control.querySelector(".cms-tag-manager")) {
+      if (existing) existing.remove();
+      delete editor.dataset.adminEditor;
       return;
     }
 
@@ -1027,6 +1392,79 @@
     control.insertBefore(heading, control.firstChild);
   }
 
+  function ensureEditorToolbar() {
+    var page = domain.editorProfile(global.location.hash);
+    var back = document.querySelector("#nc-root [class*=ToolbarSectionBackLink]");
+    var collection = back && back.querySelector("[class*=BackCollection]");
+    if (!page || !back || !collection) return;
+
+    var labels = { posts: "文章", series: "专题", projects: "项目" };
+    var text = "正在编辑“" + labels[page.collection] + "”";
+    if (collection.textContent !== text) collection.textContent = text;
+    collection.setAttribute("data-admin-editor-back-label", page.collection);
+
+    var arrow = back.querySelector("[class*=BackArrow]");
+    if (arrow && !arrow.querySelector("[data-admin-editor-arrow]")) {
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("stroke-width", "2");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+      svg.setAttribute("aria-hidden", "true");
+      svg.setAttribute("data-admin-editor-arrow", "true");
+      var shaft = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      shaft.setAttribute("d", "M19 12H5");
+      var head = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      head.setAttribute("d", "m12 19-7-7 7-7");
+      svg.appendChild(shaft);
+      svg.appendChild(head);
+      arrow.replaceChildren(svg);
+    }
+  }
+
+  function ensureEditorFields() {
+    var editor = document.querySelector("#nc-root [class*=EditorContainer]");
+    var control = editorControlPane(editor);
+    if (!editor || !control) return;
+
+    var fieldNames = {
+      "标题": "title",
+      "摘要": "description",
+      "正文": "body",
+      "分类": "category",
+      "标签": "tags",
+      "专题": "series",
+      "专题顺序": "seriesOrder",
+      "发布日期": "publishedAt",
+      "更新日期": "updatedAt",
+      "草稿": "draft",
+      "精选": "featured",
+      "封面": "cover",
+      "封面替代文本": "coverAlt",
+      "更新记录": "changelog",
+    };
+
+    Array.from(control.querySelectorAll("[class*=ControlContainer]")).forEach(function (container) {
+      var label = container.querySelector("[class*=FieldLabel]");
+      if (!label) return;
+      var text = String(label.textContent || "").replace(/\s*\(.+?\)\s*$/, "").trim();
+      var name = fieldNames[text];
+      if (!name) return;
+      container.setAttribute("data-admin-editor-field", name);
+
+      if (name === "changelog") {
+        var itemLabel = "更新记录";
+        var empty = new RegExp("0\\s*" + itemLabel).test(
+          String(container.textContent || ""),
+        );
+        if (empty) container.setAttribute("data-admin-empty-list", "true");
+        else container.removeAttribute("data-admin-empty-list");
+      }
+    });
+  }
+
   function sync() {
     syncScheduled = false;
     if (redirectInitialAdminRoute()) return;
@@ -1035,6 +1473,7 @@
     if (global.location.hash === MEDIA_ROUTE) {
       removeTagPage();
       ensureMediaPage();
+      settleRouteTransition();
       return;
     }
 
@@ -1042,33 +1481,45 @@
     var page = profile();
     if (!page) {
       removeTagPage();
+      ensureEditorToolbar();
       ensureEditorHeading();
+      ensureEditorFields();
+      finishRouteTransition();
       return;
     }
 
     if (page.collection === "tags") {
       ensureTagPage(page);
+      settleRouteTransition();
       return;
     }
 
     removeTagPage();
 
     var links = entries();
-    if (!links.length || !entriesMatchPage(links, page)) return;
+    if (!routeEntriesReady(links, page)) return;
     ensurePageHeading(page);
     var list = listFromEntries(links);
     links.forEach(function (link) { decorateEntry(link, page); });
     ensureTableHead(list, page);
     ensureToolbar(list, page);
     ensureListSummary(list);
-    var toolbar = document.querySelector("[data-admin-list-toolbar]");
+    var activeMain = adminMain();
+    var toolbar = activeMain && activeMain.querySelector("[data-admin-list-toolbar]");
     applyToolbar(toolbar, list, page);
+    settleRouteTransition();
   }
 
   function scheduleSync() {
     if (syncScheduled) return;
     syncScheduled = true;
-    global.setTimeout(sync, 0);
+    var schedule = global.requestAnimationFrame || function (callback) {
+      global.setTimeout(callback, 0);
+    };
+    schedule(function () {
+      syncScheduled = false;
+      sync();
+    });
   }
 
   function searchPosts(query) {
@@ -1081,9 +1532,15 @@
 
   function start() {
     if (observer) return;
-    observer = new MutationObserver(scheduleSync);
+    observer = new MutationObserver(function () {
+      if (pendingRoute) routeMutationVersion += 1;
+      scheduleSync();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
-    global.addEventListener("hashchange", scheduleSync);
+    bindRouteTransition();
+    global.addEventListener("hashchange", function () {
+      beginRouteTransition(global.location.hash);
+    });
     scheduleSync();
   }
 

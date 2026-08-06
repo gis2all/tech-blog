@@ -93,6 +93,8 @@ async function createTagSelectorHarness(
         widgetDefinition = definition;
       },
     },
+    setTimeout,
+    clearTimeout,
   };
   context.window = context;
 
@@ -152,6 +154,7 @@ async function createTagSelectorHarness(
   });
   instance.state = instance.getInitialState();
   instance.componentDidMount();
+  await new Promise((resolve) => setTimeout(resolve, 0));
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   return { changes, instance, queryCalls, stateUpdates };
@@ -608,7 +611,9 @@ describe("Decap tag selector", () => {
     const syncIndex = scriptSources.findIndex((source) =>
       source.startsWith("/admin/tag-sync.js"),
     );
-    const selectorIndex = scriptSources.indexOf("/admin/tag-selector.js");
+    const selectorIndex = scriptSources.findIndex((source) =>
+      source.startsWith("/admin/tag-selector.js"),
+    );
 
     expect(domainIndex).toBeGreaterThan(0);
     expect(syncIndex).toBe(domainIndex + 1);
@@ -824,6 +829,22 @@ describe("Decap tag selector", () => {
     );
   });
 
+  test("automatically retries one transient tag-library query failure", async () => {
+    let attempt = 0;
+    const { instance, queryCalls } = await createTagSelectorHarness({
+      queryResult: () => {
+        attempt += 1;
+        if (attempt === 1) return { payload: { error: "Query failed" } };
+        return { payload: { hits: [{ data: { tags: ["Astro"] } }] } };
+      },
+    });
+
+    expect(queryCalls).toHaveLength(2);
+    expect(instance.state.loading).toBe(false);
+    expect(instance.state.loadError).toBe(false);
+    expect(instance.state.allTags).toEqual(["Astro"]);
+  });
+
   test("renders retryable load errors for resolved and rejected queries", async () => {
     const queryResults = [
       { payload: { error: "Query failed" } },
@@ -848,7 +869,7 @@ describe("Decap tag selector", () => {
       expect.soft(instance.state.loading).toBe(true);
       expect.soft(instance.state.loadError).toBe(false);
       expect.soft(instance.state.isOpen).toBe(true);
-      expect.soft(queryCalls).toHaveLength(2);
+      expect.soft(queryCalls).toHaveLength(3);
     }
   });
 

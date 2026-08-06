@@ -14,7 +14,7 @@ describe("Decap phase-two editorial UI", () => {
       readFile(root + "public/admin/admin-shell.css", "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=8"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=58"');
     expect(html).toContain('data-cms-theme-toggle');
     expect(html).toContain('data-cms-global-search');
     expect(html.indexOf("/admin/admin-shell.css")).toBeLessThan(
@@ -29,8 +29,8 @@ describe("Decap phase-two editorial UI", () => {
     expect(navigation).not.toContain("ensureGroup");
 
     for (const token of [
-      "--cms-brand: #0b7285",
-      "--cms-ink: #18324a",
+      "--cms-brand: var(--color-brand",
+      "--cms-ink: var(--color-brand-ink",
       "[data-theme=\"dark\"]",
       "@media (max-width: 900px)",
       "#nc-root > header",
@@ -145,7 +145,7 @@ describe("Decap phase-two editorial UI", () => {
     ]);
 
     expect(html).toContain('src="/admin/admin-shell-domain.js"');
-    expect(html).toContain('src="/admin/admin-shell.js?v=9"');
+    expect(html).toContain('src="/admin/admin-shell.js?v=37"');
     expect(html.indexOf("/admin/cms-init.js")).toBeLessThan(
       html.indexOf("/admin/admin-shell.js"),
     );
@@ -157,6 +157,34 @@ describe("Decap phase-two editorial UI", () => {
     expect(shellScript).not.toContain("pendingPostSearch");
     expect(shellScript).not.toContain("search.value =");
     expect(shellScript).not.toContain(".focus();");
+  });
+
+  test("hides stale collection content until the target admin route is ready", async () => {
+    const [shell, shellScript] = await Promise.all([
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.js", "utf8"),
+    ]);
+
+    expect(shellScript).toContain("function beginRouteTransition");
+    expect(shellScript).toContain("function bindRouteTransition");
+    expect(shellScript).toContain("function finishRouteTransition");
+    expect(shellScript).toContain("function createRouteSnapshot");
+    expect(shellScript).toContain("function routeSettleDelay");
+    expect(shellScript).toContain("function settleRouteTransition");
+    expect(shellScript).toContain("function routeEntriesReady");
+    expect(shellScript).toContain("pendingListSignature");
+    expect(shellScript).toContain('setAttribute("data-admin-route-pending", "true")');
+    expect(shellScript).toContain('setAttribute("aria-busy", "true")');
+    expect(shellScript).toContain('global.addEventListener("hashchange", function ()');
+    expect(shellScript).toContain("beginRouteTransition(global.location.hash);");
+    expect(shellScript).toContain('origin.closest(\'#nc-root aside a[href*="#/collections/"]\')');
+    expect(shellScript).toContain('document.addEventListener("click"');
+    expect(shellScript).toContain("}, true);");
+    expect(shell).toMatch(
+      /body\[data-admin-route-pending="true"\] #nc-root main:not\(\[data-admin-route-snapshot-main\]\) > \*\s*\{[^}]*visibility:\s*hidden\s*!important;[^}]*pointer-events:\s*none\s*!important;/s,
+    );
+    expect(shell).toContain("[data-admin-route-snapshot]");
+    expect(shellScript).toContain("function adminMain");
   });
 
   test("redirects the initial admin route to the posts collection after login", async () => {
@@ -180,6 +208,266 @@ describe("Decap phase-two editorial UI", () => {
     expect(shell).not.toContain("padding-top: 62px;");
     expect(shell).not.toContain("margin-top: -62px;");
     expect(shell).toContain("padding-top: 0 !important;");
+  });
+
+  test("keeps the article editor workspace aligned with the post editor prototype", async () => {
+    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+
+    expect(shell).toMatch(
+      /\[class\*=EditorContainer\]\s*\{[\s\S]*?display:\s*flex[\s\S]*?flex-direction:\s*column/s,
+    );
+    expect(shell).toMatch(
+      /\[class\*=EditorContainer\] > \[class\*=ToolbarContainer\][\s\S]*?flex:\s*0 0 var\(--cms-editor-toolbar-height\)/s,
+    );
+    expect(shell).toMatch(
+      /\[class\*=EditorContainer\] > \[class\*=Editor\][\s\S]*?display:\s*flex[\s\S]*?flex-direction:\s*column/s,
+    );
+    expect(shell).toContain(
+      '[class*=EditorContainer] > [class*=Editor] > div:has(> .SplitPane)',
+    );
+    expect(shell).toMatch(
+      /\[class\*=EditorContainer\] \.SplitPane[\s\S]*?flex:\s*1 1 auto[\s\S]*?min-height:\s*0/s,
+    );
+    expect(shell).toContain(".Pane1");
+    expect(shell).toContain(".Pane2");
+    expect(shell).toMatch(
+      /\.Pane1\s*\{[^}]*flex:\s*0 0 auto\s*!important;/s,
+    );
+    expect(shell).toContain("height: 100% !important;");
+    expect(shell).toContain("overflow-y: auto !important;");
+    expect(shell).toMatch(
+      /\[data-admin-editor-control-shell\][^{]*\{[^}]*overflow:\s*clip\s*!important;/s,
+    );
+    expect(shell).toContain(
+      "[data-admin-editor-control-shell] > [data-admin-editor-control-pane]",
+    );
+    expect(shell).toContain(".Pane2 [class*=PreviewPaneContainer]");
+    expect(shell).toContain(".Pane2 [class*=PreviewPaneFrame]");
+    expect(shell).not.toContain("#nc-root [class*=PreviewPaneContainer] {");
+    expect(shell).toContain("height: 100% !important;");
+    expect(shell).toMatch(
+      /\[data-admin-editor-control-shell\][^{]*\{[^}]*padding:\s*0\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-heading\][^{]*\{[^}]*margin:\s*0 0 16px;/s,
+    );
+    expect(shell).toContain("[data-admin-editor-field=\"category\"]");
+    expect(shell).toContain("[data-admin-editor-field=\"series\"]");
+    expect(shell).toContain("[data-admin-editor-field=\"draft\"]");
+    expect(shell).toContain("[data-admin-editor-field=\"featured\"]");
+    expect(shell).toContain(".cms-editor-visual");
+    expect(shell).toContain(".cms-editor-visual [class*=EditorControlBar] + *");
+    expect(shell).toContain("padding: 32px !important;");
+  });
+
+  test("keeps editor decoration and dark surfaces stable when preview is hidden", async () => {
+    const [shell, shellScript] = await Promise.all([
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.js", "utf8"),
+    ]);
+
+    expect(shellScript).toContain("function editorControlPane");
+    expect(shellScript).toContain('setAttribute("data-admin-editor-control-pane", "true")');
+    expect(shellScript).toContain('setAttribute("data-admin-editor-control-shell", "true")');
+    expect(shellScript).not.toContain(
+      'document.querySelector("#nc-root .Pane1 [class*=ControlPaneContainer]")',
+    );
+    expect(shell).toContain("[data-admin-editor-control-pane]");
+    expect(shell).toContain("[data-admin-editor-control-shell]");
+    expect(shell).not.toContain(
+      '.Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field=',
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-root\][^{]*\{[^}]*background:\s*var\(--cms-canvas\)\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-control-pane\][^{]*\{[^}]*width:\s*min\(960px, 100%\)[^}]*background:\s*var\(--cms-canvas\)\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[class\*=FieldLabel\]::after\s*\{[^}]*content:\s*none\s*!important;/s,
+    );
+  });
+
+  test("uses split editor surfaces and lets the article preview fill its pane", async () => {
+    const [shell, previewCss] = await Promise.all([
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(root + "public/admin/preview.css", "utf8"),
+    ]);
+
+    expect(shell).toMatch(
+      /\[data-admin-editor-control-shell\][^{]*\{[^}]*background:\s*var\(--cms-canvas\)\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\.Pane2 \[class\*=PreviewPaneFrame\][^{]*\{[^}]*padding:\s*0\s*!important;/s,
+    );
+    expect(previewCss).toMatch(
+      /\.cms-post-preview\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*min-height:\s*100vh;[^}]*margin:\s*0;/s,
+    );
+    expect(previewCss).toMatch(
+      /\.cms-entity-preview\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*min-height:\s*100vh;[^}]*margin:\s*0;[^}]*background:\s*#fff;/s,
+    );
+  });
+
+  test("keeps reference and changelog list items inside one complete frame", async () => {
+    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+
+    expect(shell).toMatch(
+      /\[class\*=SortableListItem\][^{]*\{[^}]*border:\s*1px solid var\(--cms-line\)\s*!important;[^}]*overflow:\s*hidden\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[class\*=StyledListItemTopBar\][^{]*\{[^}]*justify-content:\s*flex-start\s*!important;[^}]*border-bottom:\s*1px solid var\(--cms-line\)\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[class\*=StyledListItemTopBar\] > \[role="button"\][^{]*\{[^}]*margin-left:\s*auto\s*!important;/s,
+    );
+    expect(shell).toContain('[class*=StyledListItemTopBar] > button:last-child');
+    expect(shell).toContain("width: 30px !important;");
+    expect(shell).not.toContain('[class*=List] button');
+    expect(shell).toMatch(
+      /\[class\*=SortableListItem\] > div:last-child > div > \[class\*=ControlContainer\]:first-child[^{]*\{[^}]*margin-top:\s*0\s*!important;/s,
+    );
+  });
+
+  test("normalizes native single-line editor controls to the compact design system", async () => {
+    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+
+    expect(shell).toMatch(
+      /\[class\*=ControlContainer\] > input:not\(\[role="combobox"\]\)[^{]*\{[^}]*height:\s*42px\s*!important;[^}]*min-height:\s*42px\s*!important;[^}]*padding:\s*0 12px\s*!important;[^}]*border:\s*1px solid var\(--cms-line-strong\)\s*!important;/s,
+    );
+    expect(shell).toContain(
+      '[data-admin-editor-field="changelog"] [class*=SortableListItem] [class*=ControlContainer] > div:has(input[type="date"])',
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="changelog"\][^{]*input\[type="date"\][^{]*\{[^}]*height:\s*32px\s*!important;/s,
+    );
+  });
+
+  test("normalizes compound editor widgets to the compact design system", async () => {
+    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="title"\] \.cms-article-title > input[^{]*\{[^}]*height:\s*42px\s*!important;[^}]*padding:\s*0 12px\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\.cms-article-title__destinations[^{]*\{[^}]*border:\s*0\s*!important;[^}]*background:\s*transparent\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="description"\] > textarea[^{]*\{[^}]*height:\s*104px\s*!important;[^}]*max-height:\s*104px\s*!important;[^}]*padding:\s*10px 12px\s*!important;[^}]*border:\s*1px solid var\(--cms-line-strong\)\s*!important;/s,
+    );
+    expect(shell).toContain(
+      '[data-admin-editor-field="draft"] > div:has(> [role="switch"])',
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="featured"\] > div:has\(> \[role="switch"\]\)[^{]*\{[^}]*min-height:\s*42px\s*!important;[^}]*padding:\s*0 12px\s*!important;[^}]*border:\s*1px solid var\(--cms-line\)\s*!important;[^}]*background:\s*var\(--cms-panel\)\s*!important;/s,
+    );
+    expect(shell).toContain(
+      '[data-admin-editor-field="cover"] > div:has(button[class*="FileWidgetButton"])',
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="cover"\] > div:has\(button\[class\*="FileWidgetButton"\]\)[^{]*\{[^}]*min-height:\s*42px\s*!important;[^}]*border:\s*1px solid var\(--cms-line\)\s*!important;[^}]*background:\s*var\(--cms-panel\)\s*!important;/s,
+    );
+    expect(shell).toContain(
+      '[data-admin-editor-field="cover"] > div:has(button[class*="FileWidgetButton"]):has(img)',
+    );
+    expect(shell).toMatch(
+      /button\[class\*="FileWidgetButton"\][^{]*\{[^}]*height:\s*32px\s*!important;[^}]*border:\s*1px solid var\(--cms-line\)\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="body"\] \[class\*=EditorControlBar\][^{]*\{[^}]*height:\s*44px\s*!important;[^}]*min-height:\s*44px\s*!important;/s,
+    );
+    expect(shell).toContain("scrollbar-width: none !important;");
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="body"\] \[class\*=EditorControlBar\] button[^{]*\{[^}]*width:\s*30px\s*!important;[^}]*height:\s*30px\s*!important;[^}]*border:\s*0\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="body"\][^{]*\[class\*=EditorControlBar\] \+ \*[^{]*\{[^}]*min-height:\s*230px\s*!important;[^}]*border:\s*1px solid var\(--cms-line\)\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="body"\] \.cms-editor-raw \[class\*=EditorControlBar\][^{]*\{[^}]*position:\s*relative\s*!important;[^}]*margin:\s*0\s*!important;/s,
+    );
+  });
+
+  test("matches the prototype editor toolbar treatment", async () => {
+    const [shell, script] = await Promise.all([
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.js", "utf8"),
+    ]);
+
+    expect(shell).toContain("padding: 0 !important;");
+    expect(shell).toContain("flex: 0 0 216px !important;");
+    expect(shell).toContain("width: 216px !important;");
+    expect(shell).toContain("[class*=BackArrow]");
+    expect(shell).toContain("[class*=BackStatus]");
+    expect(shell).toContain("height: 34px !important;");
+    expect(shell).toContain("gap: 10px !important;");
+    expect(shell).toContain("--cms-editor-toolbar-height: 62px;");
+    expect(shell).toContain("padding: 0 0 0 20px !important;");
+    expect(script).toContain("function ensureEditorToolbar");
+    expect(script).toContain("正在编辑“");
+    expect(script).toContain('data-admin-editor-arrow');
+    expect(script).toContain("ensureEditorToolbar();");
+  });
+
+  test("keeps article editor controls compact and refreshes the inline preview", async () => {
+    const [html, navigation, shell, shellScript] = await Promise.all([
+      readFile(root + "public/admin/index.html", "utf8"),
+      readFile(root + "public/admin/admin-navigation.js", "utf8"),
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.js", "utf8"),
+    ]);
+
+    expect(html).toContain('href="/admin/admin-shell.css?v=58"');
+    expect(html).toContain('src="/admin/admin-navigation.js?v=27"');
+    expect(navigation).toContain("function bindEditorPreviewRefresh");
+    expect(navigation).toContain("function ensureEditorRefreshButton");
+    expect(navigation).toContain("data-admin-preview-toggle");
+    expect(navigation).toContain('preview.setAttribute("aria-pressed",');
+    expect(navigation).toContain('previewVisible ? "隐藏预览" : "显示预览"');
+    expect(navigation).toContain(
+      'origin.closest("#nc-root [class*=EditorContainer] [data-admin-refresh-preview]")',
+    );
+    expect(navigation).toContain('label.textContent = "刷新"');
+    expect(navigation).toContain('replaceWithLucideIcon(refresh, "refresh-cw")');
+    expect(navigation).toContain("function decorateEditorPublishMenu");
+    expect(navigation).toContain('replaceWithLucideIcon(icon, iconName)');
+    expect(shell).toContain('[data-admin-editor-field="category"]');
+    expect(shell).toContain(':has(> [class*="-singleValue"])');
+    expect(shell).toMatch(
+      /\[role=listbox\] \[role=option\],[^{]*\{[^}]*display:\s*flex\s*!important;[^}]*align-items:\s*center\s*!important;/s,
+    );
+    expect(shell).toContain(".cms-tag-selector__selected");
+    expect(shell).toContain(
+      '#nc-root [class*=EditorContainer] .cms-tag-selector__suggestion[role="option"]',
+    );
+    expect(shell).toContain(
+      '#nc-root [class*=EditorContainer] .cms-tag-selector__suggestions[role="listbox"]',
+    );
+    expect(shell).toContain("overflow: visible !important;");
+    expect(shell).toContain("[data-admin-preview-toggle]");
+    expect(shell).toMatch(
+      /\[data-admin-preview-toggle\]\[aria-pressed="true"\][^{]*\{[^}]*background:\s*var\(--cms-brand-soft\)\s*!important;/s,
+    );
+    expect(shell).toContain('button[title="同步滚动"]');
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="publishedAt"\],[\s\S]*?\[data-admin-editor-field="updatedAt"\][\s\S]*?display:\s*inline-block;[\s\S]*?width:\s*calc\(50% - 8px\);/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-editor-field="publishedAt"\][^{]*\{[^}]*margin-right:\s*16px;/s,
+    );
+    expect(shell).toContain('> div[id^="changelog-field-"]');
+    expect(shell).toContain('[data-admin-empty-list="true"]');
+    expect(shellScript).toContain('new RegExp("0\\\\s*" + itemLabel)');
+    expect(shell).toContain("height: 42px !important;");
+    expect(shell).toContain("min-width: 70px !important;");
+    expect(shell).toContain('[data-admin-refresh-preview] svg');
+    expect(shell).toContain("color: inherit !important;");
+    expect(shell).toContain(
+      '#nc-root [class*=EditorContainer] [data-admin-publish-menu] > ul',
+    );
+    expect(shell).toContain(
+      '#nc-root [class*=EditorContainer] [data-admin-publish-item]',
+    );
+    expect(shell).not.toContain("right: 310px;");
   });
 
   test("aligns the CMS navigation shell with the website header", async () => {
@@ -217,6 +505,65 @@ describe("Decap phase-two editorial UI", () => {
     }
   });
 
+  test("shares website control tokens and replaces admin-owned native selects", async () => {
+    const [baseLayout, html, globalCss, shell, shellScript, mediaScript] = await Promise.all([
+      readFile(root + "src/layouts/BaseLayout.astro", "utf8"),
+      readFile(root + "public/admin/index.html", "utf8"),
+      readFile(root + "src/styles/global.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.js", "utf8"),
+      readFile(root + "public/admin/media-library.js", "utf8"),
+    ]);
+
+    expect(baseLayout).toContain('href="/styles/design-system.css?v=1"');
+    expect(html).toContain('href="/styles/design-system.css?v=1"');
+    expect(html).toContain('src="/admin/admin-controls-domain.js?v=1"');
+    expect(html).toContain('src="/admin/admin-controls.js?v=1"');
+    expect(html.indexOf("/admin/admin-controls.js")).toBeLessThan(
+      html.indexOf("/admin/admin-shell.js"),
+    );
+    expect(globalCss).toContain("--bg: var(--surface-canvas");
+    expect(shell).toContain("--cms-control-height: var(--control-height");
+    expect(shell).toContain(".cms-select__listbox");
+    expect(shell).toContain('[role="menuitem"]');
+    expect(shellScript).toContain("DecapAdminControls.createSelect");
+    expect(shellScript).not.toContain('document.createElement("select")');
+    expect(mediaScript).toContain("DecapAdminControls.createSelect");
+    expect(mediaScript).not.toContain('element("select")');
+  });
+
+  test("keeps search fields visually quiet while typing", async () => {
+    const [globalCss, shell] = await Promise.all([
+      readFile(root + "src/styles/global.css", "utf8"),
+      readFile(root + "public/admin/admin-shell.css", "utf8"),
+    ]);
+
+    expect(globalCss).not.toMatch(/\.nav-search:focus-within\s*\{/);
+    expect(shell).toMatch(
+      /\.cms-global-search:focus\s*\{[^}]*border-color:\s*var\(--cms-line\);[^}]*box-shadow:\s*none;/s,
+    );
+    expect(shell).toMatch(
+      /\[data-admin-list-toolbar\]\s*>\s*input\[type="search"\]:focus\s*\{[^}]*box-shadow:\s*none\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\.cms-tag-manager__toolbar input\[type="search"\]:focus[^}]*\{[^}]*box-shadow:\s*none\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\.cms-media__toolbar input\[type="search"\]:focus\s*\{[^}]*box-shadow:\s*none\s*!important;/s,
+    );
+  });
+
+  test("keeps the quick-new trigger fixed while showing a compact menu", async () => {
+    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+
+    expect(shell).toMatch(
+      /#nc-root > header \[role=menu\]\s*\{[^}]*position:\s*absolute\s*!important;[^}]*right:\s*0\s*!important;[^}]*width:\s*140px\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /#nc-root > header \[role=menu\] > ul\s*\{[^}]*width:\s*100%\s*!important;[^}]*min-width:\s*100%\s*!important;[^}]*max-width:\s*100%\s*!important;/s,
+    );
+  });
+
   test("keeps the sidebar typography close to the website list rhythm", async () => {
     const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
 
@@ -235,15 +582,67 @@ describe("Decap phase-two editorial UI", () => {
     expect(shellScript).toContain("function ensureTagPage");
     expect(shellScript).toContain("data-admin-tag-page");
     expect(shellScript).toContain("function persistTags");
+    expect(shellScript).toContain(
+      "{ commitMessage: commitMessage, useWorkflow: false }",
+    );
     expect(shellScript).toContain("DecapTagOperations.merge");
+    expect(shellScript).toContain("function startTagAdd");
+    expect(shellScript).toContain("function persistNewTag");
+    expect(shellScript).toContain(
+      'setTagMessage("标签“" + tag + "”已添加。", 5000)',
+    );
+    expect(shellScript).toContain('"cms-tag-manager__add", "新增标签"');
+    expect(shellScript).not.toContain('prepend(add, "plus")');
+    expect(shellScript).not.toContain(
+      'toolbar.appendChild(element("span", "cms-tag-manager__summary"))',
+    );
+    expect(shellScript).toContain(
+      'description.appendChild(element("span", "cms-tag-manager__summary"))',
+    );
+    expect(shellScript).toContain('element("p", "", page.description + "。")');
+    expect(shellScript).toContain("DecapTagDomain.missingTags([tag], tagState.tags)");
     expect(shellScript).toContain("function hideNativeTagPageChildren");
     expect(shellScript).not.toContain("main.replaceChildren");
+    const ensureTagPage = shellScript.slice(
+      shellScript.indexOf("function ensureTagPage"),
+      shellScript.indexOf("function numericDetail"),
+    );
+    expect(ensureTagPage).toMatch(
+      /if \(!container\) \{[\s\S]*?renderTagShell\(container, page\);[\s\S]*?renderTagPageState\(container\);[\s\S]*?\}/s,
+    );
+    expect(ensureTagPage).not.toMatch(
+      /\}\s*renderTagPageState\(container\);\s*if \(!tagState\.loaded/,
+    );
     expect(shell).toContain("[data-admin-tag-page]");
     expect(shell).toContain("[data-admin-tag-native-hidden]");
+    expect(shell).toContain(".cms-tag-manager__add");
+    expect(shell).toContain(".cms-tag-manager__add-form");
+    expect(shell).toMatch(
+      /\.cms-tag-manager__add\s*\{[^}]*background:\s*var\(--cms-panel\)\s*!important;[^}]*color:\s*var\(--cms-text\)\s*!important;[^}]*font-weight:\s*400;/s,
+    );
+    expect(shell).not.toContain(".cms-tag-manager__add:hover");
+    expect(shell).toMatch(
+      /\.cms-tag-manager__toolbar\s*\{[^}]*grid-template-columns:\s*minmax\(220px, 1fr\) auto auto auto;/s,
+    );
+    expect(shell).toMatch(
+      /\.cms-tag-manager__heading \.cms-tag-manager__summary\s*\{[^}]*margin-left:\s*0;/s,
+    );
+    expect(shell).toMatch(
+      /\.cms-tag-manager__merge input\s*\{[^}]*height:\s*var\(--cms-control-height\);[^}]*padding:\s*0 11px;[^}]*border:\s*1px solid var\(--cms-line\)\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\.cms-tag-manager__merge input:focus\s*\{[^}]*border-color:\s*var\(--cms-line\)\s*!important;[^}]*box-shadow:\s*none\s*!important;/s,
+    );
+    expect(shell).toMatch(
+      /\.cms-tag-manager__rename\s*\{[^}]*border:\s*0\s*!important;[^}]*background:\s*transparent\s*!important;[^}]*font-size:\s*12px;[^}]*font-weight:\s*700;/s,
+    );
     expect(shell).toContain("[data-admin-tag-page] .cms-tag-manager__heading h1::after");
     expect(tagManager).toContain("cms-tag-manager__heading");
     expect(navigation).not.toContain('window.location.hash = TAG_LIBRARY_ROUTE');
     expect(navigation).toContain('window.location.hash = "#/collections/tags"');
+    expect(
+      await readFile(root + "public/admin/index.html", "utf8"),
+    ).toContain('src="/admin/tag-operations.js?v=2"');
   });
 
   test("configures exact title identities and the custom title control", async () => {
@@ -268,7 +667,7 @@ describe("Decap phase-two editorial UI", () => {
     expect(title).toMatchObject({ widget: "article_title" });
   });
 
-  test("previews complete article metadata and storage destinations", async () => {
+  test("previews article metadata without editor-only storage destinations", async () => {
     const [preview, previewCss] = await Promise.all([
       readFile(root + "public/admin/preview.js", "utf8"),
       readFile(root + "public/admin/preview.css", "utf8"),
@@ -278,9 +677,6 @@ describe("Decap phase-two editorial UI", () => {
       "tags",
       "series",
       "updatedAt",
-      "references",
-      "publicArticlePath",
-      "mediaFolder",
       "SeriesPreview",
       "ProjectPreview",
     ]) {
@@ -289,6 +685,10 @@ describe("Decap phase-two editorial UI", () => {
     expect(preview.indexOf("cms-post-preview__meta")).toBeLessThan(
       preview.indexOf("cms-post-preview__cover"),
     );
+    expect(preview).not.toContain("cms-post-preview__destinations");
+    expect(preview).not.toContain("publicArticlePath");
+    expect(preview).not.toContain("mediaFolder");
+    expect(previewCss).not.toContain("cms-post-preview__destinations");
     expect(previewCss).toContain("max-height: 260px");
   });
 
