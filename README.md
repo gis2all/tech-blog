@@ -19,7 +19,7 @@
 - 使用浏览器本地存储在首页和正文侧栏展示最近阅读，不保存到服务端
 - 生成 RSS、站点地图、canonical URL 和静态 404 页面
 - 支持浅色/深色主题、桌面端和移动端布局
-- 通过 Vitest 和 Playwright 验证内容规则与关键交互
+- 通过 Vitest、Playwright、Axe 与 Lighthouse 验证内容规则、关键交互、可访问性和性能预算，Biome 与 tsc 门禁代码风格和后台脚本类型
 - 由 Netlify 构建并发布静态站点
 
 ## 技术栈
@@ -35,6 +35,8 @@
 | Netlify | 生产构建和静态托管 |
 | Vitest | 内容规则和组件约定测试 |
 | Playwright | 关键页面与交互回归测试 |
+| Axe / Lighthouse | 可访问性门禁与性能预算 |
+| Biome / tsc | 代码风格检查和后台脚本类型检查 |
 
 ## 环境要求
 
@@ -190,7 +192,7 @@ npm run build
 
 ## Decap CMS
 
-- 线上从 `/admin/` 登录，Decap CMS 通过 GitHub OAuth 直接提交 `main`，随后由 Netlify 构建发布。
+- 线上从 `/admin/` 登录，Decap CMS 通过 GitHub OAuth 将内容直接提交 `main`，Netlify 自动构建发布（simple 发布模式，无 PR 审核环节）。
 - 本地调试同时运行 `npm run dev -- --host 127.0.0.1 --port 4321` 和 `npm run cms:local`；后台保存只写入当前工作树，不会提交 GitHub。
 - 文章标题决定文件名、公开地址和媒体目录：文章保存在 `src/content/posts/<标题>.md`，图片保存在 `public/images/posts/<标题>/`。已发布文章标题锁定，草稿改名会一并更新引用和媒体目录。
 - 后台保留 Decap 的认证、内容和编辑器内核，并通过与网站一致的自定义管理界面提供文章预览、保存校验、未保存离开提醒、嵌入式标签管理和文章媒体库。
@@ -215,7 +217,7 @@ publish directory: dist
 Node.js: 22
 ```
 
-`npm run build` 先生成 Astro 静态页面，随后 npm 自动执行 `postbuild` 创建 Pagefind 索引，最终由 Netlify 发布整个 `dist/` 目录。
+`npm run build` 先生成 Astro 静态页面，随后 npm 自动执行 `postbuild` 生成封面缩略图并创建 Pagefind 索引，最终由 Netlify 发布整个 `dist/` 目录。
 
 在 Netlify 的生产环境变量中设置 `PUBLIC_UMAMI_WEBSITE_ID` 即可启用访问统计。未设置时不会加载 Umami 脚本，也不会影响构建。
 
@@ -223,21 +225,27 @@ Node.js: 22
 
 ```text
 npm run check
+npm run check:admin
+npm run lint
 npm run test
 npm run test:coverage
 npm run test:e2e
 npm run build
+npm run perf
 ```
 
 | 命令 | 用途 |
 | --- | --- |
 | `npm run check` | 检查 Astro 和 TypeScript |
+| `npm run check:admin` | 用 `tsc --checkJs` 检查后台脚本类型 |
+| `npm run lint` | Biome 代码风格与静态检查 |
 | `npm run test` | 运行 Vitest 测试 |
-| `npm run test:coverage` | 运行 Vitest 覆盖率门禁：语句、函数和行不低于 85%，分支不低于 80% |
-| `npm run test:e2e` | 运行 Playwright 浏览器测试 |
+| `npm run test:coverage` | 覆盖率门禁：全局 75/65/80/75，`src/lib` 85/80/85/85，后台脚本 70/60/75/70 |
+| `npm run test:e2e` | 运行 Playwright 浏览器测试（前台 43 项 + 后台 UI 16 项，含 Axe 可访问性门禁） |
 | `npm run build` | 验证生产构建并生成 Pagefind 索引 |
+| `npm run perf` | 对生产预览运行 Lighthouse 性能预算 |
 
-GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Astro/TypeScript 检查、Vitest、覆盖率、Playwright Chromium 和生产构建。`main` 验证通过后，工作流会将真实覆盖率徽章和 HTML 报告发布到 GitHub Pages；博客站点仍由 Netlify 发布。
+GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Astro/TypeScript 检查、后台类型检查、Biome、Vitest、覆盖率、Playwright Chromium（含 Axe）、生产构建和 Lighthouse 性能预算。`main` 验证通过后，工作流会将真实覆盖率徽章和 HTML 报告发布到 GitHub Pages；博客站点仍由 Netlify 发布。
 
 ## 许可证
 
@@ -253,6 +261,8 @@ GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Ast
 - 不公开 `draft: true` 的文章
 - 评论依赖 GitHub Discussions 和 Giscus App，不在项目中保存评论数据
 - `docs/` 用于本地规划和交接，不进入 GitHub 仓库
+- 生产内容发布直接提交 `main` 触发 Netlify 构建（simple 发布模式，无 PR 审核环节）；本地后台仍只写工作树
+- 改动后先跑 `npm run lint` 和 `npm run check:admin`，再按风险运行测试、构建和浏览器验证
 - 修改页面和交互后，按风险运行检查、测试、构建和浏览器验证
 
 更完整的项目上下文、架构决策和接管信息见 [`CLAUDE.md`](./CLAUDE.md)。
