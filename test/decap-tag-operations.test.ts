@@ -11,7 +11,7 @@ const post = (path: string, tags: string[]) => ({
     "---",
     "title: Example",
     "tags:",
-    ...tags.map((tag) => "  - " + tag),
+    ...tags.map((tag) => `  - ${tag}`),
     "---",
     "",
     "Body",
@@ -20,8 +20,8 @@ const post = (path: string, tags: string[]) => ({
 
 async function createHarness(options: { failEntries?: boolean } = {}) {
   const [domain, operations] = await Promise.all([
-    readFile(root + "public/admin/tag-domain.js", "utf8"),
-    readFile(root + "public/admin/tag-operations.js", "utf8"),
+    readFile(`${root}public/admin/tag-domain.js`, "utf8"),
+    readFile(`${root}public/admin/tag-operations.js`, "utf8"),
   ]);
   const persistCalls: unknown[] = [];
   const backend = {
@@ -30,6 +30,7 @@ async function createHarness(options: { failEntries?: boolean } = {}) {
       return [
         post("src/content/posts/one.md", ["Old", "Target"]),
         post("src/content/posts/two.md", ["Old"]),
+        post("src/content/posts/three.md", ["Other"]),
       ];
     },
     async getEntry() {
@@ -41,11 +42,18 @@ async function createHarness(options: { failEntries?: boolean } = {}) {
   };
   const window: Record<string, unknown> = { DecapArticleMediaBackend: backend };
   window.window = window;
-  runInNewContext(domain, window);
-  runInNewContext(operations, window);
+  runInNewContext(domain, window, {
+    filename: `${root}public/admin/tag-domain.js`,
+  });
+  runInNewContext(operations, window, {
+    filename: `${root}public/admin/tag-operations.js`,
+  });
   return {
     operations: window.DecapTagOperations as {
-      plan(source: string, target: string): Promise<{
+      plan(
+        source: string,
+        target: string,
+      ): Promise<{
         source: string;
         target: string;
         affectedCount: number;
@@ -91,9 +99,18 @@ describe("Decap atomic tag operations", () => {
   test("does not persist when the preflight read fails", async () => {
     const harness = await createHarness({ failEntries: true });
 
-    await expect(harness.operations.plan("Old", "Target")).rejects.toThrow(
-      "Read failed",
-    );
+    await expect(harness.operations.plan("Old", "Target")).rejects.toThrow("Read failed");
     expect(harness.persistCalls).toEqual([]);
+  });
+
+  test("keeps articles without the source tag out of the merge plan", async () => {
+    const harness = await createHarness();
+    const plan = await harness.operations.plan("Old", "Target");
+
+    expect(plan.entries).toHaveLength(2);
+    expect(plan.entries.map((entry) => entry.path)).toEqual([
+      "src/content/posts/one.md",
+      "src/content/posts/two.md",
+    ]);
   });
 });

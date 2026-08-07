@@ -46,14 +46,14 @@
 
     return (
       !usage ||
-      !Object.prototype.hasOwnProperty.call(usage, normalizedTag) ||
+      !Object.hasOwn(usage, normalizedTag) ||
       usage[normalizedTag] === 0
     );
   }
 
   function tagStats(tags, usage) {
     return uniqueTags(tags).map(function (tag) {
-      var count = usage && Object.prototype.hasOwnProperty.call(usage, tag)
+      var count = usage && Object.hasOwn(usage, tag)
         ? usage[tag]
         : 0;
       return { name: tag, count: count, used: count > 0 };

@@ -163,7 +163,7 @@ var TagLibraryManager = createClass({
   },
 
   getUsageCount: function (tag) {
-    return Object.prototype.hasOwnProperty.call(this.state.usage, tag)
+    return Object.hasOwn(this.state.usage, tag)
       ? this.state.usage[tag]
       : 0;
   },
