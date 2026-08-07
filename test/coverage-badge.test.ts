@@ -13,9 +13,7 @@ describe("coverage badge", () => {
     });
 
     expect(percentage).toBe(99.47);
-    expect(buildCoverageBadge(percentage)).toContain(
-      'aria-label="coverage: 99.47%"',
-    );
+    expect(buildCoverageBadge(percentage)).toContain('aria-label="coverage: 99.47%"');
   });
 
   test("rejects a summary without a valid line percentage", () => {

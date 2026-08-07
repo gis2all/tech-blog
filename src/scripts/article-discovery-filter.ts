@@ -19,7 +19,9 @@ function setupArticleDiscoveryFilter() {
   const articleView = document.querySelector<HTMLElement>("[data-article-view]");
   const filterView = document.querySelector<HTMLElement>("[data-article-filter-view]");
   const tocView = document.querySelector<HTMLElement>("[data-article-toc-view]");
-  const discoveryView = document.querySelector<HTMLElement>("[data-article-discovery-view]");
+  const discoveryView = document.querySelector<HTMLElement>(
+    "[data-article-discovery-view]",
+  );
   const title = document.querySelector<HTMLElement>("[data-article-filter-title]");
   const count = document.querySelector<HTMLElement>("[data-article-filter-count]");
   const list = document.querySelector<HTMLElement>("[data-article-filter-list]");
@@ -89,13 +91,16 @@ function setupArticleDiscoveryFilter() {
     const params = new URL(window.location.href).searchParams;
     const category = params.get("category");
     const series = params.get("series");
-    const link = params.get("view") === "all"
-      ? clearLink
-      : category
-      ? categoryLinks.find((candidate) => candidate.dataset.filterCategory === category)
-      : series
-        ? seriesLinks.find((candidate) => candidate.dataset.filterSeries === series)
-        : undefined;
+    const link =
+      params.get("view") === "all"
+        ? clearLink
+        : category
+          ? categoryLinks.find(
+              (candidate) => candidate.dataset.filterCategory === category,
+            )
+          : series
+            ? seriesLinks.find((candidate) => candidate.dataset.filterSeries === series)
+            : undefined;
     return link ? selectionForLink(link) : null;
   }
 
@@ -109,18 +114,20 @@ function setupArticleDiscoveryFilter() {
     else clearLink.removeAttribute("aria-current");
 
     categoryLinks.forEach((link) => {
-      const active = selection?.kind === "category"
-        ? link.dataset.filterCategory === selection.value
-        : link.dataset.filterCategory === baseCategory;
+      const active =
+        selection?.kind === "category"
+          ? link.dataset.filterCategory === selection.value
+          : link.dataset.filterCategory === baseCategory;
       link.classList.toggle("active", active);
       if (active) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     });
 
     seriesLinks.forEach((link) => {
-      const active = selection?.kind === "series"
-        ? link.dataset.filterSeries === selection.value
-        : link.dataset.filterSeries === baseSeries;
+      const active =
+        selection?.kind === "series"
+          ? link.dataset.filterSeries === selection.value
+          : link.dataset.filterSeries === baseSeries;
       link.classList.toggle("active", active);
       if (active) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
@@ -180,12 +187,18 @@ function setupArticleDiscoveryFilter() {
       });
       if (!response.ok) throw new Error(`Unable to load ${selection.href}`);
 
-      const documentFragment = new DOMParser().parseFromString(await response.text(), "text/html");
-      const source = selection.kind === "all"
-        ? documentFragment.querySelector<HTMLElement>(".home-feed .article-list")
-        : selection.kind === "category"
-          ? documentFragment.querySelector<HTMLElement>(".category-articles .article-list")
-          : documentFragment.querySelector<HTMLElement>(".article-list");
+      const documentFragment = new DOMParser().parseFromString(
+        await response.text(),
+        "text/html",
+      );
+      const source =
+        selection.kind === "all"
+          ? documentFragment.querySelector<HTMLElement>(".home-feed .article-list")
+          : selection.kind === "category"
+            ? documentFragment.querySelector<HTMLElement>(
+                ".category-articles .article-list",
+              )
+            : documentFragment.querySelector<HTMLElement>(".article-list");
       if (!source) throw new Error(`Article list missing from ${selection.href}`);
 
       const cachedList = {
@@ -201,7 +214,13 @@ function setupArticleDiscoveryFilter() {
 
   [clearLink, ...links].forEach((link) => {
     link.addEventListener("click", (event) => {
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      if (
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
         return;
       }
 

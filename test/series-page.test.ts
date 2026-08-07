@@ -1,7 +1,7 @@
 import { access, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { parse } from "yaml";
 import { describe, expect, test } from "vitest";
+import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -107,9 +107,7 @@ describe("series page", () => {
         title: data.title,
         order: data.order,
       })),
-    ).toEqual(
-      expectedSeries.map(({ id, title, order }) => ({ slug: id, title, order })),
-    );
+    ).toEqual(expectedSeries.map(({ id, title, order }) => ({ slug: id, title, order })));
 
     await expect(
       access(`${root}src/content/series/ai-agent-engineering.json`),
@@ -146,15 +144,13 @@ describe("series page", () => {
     expect(page).toContain('class="series-card-media"');
     expect(page).toContain('class="series-card-title"');
     expect(page).toContain('class="series-card-action"');
-    expect(page).toContain("`${count} 篇文章`");
+    expect(page).toContain(`\`\${count} 篇文章\``);
     expect(page).toContain("查看专题");
     expect(page).toContain("<ArrowRight");
     expect(css).toMatch(
       /\.series-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/s,
     );
-    expect(css).toMatch(
-      /\.series-card-media\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*9/s,
-    );
+    expect(css).toMatch(/\.series-card-media\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*9/s);
     expect(css).toMatch(
       /\.series-card-media img\s*\{[^}]*object-fit:\s*cover[^}]*object-position:\s*top center/s,
     );

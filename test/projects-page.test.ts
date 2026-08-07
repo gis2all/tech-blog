@@ -66,9 +66,7 @@ describe("projects page", () => {
     expect(css).toMatch(
       /\.project-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/s,
     );
-    expect(css).toMatch(
-      /\.project-card-media\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*9/s,
-    );
+    expect(css).toMatch(/\.project-card-media\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*9/s);
     expect(css).toMatch(
       /\.project-card-media img\s*\{[^}]*object-fit:\s*cover[^}]*object-position:\s*top center/s,
     );

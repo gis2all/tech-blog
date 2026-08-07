@@ -28,17 +28,13 @@ describe("desktop side rail layout", () => {
   test("keeps long article text inside the content column", async () => {
     const css = await readFile(`${root}src/styles/global.css`, "utf8");
 
-    expect(css).toMatch(
-      /\.prose\s*\{[^}]*overflow-wrap:\s*anywhere/s,
-    );
+    expect(css).toMatch(/\.prose\s*\{[^}]*overflow-wrap:\s*anywhere/s);
   });
 
   test("spaces the discovery profile and vertically centers rail counts", async () => {
     const css = await readFile(`${root}src/styles/global.css`, "utf8");
 
-    expect(css).toMatch(
-      /\.discovery-profile\s*\{[^}]*padding:\s*38px 16px 17px/s,
-    );
+    expect(css).toMatch(/\.discovery-profile\s*\{[^}]*padding:\s*38px 16px 17px/s);
     expect(css).toMatch(
       /\.discovery-profile \.author-avatar-frame\.author-avatar-profile\s*\{[^}]*margin-bottom:\s*10px/s,
     );

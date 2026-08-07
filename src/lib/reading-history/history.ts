@@ -20,8 +20,7 @@ function normalizeEntry(value: unknown): ReadingHistoryEntry | undefined {
   const slug = typeof value.slug === "string" ? value.slug.trim() : "";
   const url = typeof value.url === "string" ? value.url.trim() : "";
   const title = typeof value.title === "string" ? value.title.trim() : "";
-  const category =
-    typeof value.category === "string" ? value.category.trim() : "";
+  const category = typeof value.category === "string" ? value.category.trim() : "";
   const visitedAt = value.visitedAt;
   const progress = value.progress;
 
@@ -45,7 +44,7 @@ function normalizeEntry(value: unknown): ReadingHistoryEntry | undefined {
     title,
     category,
     visitedAt,
-    progress: Math.round(Math.min(100, Math.max(0, progress)))
+    progress: Math.round(Math.min(100, Math.max(0, progress))),
   };
 }
 
@@ -77,7 +76,7 @@ export function parseReadingHistory(raw: string | null): ReadingHistoryEntry[] {
 
 export function upsertReadingHistory(
   entries: ReadingHistoryEntry[],
-  next: ReadingHistoryEntry
+  next: ReadingHistoryEntry,
 ): ReadingHistoryEntry[] {
   return normalizeHistory([next, ...entries]);
 }

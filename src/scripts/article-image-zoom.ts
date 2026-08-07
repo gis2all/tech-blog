@@ -39,7 +39,8 @@ function openImageLightbox(image: HTMLImageElement) {
   closeButton.className = "article-image-lightbox__close";
   closeButton.setAttribute("aria-label", "关闭图片预览");
   closeButton.title = "关闭图片预览";
-  closeButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>';
+  closeButton.innerHTML =
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>';
   closeButton.addEventListener("click", () => closeImageLightbox());
 
   overlay.append(expandedImage, closeButton);
@@ -60,7 +61,10 @@ articleImages.forEach((image) => {
   image.classList.add("article-zoomable-image");
   image.tabIndex = 0;
   image.setAttribute("role", "button");
-  image.setAttribute("aria-label", image.alt.trim() ? `放大图片：${image.alt.trim()}` : "放大图片");
+  image.setAttribute(
+    "aria-label",
+    image.alt.trim() ? `放大图片：${image.alt.trim()}` : "放大图片",
+  );
   image.addEventListener("click", () => openImageLightbox(image));
   image.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {

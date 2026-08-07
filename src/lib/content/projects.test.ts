@@ -22,4 +22,12 @@ describe("project helpers", () => {
       "first",
     ]);
   });
+
+  test("getPublicProjects treats missing and zero order consistently", () => {
+    const unordered = [
+      { id: "a", data: {} },
+      { id: "b", data: { order: 0 } },
+    ];
+    expect(getPublicProjects(unordered).map((project) => project.id)).toEqual(["b", "a"]);
+  });
 });

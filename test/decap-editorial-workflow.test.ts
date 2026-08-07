@@ -10,10 +10,13 @@ type PersistEntry = {
   assets: Array<{ path: string }>;
 };
 
-function cmsEntry(data: Record<string, unknown>, options: {
-  path?: string;
-  newRecord?: boolean;
-} = {}) {
+function cmsEntry(
+  data: Record<string, unknown>,
+  options: {
+    path?: string;
+    newRecord?: boolean;
+  } = {},
+) {
   return {
     get(key: string) {
       if (key === "collection") return "posts";
@@ -29,9 +32,9 @@ function cmsEntry(data: Record<string, unknown>, options: {
 
 async function createHarness(existingPaths: string[] = []) {
   const [domainSource, mediaDomainSource, workflowSource] = await Promise.all([
-    readFile(root + "public/admin/editorial-domain.js", "utf8"),
-    readFile(root + "public/admin/media-domain.js", "utf8"),
-    readFile(root + "public/admin/editorial-workflow.js", "utf8"),
+    readFile(`${root}public/admin/editorial-domain.js`, "utf8"),
+    readFile(`${root}public/admin/media-domain.js`, "utf8"),
+    readFile(`${root}public/admin/editorial-workflow.js`, "utf8"),
   ]);
   const listeners = new Map<string, (payload: unknown) => unknown>();
   const persistCalls: PersistEntry[] = [];
@@ -64,7 +67,13 @@ async function createHarness(existingPaths: string[] = []) {
   const context: Record<string, unknown> = {
     CMS: {
       getBackend: (name: string) => registrations.get(name),
-      registerEventListener: ({ name, handler }: { name: string; handler: (payload: unknown) => unknown }) => {
+      registerEventListener: ({
+        name,
+        handler,
+      }: {
+        name: string;
+        handler: (payload: unknown) => unknown;
+      }) => {
         listeners.set(name, handler);
       },
     },
@@ -79,15 +88,27 @@ async function createHarness(existingPaths: string[] = []) {
     location,
   };
   context.window = context;
-  runInNewContext(domainSource, context);
-  runInNewContext(mediaDomainSource, context);
-  runInNewContext(workflowSource, context);
+  runInNewContext(domainSource, context, {
+    filename: `${root}public/admin/editorial-domain.js`,
+  });
+  runInNewContext(mediaDomainSource, context, {
+    filename: `${root}public/admin/media-domain.js`,
+  });
+  runInNewContext(workflowSource, context, {
+    filename: `${root}public/admin/editorial-workflow.js`,
+  });
+
+  function requireListener(name: string) {
+    const listener = listeners.get(name);
+    if (!listener) throw new Error(`Missing workflow listener: ${name}`);
+    return listener;
+  }
 
   return {
     confirmations,
     persistCalls,
-    preSave: listeners.get("preSave")!,
-    postSave: listeners.get("postSave")!,
+    preSave: requireListener("preSave"),
+    postSave: requireListener("postSave"),
     location,
     initialize: (name = "github") => registrations.get(name)!.init(),
   };
@@ -146,7 +167,14 @@ describe("Decap title-driven editorial workflow", () => {
     expect(() =>
       harness.preSave({
         entry: cmsEntry(
-          { title: "新标题", draft: false, description: "摘要", body: "正文", category: "DevOps", publishedAt: "2026-08-03" },
+          {
+            title: "新标题",
+            draft: false,
+            description: "摘要",
+            body: "正文",
+            category: "DevOps",
+            publishedAt: "2026-08-03",
+          },
           { path: "src/content/posts/旧标题.md" },
         ),
       }),
@@ -162,9 +190,9 @@ describe("Decap title-driven editorial workflow", () => {
       ),
     });
 
-    await harness.initialize("proxy").persistEntry(
-      articlePersistEntry("src/content/posts/旧标题.md"),
-    );
+    await harness
+      .initialize("proxy")
+      .persistEntry(articlePersistEntry("src/content/posts/旧标题.md"));
 
     expect(harness.confirmations[0]).toContain("旧链接");
     expect(harness.persistCalls[0].dataFiles[0]).toMatchObject({

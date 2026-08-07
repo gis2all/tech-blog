@@ -51,9 +51,7 @@ describe("about page", () => {
   test("uses compact section spacing for the short About page content", async () => {
     const css = await readFile(`${root}src/styles/global.css`, "utf8");
 
-    expect(css).toMatch(
-      /\.about-page \.prose h2\s*\{[^}]*margin:\s*24px 0 8px/s,
-    );
+    expect(css).toMatch(/\.about-page \.prose h2\s*\{[^}]*margin:\s*24px 0 8px/s);
     expect(css).toMatch(
       /\.about-page \.prose > h2:first-child\s*\{[^}]*margin-top:\s*0/s,
     );

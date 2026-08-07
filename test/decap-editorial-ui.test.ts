@@ -1,22 +1,22 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
-import { parse } from "yaml";
 import { describe, expect, test } from "vitest";
+import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 describe("Decap phase-two editorial UI", () => {
   test("loads a site-aligned CMS shell around Decap without mutating Decap-managed layout nodes", async () => {
     const [html, navigation, shell] = await Promise.all([
-      readFile(root + "public/admin/index.html", "utf8"),
-      readFile(root + "public/admin/admin-navigation.js", "utf8"),
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(`${root}public/admin/index.html`, "utf8"),
+      readFile(`${root}public/admin/admin-navigation.js`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
     expect(html).toContain('href="/admin/admin-shell.css?v=58"');
-    expect(html).toContain('data-cms-theme-toggle');
-    expect(html).toContain('data-cms-global-search');
+    expect(html).toContain("data-cms-theme-toggle");
+    expect(html).toContain("data-cms-global-search");
     expect(html.indexOf("/admin/admin-shell.css")).toBeLessThan(
       html.indexOf("decap-cms@3.15.1"),
     );
@@ -31,7 +31,7 @@ describe("Decap phase-two editorial UI", () => {
     for (const token of [
       "--cms-brand: var(--color-brand",
       "--cms-ink: var(--color-brand-ink",
-      "[data-theme=\"dark\"]",
+      '[data-theme="dark"]',
       "@media (max-width: 900px)",
       "#nc-root > header",
       "#nc-root > header > div::after",
@@ -55,12 +55,14 @@ describe("Decap phase-two editorial UI", () => {
 
   test("keeps the login page as a centered standalone screen without the admin top bar", async () => {
     const [shell, navigation] = await Promise.all([
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
-      readFile(root + "public/admin/admin-navigation.js", "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
+      readFile(`${root}public/admin/admin-navigation.js`, "utf8"),
     ]);
 
     expect(shell).toContain("body:has(#nc-root [class*=LoginButton]) #nc-root > header");
-    expect(shell).toContain("body:has(#nc-root [class*=LoginButton]) > .cms-theme-toggle");
+    expect(shell).toContain(
+      "body:has(#nc-root [class*=LoginButton]) > .cms-theme-toggle",
+    );
     expect(shell).toContain("top: 239px");
     expect(shell).toContain("width: 46px");
     expect(shell).toContain("font-size: 24px");
@@ -74,25 +76,31 @@ describe("Decap phase-two editorial UI", () => {
     expect(shell).toContain("visibility: hidden !important");
     expect(shell).not.toContain("> .cms-login-copy::after");
     expect(shell).not.toContain("#nc-root:has([class*=LoginButton])::before");
-    expect(shell).not.toContain("#nc-root:has([class*=LoginButton]) svg {\n  display: none");
+    expect(shell).not.toContain(
+      "#nc-root:has([class*=LoginButton]) svg {\n  display: none",
+    );
     expect(navigation).toContain("function decorateLoginButton");
     expect(navigation).toContain("使用 GitHub 登录");
-    expect(navigation).toContain('button.replaceChildren(createLucideIcon("github"), label)');
+    expect(navigation).toContain(
+      'button.replaceChildren(createLucideIcon("github"), label)',
+    );
   });
 
   test("loads title workflow extensions before CMS initialization", async () => {
-    const html = await readFile(root + "public/admin/index.html", "utf8");
+    const html = await readFile(`${root}public/admin/index.html`, "utf8");
     const sources = Array.from(
       html.matchAll(/<script\s+src="([^"]+)"/g),
       (match) => match[1],
     );
 
-    expect(sources).toEqual(expect.arrayContaining([
-      "/admin/editorial-domain.js",
-      "/admin/editorial-workflow.js",
-      "/admin/article-title.js",
-      "/admin/unsaved-changes.js",
-    ]));
+    expect(sources).toEqual(
+      expect.arrayContaining([
+        "/admin/editorial-domain.js",
+        "/admin/editorial-workflow.js",
+        "/admin/article-title.js",
+        "/admin/unsaved-changes.js",
+      ]),
+    );
     expect(sources.indexOf("/admin/editorial-domain.js")).toBeLessThan(
       sources.indexOf("/admin/editorial-workflow.js"),
     );
@@ -103,8 +111,8 @@ describe("Decap phase-two editorial UI", () => {
 
   test("initializes the CMS with local proxy backend only on development hosts", async () => {
     const [html, initSource] = await Promise.all([
-      readFile(root + "public/admin/index.html", "utf8"),
-      readFile(root + "public/admin/cms-init.js", "utf8"),
+      readFile(`${root}public/admin/index.html`, "utf8"),
+      readFile(`${root}public/admin/cms-init.js`, "utf8"),
     ]);
 
     expect(html).toContain('src="/admin/cms-init.js?v=1"');
@@ -121,15 +129,17 @@ describe("Decap phase-two editorial UI", () => {
       },
     };
     runInNewContext(initSource, sandbox);
-    expect(calls).toEqual([{
-      config: {
-        backend: {
-          name: "proxy",
-          proxy_url: "http://127.0.0.1:4322/api/v1",
+    expect(calls).toEqual([
+      {
+        config: {
+          backend: {
+            name: "proxy",
+            proxy_url: "http://127.0.0.1:4322/api/v1",
+          },
+          load_config_file: true,
         },
-        load_config_file: true,
       },
-    }]);
+    ]);
 
     calls.length = 0;
     sandbox.window.location.hostname = "example.com";
@@ -139,9 +149,9 @@ describe("Decap phase-two editorial UI", () => {
 
   test("loads non-destructive list enhancements after CMS initialization", async () => {
     const [html, navigation, shellScript] = await Promise.all([
-      readFile(root + "public/admin/index.html", "utf8"),
-      readFile(root + "public/admin/admin-navigation.js", "utf8"),
-      readFile(root + "public/admin/admin-shell.js", "utf8"),
+      readFile(`${root}public/admin/index.html`, "utf8"),
+      readFile(`${root}public/admin/admin-navigation.js`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.js`, "utf8"),
     ]);
 
     expect(html).toContain('src="/admin/admin-shell-domain.js"');
@@ -161,8 +171,8 @@ describe("Decap phase-two editorial UI", () => {
 
   test("hides stale collection content until the target admin route is ready", async () => {
     const [shell, shellScript] = await Promise.all([
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
-      readFile(root + "public/admin/admin-shell.js", "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.js`, "utf8"),
     ]);
 
     expect(shellScript).toContain("function beginRouteTransition");
@@ -177,7 +187,9 @@ describe("Decap phase-two editorial UI", () => {
     expect(shellScript).toContain('setAttribute("aria-busy", "true")');
     expect(shellScript).toContain('global.addEventListener("hashchange", function ()');
     expect(shellScript).toContain("beginRouteTransition(global.location.hash);");
-    expect(shellScript).toContain('origin.closest(\'#nc-root aside a[href*="#/collections/"]\')');
+    expect(shellScript).toContain(
+      "origin.closest('#nc-root aside a[href*=\"#/collections/\"]')",
+    );
     expect(shellScript).toContain('document.addEventListener("click"');
     expect(shellScript).toContain("}, true);");
     expect(shell).toMatch(
@@ -188,7 +200,7 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("redirects the initial admin route to the posts collection after login", async () => {
-    const source = await readFile(root + "public/admin/admin-shell.js", "utf8");
+    const source = await readFile(`${root}public/admin/admin-shell.js`, "utf8");
 
     expect(source).toContain("function redirectInitialAdminRoute");
     expect(source).toContain('global.location.hash && global.location.hash !== "#/"');
@@ -198,8 +210,8 @@ describe("Decap phase-two editorial UI", () => {
 
   test("shares the website theme preference and keeps the editor toolbar flush to the viewport", async () => {
     const [navigation, shell] = await Promise.all([
-      readFile(root + "public/admin/admin-navigation.js", "utf8"),
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(`${root}public/admin/admin-navigation.js`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
     expect(navigation).toContain('localStorage.setItem("theme", next)');
@@ -211,7 +223,7 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("keeps the article editor workspace aligned with the post editor prototype", async () => {
-    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+    const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
 
     expect(shell).toMatch(
       /\[class\*=EditorContainer\]\s*\{[\s\S]*?display:\s*flex[\s\S]*?flex-direction:\s*column/s,
@@ -223,16 +235,14 @@ describe("Decap phase-two editorial UI", () => {
       /\[class\*=EditorContainer\] > \[class\*=Editor\][\s\S]*?display:\s*flex[\s\S]*?flex-direction:\s*column/s,
     );
     expect(shell).toContain(
-      '[class*=EditorContainer] > [class*=Editor] > div:has(> .SplitPane)',
+      "[class*=EditorContainer] > [class*=Editor] > div:has(> .SplitPane)",
     );
     expect(shell).toMatch(
       /\[class\*=EditorContainer\] \.SplitPane[\s\S]*?flex:\s*1 1 auto[\s\S]*?min-height:\s*0/s,
     );
     expect(shell).toContain(".Pane1");
     expect(shell).toContain(".Pane2");
-    expect(shell).toMatch(
-      /\.Pane1\s*\{[^}]*flex:\s*0 0 auto\s*!important;/s,
-    );
+    expect(shell).toMatch(/\.Pane1\s*\{[^}]*flex:\s*0 0 auto\s*!important;/s);
     expect(shell).toContain("height: 100% !important;");
     expect(shell).toContain("overflow-y: auto !important;");
     expect(shell).toMatch(
@@ -251,10 +261,10 @@ describe("Decap phase-two editorial UI", () => {
     expect(shell).toMatch(
       /\[data-admin-editor-heading\][^{]*\{[^}]*margin:\s*0 0 16px;/s,
     );
-    expect(shell).toContain("[data-admin-editor-field=\"category\"]");
-    expect(shell).toContain("[data-admin-editor-field=\"series\"]");
-    expect(shell).toContain("[data-admin-editor-field=\"draft\"]");
-    expect(shell).toContain("[data-admin-editor-field=\"featured\"]");
+    expect(shell).toContain('[data-admin-editor-field="category"]');
+    expect(shell).toContain('[data-admin-editor-field="series"]');
+    expect(shell).toContain('[data-admin-editor-field="draft"]');
+    expect(shell).toContain('[data-admin-editor-field="featured"]');
     expect(shell).toContain(".cms-editor-visual");
     expect(shell).toContain(".cms-editor-visual [class*=EditorControlBar] + *");
     expect(shell).toContain("padding: 32px !important;");
@@ -262,20 +272,24 @@ describe("Decap phase-two editorial UI", () => {
 
   test("keeps editor decoration and dark surfaces stable when preview is hidden", async () => {
     const [shell, shellScript] = await Promise.all([
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
-      readFile(root + "public/admin/admin-shell.js", "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.js`, "utf8"),
     ]);
 
     expect(shellScript).toContain("function editorControlPane");
-    expect(shellScript).toContain('setAttribute("data-admin-editor-control-pane", "true")');
-    expect(shellScript).toContain('setAttribute("data-admin-editor-control-shell", "true")');
+    expect(shellScript).toContain(
+      'setAttribute("data-admin-editor-control-pane", "true")',
+    );
+    expect(shellScript).toContain(
+      'setAttribute("data-admin-editor-control-shell", "true")',
+    );
     expect(shellScript).not.toContain(
       'document.querySelector("#nc-root .Pane1 [class*=ControlPaneContainer]")',
     );
     expect(shell).toContain("[data-admin-editor-control-pane]");
     expect(shell).toContain("[data-admin-editor-control-shell]");
     expect(shell).not.toContain(
-      '.Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field=',
+      ".Pane1 [class*=ControlPaneContainer] > [data-admin-editor-field=",
     );
     expect(shell).toMatch(
       /\[data-admin-editor-root\][^{]*\{[^}]*background:\s*var\(--cms-canvas\)\s*!important;/s,
@@ -290,8 +304,8 @@ describe("Decap phase-two editorial UI", () => {
 
   test("uses split editor surfaces and lets the article preview fill its pane", async () => {
     const [shell, previewCss] = await Promise.all([
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
-      readFile(root + "public/admin/preview.css", "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
+      readFile(`${root}public/admin/preview.css`, "utf8"),
     ]);
 
     expect(shell).toMatch(
@@ -309,7 +323,7 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("keeps reference and changelog list items inside one complete frame", async () => {
-    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+    const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
 
     expect(shell).toMatch(
       /\[class\*=SortableListItem\][^{]*\{[^}]*border:\s*1px solid var\(--cms-line\)\s*!important;[^}]*overflow:\s*hidden\s*!important;/s,
@@ -320,16 +334,16 @@ describe("Decap phase-two editorial UI", () => {
     expect(shell).toMatch(
       /\[class\*=StyledListItemTopBar\] > \[role="button"\][^{]*\{[^}]*margin-left:\s*auto\s*!important;/s,
     );
-    expect(shell).toContain('[class*=StyledListItemTopBar] > button:last-child');
+    expect(shell).toContain("[class*=StyledListItemTopBar] > button:last-child");
     expect(shell).toContain("width: 30px !important;");
-    expect(shell).not.toContain('[class*=List] button');
+    expect(shell).not.toContain("[class*=List] button");
     expect(shell).toMatch(
       /\[class\*=SortableListItem\] > div:last-child > div > \[class\*=ControlContainer\]:first-child[^{]*\{[^}]*margin-top:\s*0\s*!important;/s,
     );
   });
 
   test("normalizes native single-line editor controls to the compact design system", async () => {
-    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+    const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
 
     expect(shell).toMatch(
       /\[class\*=ControlContainer\] > input:not\(\[role="combobox"\]\)[^{]*\{[^}]*height:\s*42px\s*!important;[^}]*min-height:\s*42px\s*!important;[^}]*padding:\s*0 12px\s*!important;[^}]*border:\s*1px solid var\(--cms-line-strong\)\s*!important;/s,
@@ -343,7 +357,7 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("normalizes compound editor widgets to the compact design system", async () => {
-    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+    const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
 
     expect(shell).toMatch(
       /\[data-admin-editor-field="title"\] \.cms-article-title > input[^{]*\{[^}]*height:\s*42px\s*!important;[^}]*padding:\s*0 12px\s*!important;/s,
@@ -389,8 +403,8 @@ describe("Decap phase-two editorial UI", () => {
 
   test("matches the prototype editor toolbar treatment", async () => {
     const [shell, script] = await Promise.all([
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
-      readFile(root + "public/admin/admin-shell.js", "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.js`, "utf8"),
     ]);
 
     expect(shell).toContain("padding: 0 !important;");
@@ -404,16 +418,16 @@ describe("Decap phase-two editorial UI", () => {
     expect(shell).toContain("padding: 0 0 0 20px !important;");
     expect(script).toContain("function ensureEditorToolbar");
     expect(script).toContain("正在编辑“");
-    expect(script).toContain('data-admin-editor-arrow');
+    expect(script).toContain("data-admin-editor-arrow");
     expect(script).toContain("ensureEditorToolbar();");
   });
 
   test("keeps article editor controls compact and refreshes the inline preview", async () => {
     const [html, navigation, shell, shellScript] = await Promise.all([
-      readFile(root + "public/admin/index.html", "utf8"),
-      readFile(root + "public/admin/admin-navigation.js", "utf8"),
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
-      readFile(root + "public/admin/admin-shell.js", "utf8"),
+      readFile(`${root}public/admin/index.html`, "utf8"),
+      readFile(`${root}public/admin/admin-navigation.js`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.js`, "utf8"),
     ]);
 
     expect(html).toContain('href="/admin/admin-shell.css?v=58"');
@@ -429,7 +443,7 @@ describe("Decap phase-two editorial UI", () => {
     expect(navigation).toContain('label.textContent = "刷新"');
     expect(navigation).toContain('replaceWithLucideIcon(refresh, "refresh-cw")');
     expect(navigation).toContain("function decorateEditorPublishMenu");
-    expect(navigation).toContain('replaceWithLucideIcon(icon, iconName)');
+    expect(navigation).toContain("replaceWithLucideIcon(icon, iconName)");
     expect(shell).toContain('[data-admin-editor-field="category"]');
     expect(shell).toContain(':has(> [class*="-singleValue"])');
     expect(shell).toMatch(
@@ -459,21 +473,21 @@ describe("Decap phase-two editorial UI", () => {
     expect(shellScript).toContain('new RegExp("0\\\\s*" + itemLabel)');
     expect(shell).toContain("height: 42px !important;");
     expect(shell).toContain("min-width: 70px !important;");
-    expect(shell).toContain('[data-admin-refresh-preview] svg');
+    expect(shell).toContain("[data-admin-refresh-preview] svg");
     expect(shell).toContain("color: inherit !important;");
     expect(shell).toContain(
-      '#nc-root [class*=EditorContainer] [data-admin-publish-menu] > ul',
+      "#nc-root [class*=EditorContainer] [data-admin-publish-menu] > ul",
     );
     expect(shell).toContain(
-      '#nc-root [class*=EditorContainer] [data-admin-publish-item]',
+      "#nc-root [class*=EditorContainer] [data-admin-publish-item]",
     );
     expect(shell).not.toContain("right: 310px;");
   });
 
   test("aligns the CMS navigation shell with the website header", async () => {
     const [navigation, shell] = await Promise.all([
-      readFile(root + "public/admin/admin-navigation.js", "utf8"),
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(`${root}public/admin/admin-navigation.js`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
     expect(shell).toContain("width: min(1280px, 100%) !important");
@@ -487,7 +501,7 @@ describe("Decap phase-two editorial UI", () => {
     expect(navigation).toContain("LUCIDE_ICON_NODES");
     expect(navigation).toContain("createLucideIcon");
     expect(navigation).toContain("moveHeaderControls");
-    expect(navigation).toContain('span[class*=IconWrapper]');
+    expect(navigation).toContain("span[class*=IconWrapper]");
     expect(navigation).toContain('button.textContent = "新建"');
     expect(shell).toContain("min-width: 104px !important");
     expect(shell).toContain("display: none !important");
@@ -506,14 +520,15 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("shares website control tokens and replaces admin-owned native selects", async () => {
-    const [baseLayout, html, globalCss, shell, shellScript, mediaScript] = await Promise.all([
-      readFile(root + "src/layouts/BaseLayout.astro", "utf8"),
-      readFile(root + "public/admin/index.html", "utf8"),
-      readFile(root + "src/styles/global.css", "utf8"),
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
-      readFile(root + "public/admin/admin-shell.js", "utf8"),
-      readFile(root + "public/admin/media-library.js", "utf8"),
-    ]);
+    const [baseLayout, html, globalCss, shell, shellScript, mediaScript] =
+      await Promise.all([
+        readFile(`${root}src/layouts/BaseLayout.astro`, "utf8"),
+        readFile(`${root}public/admin/index.html`, "utf8"),
+        readFile(`${root}src/styles/global.css`, "utf8"),
+        readFile(`${root}public/admin/admin-shell.css`, "utf8"),
+        readFile(`${root}public/admin/admin-shell.js`, "utf8"),
+        readFile(`${root}public/admin/media-library.js`, "utf8"),
+      ]);
 
     expect(baseLayout).toContain('href="/styles/design-system.css?v=1"');
     expect(html).toContain('href="/styles/design-system.css?v=1"');
@@ -534,8 +549,8 @@ describe("Decap phase-two editorial UI", () => {
 
   test("keeps search fields visually quiet while typing", async () => {
     const [globalCss, shell] = await Promise.all([
-      readFile(root + "src/styles/global.css", "utf8"),
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(`${root}src/styles/global.css`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
     expect(globalCss).not.toMatch(/\.nav-search:focus-within\s*\{/);
@@ -554,7 +569,7 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("keeps the quick-new trigger fixed while showing a compact menu", async () => {
-    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+    const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
 
     expect(shell).toMatch(
       /#nc-root > header \[role=menu\]\s*\{[^}]*position:\s*absolute\s*!important;[^}]*right:\s*0\s*!important;[^}]*width:\s*140px\s*!important;/s,
@@ -565,7 +580,7 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("keeps the sidebar typography close to the website list rhythm", async () => {
-    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+    const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
 
     expect(shell).toContain("font-size: 14px !important;");
     expect(shell).toContain("font-weight: 400 !important;");
@@ -574,23 +589,22 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("renders the tag library as an embedded admin page instead of a Decap file editor", async () => {
-    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
-    const tagManager = await readFile(root + "public/admin/tag-library-manager.js", "utf8");
-    const navigation = await readFile(root + "public/admin/admin-navigation.js", "utf8");
-    const shellScript = await readFile(root + "public/admin/admin-shell.js", "utf8");
+    const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
+    const tagManager = await readFile(
+      `${root}public/admin/tag-library-manager.js`,
+      "utf8",
+    );
+    const navigation = await readFile(`${root}public/admin/admin-navigation.js`, "utf8");
+    const shellScript = await readFile(`${root}public/admin/admin-shell.js`, "utf8");
 
     expect(shellScript).toContain("function ensureTagPage");
     expect(shellScript).toContain("data-admin-tag-page");
     expect(shellScript).toContain("function persistTags");
-    expect(shellScript).toContain(
-      "{ commitMessage: commitMessage, useWorkflow: false }",
-    );
+    expect(shellScript).toContain("{ commitMessage: commitMessage, useWorkflow: false }");
     expect(shellScript).toContain("DecapTagOperations.merge");
     expect(shellScript).toContain("function startTagAdd");
     expect(shellScript).toContain("function persistNewTag");
-    expect(shellScript).toContain(
-      'setTagMessage("标签“" + tag + "”已添加。", 5000)',
-    );
+    expect(shellScript).toContain('setTagMessage("标签“" + tag + "”已添加。", 5000)');
     expect(shellScript).toContain('"cms-tag-manager__add", "新增标签"');
     expect(shellScript).not.toContain('prepend(add, "plus")');
     expect(shellScript).not.toContain(
@@ -638,18 +652,20 @@ describe("Decap phase-two editorial UI", () => {
     );
     expect(shell).toContain("[data-admin-tag-page] .cms-tag-manager__heading h1::after");
     expect(tagManager).toContain("cms-tag-manager__heading");
-    expect(navigation).not.toContain('window.location.hash = TAG_LIBRARY_ROUTE');
+    expect(navigation).not.toContain("window.location.hash = TAG_LIBRARY_ROUTE");
     expect(navigation).toContain('window.location.hash = "#/collections/tags"');
-    expect(
-      await readFile(root + "public/admin/index.html", "utf8"),
-    ).toContain('src="/admin/tag-operations.js?v=2"');
+    expect(await readFile(`${root}public/admin/index.html`, "utf8")).toContain(
+      'src="/admin/tag-operations.js?v=2"',
+    );
   });
 
   test("configures exact title identities and the custom title control", async () => {
-    const config = parse(
-      await readFile(root + "public/admin/config.yml", "utf8"),
-    ) as { collections: Array<Record<string, unknown>> };
-    const posts = config.collections.find((collection) => collection.name === "posts") as {
+    const config = parse(await readFile(`${root}public/admin/config.yml`, "utf8")) as {
+      collections: Array<Record<string, unknown>>;
+    };
+    const posts = config.collections.find(
+      (collection) => collection.name === "posts",
+    ) as {
       slug: string;
       media_folder: string;
       public_folder: string;
@@ -669,8 +685,8 @@ describe("Decap phase-two editorial UI", () => {
 
   test("previews article metadata without editor-only storage destinations", async () => {
     const [preview, previewCss] = await Promise.all([
-      readFile(root + "public/admin/preview.js", "utf8"),
-      readFile(root + "public/admin/preview.css", "utf8"),
+      readFile(`${root}public/admin/preview.js`, "utf8"),
+      readFile(`${root}public/admin/preview.css`, "utf8"),
     ]);
 
     for (const field of [
@@ -694,9 +710,9 @@ describe("Decap phase-two editorial UI", () => {
 
   test("matches the prototype list width, resource shortcut, and media grid", async () => {
     const [shell, shellScript, mediaCss] = await Promise.all([
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
-      readFile(root + "public/admin/admin-shell.js", "utf8"),
-      readFile(root + "public/admin/media-library.css", "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.js`, "utf8"),
+      readFile(`${root}public/admin/media-library.css`, "utf8"),
     ]);
 
     expect(shell).toContain("width: min(1280px, 100%) !important");
@@ -710,16 +726,15 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("keeps filtered CMS list rows hidden despite custom row display styles", async () => {
-    const shell = await readFile(root + "public/admin/admin-shell.css", "utf8");
+    const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
 
-    expect(shell).toMatch(/\[data-admin-entry-row\]\[hidden\]\s*\{[^}]*display:\s*none\s*!important/s);
+    expect(shell).toMatch(
+      /\[data-admin-entry-row\]\[hidden\]\s*\{[^}]*display:\s*none\s*!important/s,
+    );
   });
 
   test("does not append a draft count to the draft shortcut", async () => {
-    const navigation = await readFile(
-      root + "public/admin/admin-navigation.js",
-      "utf8",
-    );
+    const navigation = await readFile(`${root}public/admin/admin-navigation.js`, "utf8");
 
     expect(navigation).toContain('textContent = "草稿"');
     expect(navigation).not.toContain("draftCount");
@@ -728,10 +743,7 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("warns for dirty internal navigation and native page exit", async () => {
-    const source = await readFile(
-      root + "public/admin/unsaved-changes.js",
-      "utf8",
-    );
+    const source = await readFile(`${root}public/admin/unsaved-changes.js`, "utf8");
 
     expect(source).toContain('"beforeunload"');
     expect(source).toContain('"hashchange"');
@@ -740,10 +752,7 @@ describe("Decap phase-two editorial UI", () => {
   });
 
   test("does not treat tag library filters as unsaved content", async () => {
-    const source = await readFile(
-      root + "public/admin/unsaved-changes.js",
-      "utf8",
-    );
+    const source = await readFile(`${root}public/admin/unsaved-changes.js`, "utf8");
     const listeners = new Map<string, (event?: unknown) => void>();
     let confirmCalls = 0;
     const context: Record<string, unknown> = {

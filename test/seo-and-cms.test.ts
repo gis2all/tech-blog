@@ -1,16 +1,15 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
-import { parse } from "yaml";
 import { describe, expect, test } from "vitest";
+import { parse } from "yaml";
 import { site } from "../src/lib/site";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const productionUrl = "https://blog.gis2all.top";
 
 function getCollection(config: unknown, name: string) {
-  const collections = (config as { collections?: Array<{ name: string }> })
-    .collections;
+  const collections = (config as { collections?: Array<{ name: string }> }).collections;
   return collections?.find((collection) => collection.name === name);
 }
 
@@ -59,9 +58,7 @@ describe("production metadata", () => {
 
     expect(robots).toContain("User-agent: *");
     expect(robots).toContain("Allow: /");
-    expect(robots).toContain(
-      `Sitemap: ${productionUrl}/sitemap-index.xml`,
-    );
+    expect(robots).toContain(`Sitemap: ${productionUrl}/sitemap-index.xml`);
   });
 
   test("adds social card metadata to the shared page head", async () => {
@@ -105,9 +102,7 @@ describe("production metadata", () => {
       readFile(`${root}package.json`, "utf8"),
     ]);
 
-    expect(readme).toContain(
-      "https://gis2all.github.io/tech-blog/badge.svg",
-    );
+    expect(readme).toContain("https://gis2all.github.io/tech-blog/badge.svg");
     expect(readme).toContain("https://gis2all.github.io/tech-blog/");
     expect(readme).not.toContain("codecov.io");
     expect(workflow).not.toContain("codecov/codecov-action");
@@ -122,10 +117,7 @@ describe("production metadata", () => {
 
   test("adds JSON-LD structured data to article pages", async () => {
     const [articleLayout, baseLayout] = await Promise.all([
-      readFile(
-      `${root}src/layouts/ArticleLayout.astro`,
-      "utf8",
-      ),
+      readFile(`${root}src/layouts/ArticleLayout.astro`, "utf8"),
       readFile(`${root}src/layouts/BaseLayout.astro`, "utf8"),
     ]);
 
@@ -149,9 +141,7 @@ describe("production metadata", () => {
     expect(commentsComponent).toContain('data-repo="gis2all/tech-blog"');
     expect(commentsComponent).toContain('data-repo-id="R_kgDOTk6_FA"');
     expect(commentsComponent).toContain('data-category="Announcements"');
-    expect(commentsComponent).toContain(
-      'data-category-id="DIC_kwDOTk6_FM4DCd-z"',
-    );
+    expect(commentsComponent).toContain('data-category-id="DIC_kwDOTk6_FM4DCd-z"');
     expect(commentsComponent).toContain('data-mapping="pathname"');
     expect(commentsComponent).toContain('data-lang="zh-CN"');
     expect(commentsScript).toContain('addEventListener("load"');
@@ -163,9 +153,7 @@ describe("production metadata", () => {
 
 describe("Decap CMS schema", () => {
   test("exposes all required fields for series and projects", async () => {
-    const config = parse(
-      await readFile(`${root}public/admin/config.yml`, "utf8"),
-    );
+    const config = parse(await readFile(`${root}public/admin/config.yml`, "utf8"));
 
     expect(getFieldNames(getCollection(config, "series"))).toEqual(
       expect.arrayContaining(["image", "imageAlt"]),
@@ -176,13 +164,12 @@ describe("Decap CMS schema", () => {
   });
 
   test("supports a Chinese editorial workflow and an article preview", async () => {
-    const [configSource, adminIndex, previewScript, previewStyle] =
-      await Promise.all([
-        readFile(`${root}public/admin/config.yml`, "utf8"),
-        readFile(`${root}public/admin/index.html`, "utf8"),
-        readFile(`${root}public/admin/preview.js`, "utf8").catch(() => ""),
-        readFile(`${root}public/admin/preview.css`, "utf8").catch(() => ""),
-      ]);
+    const [configSource, adminIndex, previewScript, previewStyle] = await Promise.all([
+      readFile(`${root}public/admin/config.yml`, "utf8"),
+      readFile(`${root}public/admin/index.html`, "utf8"),
+      readFile(`${root}public/admin/preview.js`, "utf8").catch(() => ""),
+      readFile(`${root}public/admin/preview.css`, "utf8").catch(() => ""),
+    ]);
     const config = parse(configSource);
     const posts = getCollection(config, "posts");
     const series = getCollection(config, "series");
@@ -294,7 +281,9 @@ describe("Decap CMS schema", () => {
       "projects",
     ]);
     for (const registration of previewRegistrations.templates) {
-      expect(typeof (registration.template as { render?: unknown }).render).toBe("function");
+      expect(typeof (registration.template as { render?: unknown }).render).toBe(
+        "function",
+      );
     }
     expect(previewStyle).toContain(".cms-post-preview");
     expect(previewStyle).toContain(".cms-entity-preview");
@@ -323,8 +312,9 @@ describe("Decap CMS schema", () => {
     expect(packageJson.scripts?.["cms:local"]).toBe(
       "node scripts/start-decap-server.mjs",
     );
-    expect(launcher).toContain('process.env.PORT = "4322"');
-    expect(launcher).toContain('process.env.BIND_HOST = "127.0.0.1"');
+    expect(launcher).toContain('process.env.PORT || "4322"');
+    expect(launcher).toContain('process.env.BIND_HOST || "127.0.0.1"');
+    expect(launcher).toContain("registerLocalFs");
     expect(readme).toContain("npm run cms:local");
     expect(readme).toContain("http://127.0.0.1:4321/admin/");
     expect(readme).toContain("4322");
@@ -332,13 +322,14 @@ describe("Decap CMS schema", () => {
   });
 
   test("uses a reusable tag library for searchable multi-select article tags", async () => {
-    const [configSource, adminIndex, tagSelector, tagLibrarySource, postTagValues] = await Promise.all([
-      readFile(`${root}public/admin/config.yml`, "utf8"),
-      readFile(`${root}public/admin/index.html`, "utf8"),
-      readFile(`${root}public/admin/tag-selector.js`, "utf8").catch(() => ""),
-      readFile(`${root}src/data/tag-library.json`, "utf8").catch(() => "{}"),
-      getPostTagValues(),
-    ]);
+    const [configSource, adminIndex, tagSelector, tagLibrarySource, postTagValues] =
+      await Promise.all([
+        readFile(`${root}public/admin/config.yml`, "utf8"),
+        readFile(`${root}public/admin/index.html`, "utf8"),
+        readFile(`${root}public/admin/tag-selector.js`, "utf8").catch(() => ""),
+        readFile(`${root}src/data/tag-library.json`, "utf8").catch(() => "{}"),
+        getPostTagValues(),
+      ]);
     const config = parse(configSource);
     const posts = getCollection(config, "posts");
     const tags = getCollection(config, "tags");
@@ -376,9 +367,7 @@ describe("Decap CMS schema", () => {
     const [configSource, adminIndex, navigationSource] = await Promise.all([
       readFile(`${root}public/admin/config.yml`, "utf8"),
       readFile(`${root}public/admin/index.html`, "utf8"),
-      readFile(`${root}public/admin/admin-navigation.js`, "utf8").catch(
-        () => "",
-      ),
+      readFile(`${root}public/admin/admin-navigation.js`, "utf8").catch(() => ""),
     ]);
     const config = parse(configSource);
     const postsCollections = (config.collections as Array<{ name?: string }>).filter(
@@ -400,8 +389,7 @@ describe("Decap CMS schema", () => {
     expect(postsCollections).toHaveLength(1);
     expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=27"');
     expect(
-      (context.DecapAdminNavigation as { isDraftRoute: () => boolean })
-        .isDraftRoute(),
+      (context.DecapAdminNavigation as { isDraftRoute: () => boolean }).isDraftRoute(),
     ).toBe(true);
   });
 
@@ -453,8 +441,8 @@ describe("Decap CMS schema", () => {
             : selector === 'a[href="#/collections/tags"]'
               ? tagsLink
               : selector === '[data-testid="drafts-shortcut"]'
-                ? draftLink ?? null
-              : null,
+                ? (draftLink ?? null)
+                : null,
         querySelectorAll: () => [],
       },
       MutationObserver: class {
@@ -600,8 +588,9 @@ describe("Decap CMS schema", () => {
     context.window = context;
 
     runInNewContext(navigationSource, context);
-    (context.DecapAdminNavigation as { ensureDraftFilter: () => void })
-      .ensureDraftFilter();
+    (
+      context.DecapAdminNavigation as { ensureDraftFilter: () => void }
+    ).ensureDraftFilter();
 
     expect(filterClicks).toBe(1);
   });
@@ -709,8 +698,6 @@ describe("Decap CMS schema", () => {
     );
     let observerOptions: Record<string, unknown> | undefined;
     class MutationObserverStub {
-      constructor(_callback: () => void) {}
-
       observe(_target: unknown, options: Record<string, unknown>) {
         observerOptions = options;
       }
@@ -761,8 +748,6 @@ describe("Decap CMS schema", () => {
     };
     const calls: string[] = [];
     class MutationObserverStub {
-      constructor(_callback: () => void) {}
-
       observe() {}
     }
     const context: Record<string, unknown> = {
@@ -844,9 +829,7 @@ describe("Decap CMS schema", () => {
   });
 
   test("redirects the local CMS directory URL to its static entry page", async () => {
-    const middleware = await readFile(`${root}src/middleware.ts`, "utf8").catch(
-      () => "",
-    );
+    const middleware = await readFile(`${root}src/middleware.ts`, "utf8").catch(() => "");
 
     expect(middleware).toContain('context.url.pathname === "/admin/"');
     expect(middleware).toContain('context.redirect("/admin/index.html", 302)');

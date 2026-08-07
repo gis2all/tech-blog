@@ -38,9 +38,7 @@ test.describe("mobile navigation and article controls", () => {
     await expect(toggle).toBeFocused();
   });
 
-  test("places the article TOC before the menu in keyboard order", async ({
-    page,
-  }) => {
+  test("places the article TOC before the menu in keyboard order", async ({ page }) => {
     await page.goto(groovyArticlePath);
 
     const search = page.getByRole("searchbox", { name: "搜索文章" });
@@ -99,9 +97,7 @@ test.describe("desktop navigation", () => {
     await expect(page.getByRole("link", { name: "知行首页" })).toBeFocused();
   });
 
-  test("pins the active desktop nav indicator to the header bottom", async ({
-    page,
-  }) => {
+  test("pins the active desktop nav indicator to the header bottom", async ({ page }) => {
     await page.setViewportSize({ width: 1200, height: 800 });
     await page.goto("/tags/");
 
