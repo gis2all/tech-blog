@@ -580,6 +580,7 @@ public/images/posts/
 - 后台 E2E 不与具体内容数量或某篇真实文章绑定：搜索/草稿视图用自建时间戳草稿夹具并自清理，断言只依赖关系（"可见行全部是草稿"、"搜索唯一命中自建标题"）；新增/删除真实文章无需改测试。
 - 覆盖率门禁：全局分支 72、`src/lib/**` 分支 85、`public/admin/**` 分支 70（语句/函数/行阈值见 `vitest.config.ts`）。后台 domain 与 src/lib 的缺口按覆盖率报告的未覆盖行补单测，UI 粘合代码由后台 E2E 兜底。
 - Playwright E2E 在 Windows 结束后可能残留 `astro dev` 进程占用 4321；切换开发/预览/构建前先确认端口空闲。
+- Docker 容器重启 `astro-dev` 后若报 "Another astro dev server is already running" 且端口未恢复，通常是容器退出时留下的 `.astro/dev.json` 锁文件（记录已不存在的 PID）；删除该文件后 `docker compose up -d --force-recreate astro-dev` 即可恢复端口映射。
 - 覆盖率徽章由 `npm run coverage:badge` 生成，读取 `coverage/coverage-summary.json` 并输出 `coverage/badge.svg`。
 - 若新增或替换 CMS、部署平台、评论、统计或搜索服务，更新本文的架构、环境变量和迁移说明。
 

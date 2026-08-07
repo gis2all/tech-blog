@@ -40,8 +40,17 @@ async function waitForServer(url, timeoutMs) {
 async function startPreviewServer() {
   try {
     const probe = await fetch(baseUrl);
-    if (probe.ok) return null;
-  } catch {
+    if (probe.ok) {
+      // An existing server is only reusable when it is a production preview
+      // (serves /_astro/ assets). waitForServer throws for dev servers, so
+      // a misconfigured port fails loudly instead of measuring dev output.
+      await waitForServer(baseUrl, 5000);
+      return null;
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("non-preview")) {
+      throw error;
+    }
     // start a fresh preview server
   }
   const child = spawn(
