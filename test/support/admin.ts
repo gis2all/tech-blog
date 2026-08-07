@@ -31,7 +31,7 @@ export function uniqueTitle(prefix: string): string {
 }
 
 export async function waitForStableCount(
-  page: Page,
+  _page: Page,
   locator: Locator,
   timeout = 30000,
 ): Promise<void> {
