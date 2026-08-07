@@ -18,6 +18,7 @@ async function loadDomain() {
       cover?: boolean,
     ): string[];
     targetExtension(file: { name: string; type: string }): string;
+    isRaster(file: { name: string; type?: string }): boolean;
     nextFileName(existing: string[], cover: boolean, extension: string): string;
     fitDimensions(
       width: number,
@@ -242,9 +243,9 @@ describe("Decap article media domain", () => {
     expect(domain.isSafeSvg("<svg>&lt;script&gt;alert(1)&lt;/script&gt;</svg>")).toBe(
       false,
     );
-    expect(
-      domain.isSafeSvg("<svg><a href=&quot;javascript:run()&quot; /></svg>"),
-    ).toBe(false);
+    expect(domain.isSafeSvg("<svg><a href=&quot;javascript:run()&quot; /></svg>")).toBe(
+      false,
+    );
     expect(domain.isSafeSvg("<svg>&apos;javascript:run()&apos;</svg>")).toBe(false);
   });
 
@@ -255,7 +256,11 @@ describe("Decap article media domain", () => {
       domain.validateFile({ name: "notes.txt", type: "text/plain", size: 10 }),
     ).not.toEqual([]);
     expect(
-      domain.validateFile({ name: "clip.gif", type: "image/gif", size: 5 * 1024 * 1024 + 1 }),
+      domain.validateFile({
+        name: "clip.gif",
+        type: "image/gif",
+        size: 5 * 1024 * 1024 + 1,
+      }),
     ).not.toEqual([]);
   });
 
@@ -263,7 +268,11 @@ describe("Decap article media domain", () => {
     const domain = await loadDomain();
 
     expect(
-      domain.nextFileName(["cover.webp", "cover-02.webp", "cover-03.webp"], true, ".webp"),
+      domain.nextFileName(
+        ["cover.webp", "cover-02.webp", "cover-03.webp"],
+        true,
+        ".webp",
+      ),
     ).toBe("cover-04.webp");
     expect(domain.targetExtension({ name: "clip.gif", type: "image/gif" })).toBe(".gif");
     expect(domain.isRaster({ name: "clip.mp4", type: "video/mp4" })).toBe(false);

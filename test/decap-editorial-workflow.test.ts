@@ -7,7 +7,11 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 
 type PersistEntry = {
   dataFiles: Array<{ path: string; slug: string; raw: string; newPath?: string }>;
-  assets: Array<{ path: string }>;
+  assets: Array<{
+    path: string;
+    field?: { get(name: string): string };
+    fileObj?: { name: string; size?: number; type?: string };
+  }>;
 };
 
 function cmsEntry(
@@ -35,7 +39,10 @@ type HarnessOptions = {
   media?: Array<{ path: string; name: string }>;
   allPosts?: Array<{ file?: { path: string }; data?: string }>;
   processor?: Partial<{
-    processFile(file: unknown, cover: boolean): Promise<{ name: string; size: number; type: string }>;
+    processFile(
+      file: unknown,
+      cover: boolean,
+    ): Promise<{ name: string; size: number; type: string }>;
   }>;
   confirmResult?: boolean;
 };
@@ -72,13 +79,16 @@ async function createHarness(options: HarnessOptions = {}) {
             return folder === "src/content/posts" ? [] : media;
           },
           async getMediaFile(path: string) {
-            return { file: { path }, url: "/images/" + path };
+            return { file: { path }, url: `/images/${path}` };
           },
           async allEntriesByFolder() {
             return allPosts;
           },
           async persistEntry(entry: PersistEntry) {
             persistCalls.push(entry);
+          },
+          async deleteFiles() {
+            return undefined;
           },
         }),
       },
@@ -267,26 +277,22 @@ describe("Decap title-driven editorial workflow", () => {
       ),
     });
 
-    await harness
-      .initialize("proxy")
-      .persistEntry({
-        dataFiles: [
-          {
-            path: "src/content/posts/旧标题.md",
-            slug: "旧标题",
-            raw: "---\ntitle: 旧标题\ncover: /images/posts/旧标题/shot.webp\n---\n正文",
-          },
-        ],
-        assets: [],
-      });
+    await harness.initialize("proxy").persistEntry({
+      dataFiles: [
+        {
+          path: "src/content/posts/旧标题.md",
+          slug: "旧标题",
+          raw: "---\ntitle: 旧标题\ncover: /images/posts/旧标题/shot.webp\n---\n正文",
+        },
+      ],
+      assets: [],
+    });
 
     const entry = harness.persistCalls[0];
     const renamed = entry.dataFiles[0];
     expect(renamed.newPath).toBe("src/content/posts/新标题.md");
     expect(renamed.raw).toContain("/images/posts/新标题/shot.webp");
-    const mediaAssets = entry.assets.filter(
-      (asset) => asset.path && asset.path.includes("新标题"),
-    );
+    const mediaAssets = entry.assets.filter((asset) => asset.path?.includes("新标题"));
     expect(mediaAssets.map((asset) => asset.path)).toEqual([
       "public/images/posts/新标题/shot.webp",
       "public/images/posts/新标题/clip.mp4",
@@ -329,7 +335,7 @@ describe("Decap title-driven editorial workflow", () => {
       true,
     );
     const other = dataFiles.find((file) => file.path === "src/content/posts/other.md");
-    expect(other.raw).toContain("/images/posts/新标题/shot.webp");
+    expect(other?.raw).toContain("/images/posts/新标题/shot.webp");
   });
 
   test("persists new cover assets with generated names and rewrites references", async () => {
@@ -360,7 +366,7 @@ describe("Decap title-driven editorial workflow", () => {
     const entry = harness.persistCalls[0];
     const asset = entry.assets[0];
     expect(asset.path).toBe("public/images/posts/带图文章/cover.webp");
-    expect(asset.fileObj.name).toBe("cover.webp");
+    expect(asset.fileObj?.name).toBe("cover.webp");
     expect(entry.dataFiles[0].raw).toContain("/images/posts/带图文章/cover.webp");
   });
 

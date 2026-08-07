@@ -154,7 +154,9 @@ describe("Decap atomic tag operations", () => {
       merge(plan: unknown): Promise<unknown>;
     };
 
-    await expect(operations.plan("Old", "Target")).rejects.toThrow("后台保存连接尚未就绪");
+    await expect(operations.plan("Old", "Target")).rejects.toThrow(
+      "后台保存连接尚未就绪",
+    );
     await expect(operations.merge({})).rejects.toThrow("合并计划无效");
     await expect(operations.merge(null)).rejects.toThrow("合并计划无效");
   });

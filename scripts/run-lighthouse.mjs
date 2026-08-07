@@ -204,7 +204,7 @@ try {
   }
   if (chrome) {
     try {
-      await chrome.kill();
+      chrome.kill();
     } catch {
       // Windows may briefly lock the temporary Chrome profile directory.
     }
