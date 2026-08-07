@@ -22,6 +22,7 @@ describe("security headers", () => {
     expect(csp).toContain("https://raw.githubusercontent.com");
     expect(csp).toContain("https://giscus.app");
     expect(csp).toContain("https://app.netlify.com");
+    expect(csp).toContain("unsafe-eval");
   });
 
   test("runs an npm audit in CI", async () => {
