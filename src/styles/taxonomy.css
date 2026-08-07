@@ -1,0 +1,145 @@
+.taxonomy-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.discovery-rail .taxonomy-row {
+  align-items: center;
+}
+
+.taxonomy-row,
+.archive-row,
+.series-list a,
+.project-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+}
+
+.taxonomy-row:last-child,
+.archive-row:last-child,
+.series-list a:last-child,
+.project-row:last-child {
+  border-bottom: 0;
+}
+
+.taxonomy-row b,
+.archive-row b {
+  color: var(--muted);
+  font: 12px ui-monospace, Consolas, monospace;
+}
+
+.archive-panel {
+  padding: 36px 40px 42px;
+  overflow: hidden;
+}
+
+.archive-year + .archive-year {
+  margin-top: 38px;
+  padding-top: 2px;
+}
+
+.archive-year-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0 0 20px;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.archive-year-heading small {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.archive-months {
+  position: relative;
+}
+
+.archive-months::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 114px;
+  width: 1px;
+  background: var(--line);
+}
+
+.archive-month {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.archive-month + .archive-month {
+  margin-top: 18px;
+}
+
+.archive-month-label {
+  align-self: start;
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.archive-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 22px;
+  align-items: baseline;
+  min-height: 44px;
+  padding: 9px 0 9px 38px;
+}
+
+.archive-entry i {
+  position: absolute;
+  top: 15px;
+  left: -5px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--brand);
+  border-radius: 50%;
+  background: var(--panel);
+}
+
+.archive-entry time {
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.archive-entry span {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.archive-entry:hover span {
+  color: var(--brand);
+}
+
+.taxonomy-row.active {
+  background: var(--brand-soft);
+  color: var(--brand);
+  box-shadow: inset 2px 0 var(--brand);
+}
+
+.taxonomy-row:hover {
+  background: var(--soft);
+  color: var(--brand);
+}
+
+.taxonomy-row.active b {
+  color: var(--brand);
+}

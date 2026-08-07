@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
+import { readAllStyles } from "./support/styles";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -9,7 +10,7 @@ describe("article image zoom", () => {
     const [source, site, css] = await Promise.all([
       readFile(`${root}src/scripts/article-image-zoom.ts`, "utf8").catch(() => ""),
       readFile(`${root}src/scripts/site.ts`, "utf8"),
-      readFile(`${root}src/styles/global.css`, "utf8"),
+      readAllStyles(),
     ]);
 
     expect(site).toContain('import "./article-image-zoom"');

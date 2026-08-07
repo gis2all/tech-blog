@@ -115,6 +115,7 @@ describe("production metadata", () => {
     expect(firstStylesheet).toBeGreaterThan(-1);
     expect(themeRestore).toBeLessThan(firstStylesheet);
     expect(layout).toContain('document.documentElement.dataset.theme = "dark"');
+    expect(layout).toContain('matchMedia("(prefers-color-scheme: dark)")');
   });
 
   test("loads Umami Cloud only through the production environment setting", async () => {

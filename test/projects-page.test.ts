@@ -1,6 +1,7 @@
 import { access, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
+import { readAllStyles } from "./support/styles";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -55,7 +56,7 @@ describe("projects page", () => {
   test("renders linked screenshot cards with a responsive 16:9 layout", async () => {
     const [page, css] = await Promise.all([
       readFile(`${root}src/pages/projects.astro`, "utf8"),
-      readFile(`${root}src/styles/global.css`, "utf8"),
+      readAllStyles(),
     ]);
 
     expect(page).toContain("<p>我的开源项目与工程实践</p>");

@@ -43,9 +43,12 @@ const umamiWebsiteId = getUmamiWebsiteId(
     <script is:inline>
       (() => {
         try {
-          if (localStorage.getItem("theme") === "dark") {
-            document.documentElement.dataset.theme = "dark";
-          }
+          const storedTheme = localStorage.getItem("theme");
+          const dark =
+            storedTheme === "dark" ||
+            (storedTheme !== "light" &&
+              matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.dataset.theme = "dark";
         } catch {}
       })();
     </script>
@@ -78,6 +81,7 @@ const umamiWebsiteId = getUmamiWebsiteId(
     <link rel="alternate" type="application/rss+xml" title={`${site.title} RSS`} href="/rss.xml" />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
     <SiteHeader currentPath={Astro.url.pathname}>
       <slot name="header-actions" slot="header-actions" />
     </SiteHeader>

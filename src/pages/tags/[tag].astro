@@ -16,7 +16,7 @@ const { tag } = Astro.props;
 ---
 
 <BaseLayout title={tag.name} description={`浏览 ${tag.name} 标签下的文章`}>
-  <main class="wrap">
+  <main id="main-content" class="wrap">
     <div class="page-head">
       <div>
         <h1>{tag.name}</h1>

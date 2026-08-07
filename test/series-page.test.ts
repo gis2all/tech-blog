@@ -2,6 +2,7 @@ import { access, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import { parse } from "yaml";
+import { readAllStyles } from "./support/styles";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -136,7 +137,7 @@ describe("series page", () => {
   test("renders linked screenshot cards in a responsive 16:9 grid", async () => {
     const [page, css] = await Promise.all([
       readFile(`${root}src/pages/series/index.astro`, "utf8"),
-      readFile(`${root}src/styles/global.css`, "utf8"),
+      readAllStyles(),
     ]);
 
     expect(page).toContain("<p>按主题整理的系列文章与实践路径</p>");

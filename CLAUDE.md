@@ -84,16 +84,16 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 ```text
 npm run check         → 0 errors, 0 warnings, 1 hint
 npm run check:admin   → 0 errors（public/admin 全量 checkJs）
-npm run lint          → Biome 104 files checked, no issues
-npm test              → 31 test files passed, 287 tests passed
+npm run lint          → Biome 108 files checked, no issues
+npm test              → 32 test files passed, 289 tests passed
 npm run test:coverage → 全局 statements 93.0%, branches 84.3%, functions 95.5%, lines 96.6%
                         （src/lib 97.6 / 85.7 / 100 / 100，public/admin 91.7 / 84.0 / 94.9 / 95.6）
-npm run test:e2e      → 59 tests passed（43 前台 + 16 后台 UI，含 Axe 场景）
+npm run test:e2e      → 60 tests passed（44 前台 + 16 后台 UI，含 Axe 场景）
 npm run build         → 427 pages built
 npm run perf          → Lighthouse 预算通过（首页 275KB，文章 314KB）
 ```
 
-以上是最近一次完整代码验证结果：Astro/TypeScript 检查 0 错误；后台 JS 类型检查 0 错误；Biome lint 全绿；Vitest 31 个文件 287 个测试通过；Playwright 59 个场景通过（43 前台 + 16 后台 UI，Axe serious/critical 为 0）；生产构建 427 页；Lighthouse 性能预算通过。本批改动均未提交。
+以上是最近一次完整代码验证结果：Astro/TypeScript 检查 0 错误；后台 JS 类型检查 0 错误；Biome lint 全绿；Vitest 32 个文件 289 个测试通过；Playwright 60 个场景通过（44 前台 + 16 后台 UI，Axe serious/critical 为 0）；生产构建 427 页；Lighthouse 性能预算通过。本批改动均未提交。
 
 浏览器验证：
 
@@ -259,6 +259,8 @@ Markdown / images / config
 ```
 
 原则上，组件只接收已经整理好的展示数据，不直接扫描内容目录；内容查询、草稿过滤、排序和统计集中放在 `src/lib/content/*`，避免首页、分类页、标签页、归档页各写一套规则。
+
+样式按职责拆分在 `src/styles/`（`base.css`、`layout.css`、`components.css`、`taxonomy.css`、`article.css`、`pages.css`、`responsive.css`），`global.css` 仅作聚合入口并保持原有加载顺序；新增样式先放入对应分片。
 
 ## 6. CMS 当前状态
 
@@ -503,6 +505,8 @@ public/images/posts/
 - 搜索、弹窗、抽屉和移动目录支持键盘与 `Esc`。
 - 模态框使用 `role="dialog"`、`aria-modal="true"`，打开后移动焦点并限制焦点循环，关闭后归还焦点。
 - 视觉顺序必须与 DOM 和键盘焦点顺序一致；移动控件在进入桌面断点并隐藏前，应把焦点转移到可见的桌面等价入口。
+- 全局布局提供 `.skip-link`（“跳到主要内容”），默认移出视口、键盘聚焦时回到页首，目标为各页 `<main id="main-content">`。
+- 主题默认跟随系统 `prefers-color-scheme`；用户手动切换后写入 `localStorage` 并停止跟随系统。
 - 上传区域应可聚焦并提供按钮语义。
 - 尊重语义化 HTML，文章列表使用 `<article>`，导航使用 `<nav>`，时间使用 `<time>`。
 - 验证桌面和移动端截图，检查非空白、无重叠、无横向溢出和可操作状态。
@@ -574,6 +578,8 @@ public/images/posts/
 - 代码风格与后台类型检查是 CI 门禁：本地改动后先跑 `npm run lint`（Biome）与 `npm run check:admin`（`tsc --checkJs`）；`npm run format` 只格式化 src/test/scripts 与配置文件，`public/admin` 旧脚本不参与自动格式化。
 - Vitest 覆盖率门禁覆盖 `src/lib` 与后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`：全局 90/82/92/94，`src/lib/**` 95/84/95/98，`public/admin/**` 88/82/90/92。
 - `npm run perf` 对生产预览运行 Lighthouse 性能预算（`lighthouse-budgets.json`）；脚本会复用已运行的预览服务，但若 4321 被 `astro dev` 占用会报错并退出，避免把开发态误测成生产性能。
+- CI 包含 `npm audit --audit-level=high` 依赖漏洞门禁，与 Dependabot 每周更新配合。
+- `netlify.toml` 为全站配置安全响应头（HSTS、X-Frame-Options、Permissions-Policy 与 CSP）。CSP 白名单覆盖 Umami、Giscus、Decap CDN 与 GitHub API；新增外部脚本或域名时须同步更新该白名单，部署后先在生产验证 Giscus、Umami、`/admin/` 三条链路。
 - 封面缩略图（`*-thumb.webp`）是派生产物：生产在 `postbuild` 阶段生成到 `dist/`，开发态由 Vite 中间件按需生成；不要提交 `dist/`，也不要删除 `cover.webp` 原图（中间件与构建脚本都依赖它）。
 - Docker 容器只覆盖本地开发与 CMS 后端（4321/4322）；Playwright E2E、Lighthouse 和 CI 仍在宿主机/GitHub Actions 运行，容器不安装浏览器。`package.json` 或 `package-lock.json` 变化后需要 `docker compose build` 重建镜像，单纯改源码无需重建。
 - 后台 E2E 用 `npx playwright test --project=admin` 单独运行（或随 `npm run test:e2e` 全量跑）；Playwright 会同时拉起 4321 开发服务与 4322 本地 CMS 后端，admin 项目单 worker 串行执行。修改 `public/admin/*` 后按此回归。

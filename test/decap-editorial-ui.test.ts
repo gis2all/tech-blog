@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { describe, expect, test } from "vitest";
 import { parse } from "yaml";
+import { readAllStyles } from "./support/styles";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -521,7 +522,7 @@ describe("Decap phase-two editorial UI", () => {
       await Promise.all([
         readFile(`${root}src/layouts/BaseLayout.astro`, "utf8"),
         readFile(`${root}public/admin/index.html`, "utf8"),
-        readFile(`${root}src/styles/global.css`, "utf8"),
+        readAllStyles(),
         readFile(`${root}public/admin/admin-shell.css`, "utf8"),
         readFile(`${root}public/admin/admin-shell.js`, "utf8"),
         readFile(`${root}public/admin/media-library.js`, "utf8"),
@@ -546,7 +547,7 @@ describe("Decap phase-two editorial UI", () => {
 
   test("keeps search fields visually quiet while typing", async () => {
     const [globalCss, shell] = await Promise.all([
-      readFile(`${root}src/styles/global.css`, "utf8"),
+      readAllStyles(),
       readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 

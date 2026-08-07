@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { markdownToHtml } from "satteri";
 import { describe, expect, test } from "vitest";
 import createImagePerformancePlugin from "../src/lib/markdown/satteri-image-performance.mjs";
+import { readAllStyles } from "./support/styles";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -71,7 +72,7 @@ describe("Markdown image performance", () => {
 
 describe("site image delivery", () => {
   test("keeps responsive images at their intrinsic aspect ratio", async () => {
-    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+    const css = await readAllStyles();
 
     expect(css).toMatch(
       /img\s*\{[^}]*display:\s*block;[^}]*max-width:\s*100%;[^}]*height:\s*auto;/s,
@@ -79,7 +80,7 @@ describe("site image delivery", () => {
   });
 
   test("keeps article animations responsive", async () => {
-    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+    const css = await readAllStyles();
 
     expect(css).toMatch(
       /\.article-animation\s*\{[^}]*display:\s*block;[^}]*max-width:\s*100%;[^}]*height:\s*auto;/s,

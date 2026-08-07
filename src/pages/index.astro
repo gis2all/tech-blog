@@ -11,7 +11,7 @@ const allSeries = await getAllSeries();
 ---
 
 <BaseLayout>
-  <main class="wrap home-grid">
+  <main id="main-content" class="wrap home-grid">
     <DiscoveryRail posts={posts} allSeries={allSeries} mode="home" />
     <section class="panel home-feed">
       <RecentReading variant="mobile" />

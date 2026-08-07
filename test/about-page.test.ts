@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
+import { readAllStyles } from "./support/styles";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -8,7 +9,7 @@ describe("about page", () => {
   test("uses the primary-tab layout without a sidebar profile card", async () => {
     const page = await readFile(`${root}src/pages/about.astro`, "utf8");
 
-    expect(page).toContain('<main class="wrap">');
+    expect(page).toContain('<main id="main-content" class="wrap">');
     expect(page).toContain('class="page-head"');
     expect(page).toContain('class="panel about-page"');
     expect(page).not.toContain("listing-grid");
@@ -19,7 +20,7 @@ describe("about page", () => {
   test("keeps author identity in a responsive footer row", async () => {
     const [page, css] = await Promise.all([
       readFile(`${root}src/pages/about.astro`, "utf8"),
-      readFile(`${root}src/styles/global.css`, "utf8"),
+      readAllStyles(),
     ]);
 
     expect(page).toContain('class="about-author"');
@@ -49,7 +50,7 @@ describe("about page", () => {
   });
 
   test("uses compact section spacing for the short About page content", async () => {
-    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+    const css = await readAllStyles();
 
     expect(css).toMatch(/\.about-page \.prose h2\s*\{[^}]*margin:\s*24px 0 8px/s);
     expect(css).toMatch(

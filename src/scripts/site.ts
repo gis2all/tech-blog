@@ -3,21 +3,19 @@ import "./article-image-zoom";
 
 const root = document.documentElement;
 const storedTheme = localStorage.getItem("theme");
-
-if (storedTheme === "dark") {
-  root.dataset.theme = "dark";
-}
+const systemDarkQuery = matchMedia("(prefers-color-scheme: dark)");
+let hasExplicitTheme = storedTheme !== null;
+let dark = storedTheme === "dark" || (storedTheme === null && systemDarkQuery.matches);
 
 const themeButtons = document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]");
 
-function setTheme(dark: boolean) {
+function renderTheme() {
   if (dark) {
     root.dataset.theme = "dark";
   } else {
     delete root.dataset.theme;
   }
 
-  localStorage.setItem("theme", dark ? "dark" : "light");
   themeButtons.forEach((button) => {
     button.setAttribute("aria-label", dark ? "切换浅色模式" : "切换深色模式");
     const label = button.querySelector<HTMLElement>("[data-theme-label]");
@@ -25,9 +23,23 @@ function setTheme(dark: boolean) {
   });
 }
 
-setTheme(root.dataset.theme === "dark");
+function setTheme(next: boolean) {
+  dark = next;
+  hasExplicitTheme = true;
+  renderTheme();
+  localStorage.setItem("theme", next ? "dark" : "light");
+}
+
+renderTheme();
+systemDarkQuery.addEventListener("change", (event) => {
+  if (!hasExplicitTheme) {
+    dark = event.matches;
+    renderTheme();
+  }
+});
+
 themeButtons.forEach((button) => {
-  button.addEventListener("click", () => setTheme(root.dataset.theme !== "dark"));
+  button.addEventListener("click", () => setTheme(!dark));
 });
 
 const menuButtons = document.querySelectorAll<HTMLButtonElement>("[data-menu-toggle]");
