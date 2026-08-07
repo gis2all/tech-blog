@@ -235,4 +235,37 @@ describe("Decap article media domain", () => {
       ),
     ).toEqual([hidden]);
   });
+
+  test("rejects script payloads hidden in named HTML entities", async () => {
+    const domain = await loadDomain();
+
+    expect(domain.isSafeSvg("<svg>&lt;script&gt;alert(1)&lt;/script&gt;</svg>")).toBe(
+      false,
+    );
+    expect(
+      domain.isSafeSvg("<svg><a href=&quot;javascript:run()&quot; /></svg>"),
+    ).toBe(false);
+    expect(domain.isSafeSvg("<svg>&apos;javascript:run()&apos;</svg>")).toBe(false);
+  });
+
+  test("rejects unsupported formats and enforces every size limit", async () => {
+    const domain = await loadDomain();
+
+    expect(
+      domain.validateFile({ name: "notes.txt", type: "text/plain", size: 10 }),
+    ).not.toEqual([]);
+    expect(
+      domain.validateFile({ name: "clip.gif", type: "image/gif", size: 5 * 1024 * 1024 + 1 }),
+    ).not.toEqual([]);
+  });
+
+  test("names cover collisions and non-raster targets", async () => {
+    const domain = await loadDomain();
+
+    expect(
+      domain.nextFileName(["cover.webp", "cover-02.webp", "cover-03.webp"], true, ".webp"),
+    ).toBe("cover-04.webp");
+    expect(domain.targetExtension({ name: "clip.gif", type: "image/gif" })).toBe(".gif");
+    expect(domain.isRaster({ name: "clip.mp4", type: "video/mp4" })).toBe(false);
+  });
 });

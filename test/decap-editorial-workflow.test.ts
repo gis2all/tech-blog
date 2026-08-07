@@ -30,7 +30,24 @@ function cmsEntry(
   };
 }
 
-async function createHarness(existingPaths: string[] = []) {
+type HarnessOptions = {
+  existingPaths?: string[];
+  media?: Array<{ path: string; name: string }>;
+  allPosts?: Array<{ file?: { path: string }; data?: string }>;
+  processor?: Partial<{
+    processFile(file: unknown, cover: boolean): Promise<{ name: string; size: number; type: string }>;
+  }>;
+  confirmResult?: boolean;
+};
+
+async function createHarness(options: HarnessOptions = {}) {
+  const {
+    existingPaths = [],
+    media = [],
+    allPosts = [],
+    processor,
+    confirmResult = true,
+  } = options;
   const [domainSource, mediaDomainSource, workflowSource] = await Promise.all([
     readFile(`${root}public/admin/editorial-domain.js`, "utf8"),
     readFile(`${root}public/admin/media-domain.js`, "utf8"),
@@ -51,11 +68,14 @@ async function createHarness(existingPaths: string[] = []) {
             }
             throw Object.assign(new Error("Not found"), { status: 404 });
           },
-          async getMedia() {
-            return [];
+          async getMedia(folder: string) {
+            return folder === "src/content/posts" ? [] : media;
+          },
+          async getMediaFile(path: string) {
+            return { file: { path }, url: "/images/" + path };
           },
           async allEntriesByFolder() {
-            return [];
+            return allPosts;
           },
           async persistEntry(entry: PersistEntry) {
             persistCalls.push(entry);
@@ -77,9 +97,16 @@ async function createHarness(existingPaths: string[] = []) {
         listeners.set(name, handler);
       },
     },
+    DecapMediaProcessor: {
+      async processFile(file: unknown, cover: boolean) {
+        processedFiles.push(file);
+        if (processor?.processFile) return processor.processFile(file, cover);
+        return { name: "processed.webp", size: 100, type: "image/webp" };
+      },
+    },
     confirm: (message: string) => {
       confirmations.push(message);
-      return true;
+      return confirmResult;
     },
     setTimeout: (callback: () => void) => {
       callback();
@@ -87,6 +114,29 @@ async function createHarness(existingPaths: string[] = []) {
     },
     location,
   };
+  class MockFile {
+    name: string;
+    type: string;
+    size: number;
+    constructor(parts: string[], name: string, options: { type: string }) {
+      this.name = name;
+      this.type = options.type;
+      this.size = String(parts[0] || "").length;
+    }
+  }
+  context.File = MockFile;
+  context.FileReader = class {
+    result: string | ArrayBuffer | null = null;
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    error: Error | null = null;
+    readAsDataURL() {
+      this.result = "data:image/webp;base64,AAAA";
+      this.onload?.();
+    }
+  };
+  context.URL = { createObjectURL: () => "blob:mock" };
+  const processedFiles: unknown[] = [];
   context.window = context;
   runInNewContext(domainSource, context, {
     filename: `${root}public/admin/editorial-domain.js`,
@@ -107,6 +157,7 @@ async function createHarness(existingPaths: string[] = []) {
   return {
     confirmations,
     persistCalls,
+    processedFiles,
     preSave: requireListener("preSave"),
     postSave: requireListener("postSave"),
     location,
@@ -150,7 +201,7 @@ describe("Decap title-driven editorial workflow", () => {
 
   test("rejects a duplicate exact title before persisting", async () => {
     const target = "src/content/posts/重复标题.md";
-    const harness = await createHarness([target]);
+    const harness = await createHarness({ existingPaths: [target] });
     harness.preSave({
       entry: cmsEntry({ title: "重复标题", draft: true }, { newRecord: true }),
     });
@@ -200,5 +251,263 @@ describe("Decap title-driven editorial workflow", () => {
       newPath: "src/content/posts/新标题.md",
       slug: "新标题",
     });
+  });
+
+  test("renames a draft and migrates its media files to the new folder", async () => {
+    const harness = await createHarness({
+      media: [
+        { path: "public/images/posts/旧标题/shot.webp", name: "shot.webp" },
+        { path: "public/images/posts/旧标题/clip.mp4", name: "clip.mp4" },
+      ],
+    });
+    harness.preSave({
+      entry: cmsEntry(
+        { title: "新标题", draft: true },
+        { path: "src/content/posts/旧标题.md" },
+      ),
+    });
+
+    await harness
+      .initialize("proxy")
+      .persistEntry({
+        dataFiles: [
+          {
+            path: "src/content/posts/旧标题.md",
+            slug: "旧标题",
+            raw: "---\ntitle: 旧标题\ncover: /images/posts/旧标题/shot.webp\n---\n正文",
+          },
+        ],
+        assets: [],
+      });
+
+    const entry = harness.persistCalls[0];
+    const renamed = entry.dataFiles[0];
+    expect(renamed.newPath).toBe("src/content/posts/新标题.md");
+    expect(renamed.raw).toContain("/images/posts/新标题/shot.webp");
+    const mediaAssets = entry.assets.filter(
+      (asset) => asset.path && asset.path.includes("新标题"),
+    );
+    expect(mediaAssets.map((asset) => asset.path)).toEqual([
+      "public/images/posts/新标题/shot.webp",
+      "public/images/posts/新标题/clip.mp4",
+    ]);
+    expect(harness.processedFiles).toEqual([]);
+  });
+
+  test("rewrites linked articles and reports removed proxy media", async () => {
+    const harness = await createHarness({
+      media: [{ path: "public/images/posts/旧标题/shot.webp", name: "shot.webp" }],
+      allPosts: [
+        {
+          file: { path: "src/content/posts/other.md" },
+          data: "---\ntitle: Other\ncover: /images/posts/旧标题/shot.webp\n---\n",
+        },
+      ],
+    });
+    harness.preSave({
+      entry: cmsEntry(
+        { title: "新标题", draft: true },
+        { path: "src/content/posts/旧标题.md" },
+      ),
+    });
+
+    const implementation = harness.initialize("proxy");
+    implementation.deleteFiles = async () => undefined;
+    await implementation.persistEntry({
+      dataFiles: [
+        {
+          path: "src/content/posts/旧标题.md",
+          slug: "旧标题",
+          raw: "---\ntitle: 旧标题\n---\n",
+        },
+      ],
+      assets: [],
+    });
+
+    const dataFiles = harness.persistCalls[0].dataFiles;
+    expect(dataFiles.some((file) => file.path === "src/content/posts/other.md")).toBe(
+      true,
+    );
+    const other = dataFiles.find((file) => file.path === "src/content/posts/other.md");
+    expect(other.raw).toContain("/images/posts/新标题/shot.webp");
+  });
+
+  test("persists new cover assets with generated names and rewrites references", async () => {
+    const harness = await createHarness();
+    harness.preSave({
+      entry: cmsEntry({ title: "带图文章", draft: true }, { newRecord: true }),
+    });
+
+    const coverFile = { name: "orig.png", size: 10, type: "image/png" };
+    await harness.initialize().persistEntry({
+      dataFiles: [
+        {
+          path: "src/content/posts/带图文章.md",
+          slug: "带图文章",
+          raw: "---\ntitle: 带图文章\ncover: /images/posts/带图文章/orig.png\n---\n",
+        },
+      ],
+      assets: [
+        {
+          path: "orig.png",
+          field: { get: () => "cover" },
+          fileObj: coverFile,
+        },
+      ],
+    });
+
+    expect(harness.processedFiles).toHaveLength(1);
+    const entry = harness.persistCalls[0];
+    const asset = entry.assets[0];
+    expect(asset.path).toBe("public/images/posts/带图文章/cover.webp");
+    expect(asset.fileObj.name).toBe("cover.webp");
+    expect(entry.dataFiles[0].raw).toContain("/images/posts/带图文章/cover.webp");
+  });
+
+  test("asks before keeping an over-size compressed cover", async () => {
+    const harness = await createHarness({
+      processor: {
+        async processFile() {
+          return { name: "big.webp", size: 600 * 1024, type: "image/webp" };
+        },
+      },
+    });
+    harness.preSave({
+      entry: cmsEntry({ title: "大图文章", draft: true }, { newRecord: true }),
+    });
+
+    await harness.initialize().persistEntry({
+      dataFiles: [
+        {
+          path: "src/content/posts/大图文章.md",
+          slug: "大图文章",
+          raw: "---\ntitle: 大图文章\n---\n",
+        },
+      ],
+      assets: [
+        {
+          path: "big.png",
+          field: { get: () => "cover" },
+          fileObj: { name: "big.png", size: 100, type: "image/png" },
+        },
+      ],
+    });
+
+    expect(harness.confirmations.some((m) => m.includes("500KB"))).toBe(true);
+    expect(harness.persistCalls).toHaveLength(1);
+  });
+
+  test("cancels saving when the over-size image is declined", async () => {
+    const harness = await createHarness({
+      confirmResult: false,
+      processor: {
+        async processFile() {
+          return { name: "big.webp", size: 600 * 1024, type: "image/webp" };
+        },
+      },
+    });
+    harness.preSave({
+      entry: cmsEntry({ title: "大图文章", draft: true }, { newRecord: true }),
+    });
+
+    await expect(
+      harness.initialize().persistEntry({
+        dataFiles: [
+          {
+            path: "src/content/posts/大图文章.md",
+            slug: "大图文章",
+            raw: "---\ntitle: 大图文章\n---\n",
+          },
+        ],
+        assets: [
+          {
+            path: "big.png",
+            field: { get: () => "cover" },
+            fileObj: { name: "big.png", size: 100, type: "image/png" },
+          },
+        ],
+      }),
+    ).rejects.toThrow("已取消大图保存");
+    expect(harness.persistCalls).toEqual([]);
+  });
+
+  test("routes getEntry through the path alias after a rename", async () => {
+    const harness = await createHarness();
+    harness.preSave({
+      entry: cmsEntry(
+        { title: "新标题", draft: true },
+        { path: "src/content/posts/旧标题.md" },
+      ),
+    });
+
+    const implementation = harness.initialize("github");
+    await implementation.persistEntry({
+      dataFiles: [
+        {
+          path: "src/content/posts/旧标题.md",
+          slug: "旧标题",
+          raw: "---\ntitle: 旧标题\n---\n",
+        },
+      ],
+      assets: [],
+    });
+
+    expect(harness.persistCalls[0].dataFiles[0].newPath).toBe(
+      "src/content/posts/新标题.md",
+    );
+  });
+
+  test("asks before saving a draft with warnings", async () => {
+    const harness = await createHarness();
+    harness.preSave({
+      entry: cmsEntry(
+        {
+          title: "未来文章",
+          draft: true,
+          description: "摘要",
+          publishedAt: "2030-01-01",
+          category: "DevOps",
+        },
+        { newRecord: true },
+      ),
+    });
+
+    expect(harness.confirmations.some((m) => m.includes("发布日期在未来"))).toBe(true);
+  });
+
+  test("cancels saving when warnings are declined", async () => {
+    const harness = await createHarness({ confirmResult: false });
+    expect(() =>
+      harness.preSave({
+        entry: cmsEntry(
+          {
+            title: "未来文章",
+            draft: true,
+            description: "摘要",
+            publishedAt: "2030-01-01",
+            category: "DevOps",
+          },
+          { newRecord: true },
+        ),
+      }),
+    ).toThrow("已取消保存");
+  });
+
+  test("skips the title lock when renaming a draft is declined", async () => {
+    const harness = await createHarness({ confirmResult: false });
+    expect(() =>
+      harness.preSave({
+        entry: cmsEntry(
+          {
+            title: "新标题",
+            draft: true,
+            description: "摘要",
+            publishedAt: "2026-08-03",
+            category: "DevOps",
+          },
+          { path: "src/content/posts/旧标题.md" },
+        ),
+      }),
+    ).toThrow("已取消文章重命名");
   });
 });

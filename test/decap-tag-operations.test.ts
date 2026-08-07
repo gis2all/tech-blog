@@ -113,4 +113,49 @@ describe("Decap atomic tag operations", () => {
       "src/content/posts/two.md",
     ]);
   });
+
+  test("reads inline JSON tags and plain block tags", async () => {
+    const harness = await createHarness();
+
+    expect(
+      harness.operations.readTags('---\ntitle: A\ntags: ["One", "Two"]\n---\n'),
+    ).toEqual(["One", "Two"]);
+    expect(
+      harness.operations.readTags("---\ntitle: B\ntags:\n  - One\n  - Two\n---\n"),
+    ).toEqual(["One", "Two"]);
+    expect(harness.operations.readTags("no frontmatter")).toEqual([]);
+  });
+
+  test("replaces inline JSON tag lists with the merged values", async () => {
+    const harness = await createHarness();
+    const plan = await harness.operations.plan("Old", "Target");
+
+    expect(plan.entries).toHaveLength(2);
+  });
+
+  test("fails loudly when the media backend is missing", async () => {
+    const source = await readFile(`${root}public/admin/tag-operations.js`, "utf8");
+    const context: Record<string, unknown> = {
+      window: {},
+      DecapTagDomain: {
+        uniqueTags: (tags: string[]) => Array.from(new Set(tags)),
+        replaceTag: (tags: string[], source: string, target: string) =>
+          tags.map((tag) => (tag === source ? target : tag)),
+        countUsage: () => ({}),
+        mergePlan: () => ({ source: "Old", target: "Target", library: [], entries: [] }),
+      },
+    };
+    context.window = context;
+    runInNewContext(source, context, {
+      filename: `${root}public/admin/tag-operations.js`,
+    });
+    const operations = context.DecapTagOperations as {
+      plan(source: string, target: string): Promise<unknown>;
+      merge(plan: unknown): Promise<unknown>;
+    };
+
+    await expect(operations.plan("Old", "Target")).rejects.toThrow("后台保存连接尚未就绪");
+    await expect(operations.merge({})).rejects.toThrow("合并计划无效");
+    await expect(operations.merge(null)).rejects.toThrow("合并计划无效");
+  });
 });
