@@ -4,10 +4,10 @@ description: 平常工作中经常和Jenkins打交道，所以就想着考个相
 publishedAt: 2021-08-16
 category: DevOps
 tags:
-  - Jenkins
-  - CJE
-  - Jenkins认证工程师
-  - 认证Jenkins工程师
+  - "Jenkins"
+  - "CJE"
+  - "Jenkins认证工程师"
+  - "认证Jenkins工程师"
 draft: false
 featured: false
 updatedAt: 2021-08-16

@@ -4,11 +4,11 @@ description: 在编写Jenkinsfile时候，经常由于代码格式不正确而�
 publishedAt: 2020-06-21
 category: DevOps
 tags:
-  - Jenkins
-  - Jenkinsfiel
-  - Jenkinsfile格式
-  - 验证
-  - 校验Jenkinsfile
+  - "Jenkins"
+  - "Jenkinsfiel"
+  - "Jenkinsfile格式"
+  - "验证"
+  - "校验Jenkinsfile"
 draft: false
 featured: false
 updatedAt: 2020-06-21

@@ -4,12 +4,12 @@ description: 开发python项目经常遇到的问题就是自己本机代码没�
 publishedAt: 2021-09-24
 category: 编程开发
 tags:
-  - Coding
-  - Python
-  - virtualenv
-  - requirements
-  - python依赖
-  - python虚拟环境
+  - "Coding"
+  - "Python"
+  - "virtualenv"
+  - "requirements"
+  - "python依赖"
+  - "python虚拟环境"
 draft: false
 featured: false
 updatedAt: 2021-09-24

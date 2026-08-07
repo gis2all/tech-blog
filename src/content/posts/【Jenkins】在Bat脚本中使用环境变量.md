@@ -4,11 +4,11 @@ description: 我司的PE有这样一个需求：编译C项目不同分支时，�
 publishedAt: 2020-04-17
 category: DevOps
 tags:
-  - Jenkins
-  - bat
-  - bat环境变量
-  - bat脚本
-  - jenkins bat
+  - "Jenkins"
+  - "bat"
+  - "bat环境变量"
+  - "bat脚本"
+  - "jenkins bat"
 draft: false
 featured: false
 updatedAt: 2020-04-17

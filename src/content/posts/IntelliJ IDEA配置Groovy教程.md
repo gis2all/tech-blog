@@ -4,10 +4,10 @@ description: 写这篇文章的起因是因为经常性的需要更新Jenkins脚
 publishedAt: 2021-07-24
 category: DevOps
 tags:
-  - Jenkins
-  - Groovy
-  - ideaJ
-  - groovy + IDEA
+  - "Jenkins"
+  - "Groovy"
+  - "ideaJ"
+  - "groovy + IDEA"
 draft: false
 featured: false
 updatedAt: 2021-07-24

@@ -4,9 +4,9 @@ description: 项目无缘无故的总是自动重复Build，但是并没有设�
 publishedAt: 2020-04-08
 category: DevOps
 tags:
-  - Jenkins
-  - 项目重复构建
-  - Build重复
+  - "Jenkins"
+  - "项目重复构建"
+  - "Build重复"
 draft: false
 featured: false
 updatedAt: 2020-04-08

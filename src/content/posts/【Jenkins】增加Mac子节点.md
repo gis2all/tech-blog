@@ -4,11 +4,11 @@ description: 由于平台的限制, iOS应用只能在 Mac电脑 上编译. 为�
 publishedAt: 2020-09-09
 category: DevOps
 tags:
-  - Jenkins
-  - jenkins节点
-  - Jenkins子节点
-  - Jenkins mac节点
-  - 节点
+  - "Jenkins"
+  - "jenkins节点"
+  - "Jenkins子节点"
+  - "Jenkins mac节点"
+  - "节点"
 draft: false
 featured: false
 updatedAt: 2020-09-09

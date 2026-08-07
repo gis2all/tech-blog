@@ -4,9 +4,9 @@ description: 在Jenkins里面使用 Window batch command 从远程服务器复�
 publishedAt: 2020-03-10
 category: DevOps
 tags:
-  - Jenkins
-  - 测试工程师
-  - jenkens
+  - "Jenkins"
+  - "测试工程师"
+  - "jenkens"
 draft: false
 featured: false
 updatedAt: 2020-03-10

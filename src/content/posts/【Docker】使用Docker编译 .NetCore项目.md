@@ -4,11 +4,11 @@ description: 我们知道在Visual Studio上不能同时构建两个App, 即MSBu
 publishedAt: 2021-02-01
 category: DevOps
 tags:
-  - Docker
-  - .netcore docker
-  - docker msbuild
-  - .Net Core
-  - Dotnet core
+  - "Docker"
+  - ".netcore docker"
+  - "docker msbuild"
+  - ".Net Core"
+  - "Dotnet core"
 draft: false
 featured: false
 updatedAt: 2021-02-01

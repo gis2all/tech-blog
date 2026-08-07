@@ -4,12 +4,12 @@ description: 准备工作。配置PC的测试环境 开启Win10开发者模式 �
 publishedAt: 2020-10-30
 category: 测试工程
 tags:
-  - Automated Testing
-  - 自动化测试
-  - winappdriver
-  - appium
-  - selemiun
-  - 测试
+  - "Automated Testing"
+  - "自动化测试"
+  - "winappdriver"
+  - "appium"
+  - "selemiun"
+  - "测试"
 draft: false
 featured: false
 updatedAt: 2020-10-30

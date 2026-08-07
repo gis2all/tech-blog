@@ -4,11 +4,11 @@ description: 工作中难免会用到虚拟机，之前都是使用VMware Workst
 publishedAt: 2021-06-02
 category: DevOps
 tags:
-  - DevOps
-  - Hyper-V管理器
-  - Hyper-V
-  - Win10虚拟机
-  - 虚拟机
+  - "DevOps"
+  - "Hyper-V管理器"
+  - "Hyper-V"
+  - "Win10虚拟机"
+  - "虚拟机"
 draft: false
 featured: false
 updatedAt: 2021-06-02

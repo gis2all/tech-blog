@@ -4,10 +4,10 @@ description: "| 命令 | 功能 | | :-- | :-- | | shell input text | 输入文�
 publishedAt: 2020-04-29
 category: 测试工程
 tags:
-  - Automated Testing
-  - android
-  - adb
-  - 安卓删除文件
+  - "Automated Testing"
+  - "android"
+  - "adb"
+  - "安卓删除文件"
 draft: false
 featured: false
 updatedAt: 2020-04-29

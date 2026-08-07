@@ -4,8 +4,8 @@ description: Google Earth Studio教程专栏 【Google Earth Studio】初步探�
 publishedAt: 2020-02-12
 category: GIS
 tags:
-  - GIS
-  - 【google earth studio】高级编辑技巧
+  - "GIS"
+  - "【google earth studio】高级编辑技巧"
 draft: false
 featured: false
 updatedAt: 2020-02-12

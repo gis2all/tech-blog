@@ -4,11 +4,11 @@ description: MSBuild提供日志记录功能，用来记录编译过程中的各
 publishedAt: 2020-06-12
 category: 编程开发
 tags:
-  - Coding
-  - 代码质量
-  - C#
-  - MSbuild日志
-  - MSBuild输出
+  - "Coding"
+  - "代码质量"
+  - "C#"
+  - "MSbuild日志"
+  - "MSBuild输出"
 draft: false
 featured: false
 updatedAt: 2020-06-12

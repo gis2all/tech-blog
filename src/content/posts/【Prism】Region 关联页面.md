@@ -4,9 +4,9 @@ description: MSDN教程，看完后温习一遍，就算是中文懒人包吧。
 publishedAt: 2018-02-05
 category: 编程开发
 tags:
-  - Coding
-  - Prism
-  - Region
+  - "Coding"
+  - "Prism"
+  - "Region"
 draft: false
 featured: false
 updatedAt: 2018-02-05

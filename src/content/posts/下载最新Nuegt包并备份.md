@@ -4,11 +4,11 @@ description: 需求是备份Daily Nuget Package，这样以后要用到时可以
 publishedAt: 2021-06-03
 category: 编程开发
 tags:
-  - Coding
-  - nuget获取最新包
-  - nuget version
-  - C# 最新版本
-  - nuget最新的包
+  - "Coding"
+  - "nuget获取最新包"
+  - "nuget version"
+  - "C# 最新版本"
+  - "nuget最新的包"
 draft: false
 featured: false
 updatedAt: 2021-06-03

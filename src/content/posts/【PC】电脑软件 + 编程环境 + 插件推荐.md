@@ -4,10 +4,10 @@ description: 这是我的电脑软件清单，或许能在这里找到你所需�
 publishedAt: 2020-03-13
 category: 阅读与思考
 tags:
-  - Books
-  - Chrome
-  - MicrosoftEdge
-  - VisualStudioCode
+  - "Books"
+  - "Chrome"
+  - "MicrosoftEdge"
+  - "VisualStudioCode"
 draft: false
 featured: false
 updatedAt: 2022-10-13

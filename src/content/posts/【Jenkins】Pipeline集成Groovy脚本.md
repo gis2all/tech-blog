@@ -4,11 +4,11 @@ description: 为方便编辑和调试脚本， IDE建议选择 IntelliJ IDEA， 
 publishedAt: 2020-09-11
 category: DevOps
 tags:
-  - Jenkins
-  - Groovy
-  - jenkins groovy
-  - groovy脚本
-  - pipeline groovy
+  - "Jenkins"
+  - "Groovy"
+  - "jenkins groovy"
+  - "groovy脚本"
+  - "pipeline groovy"
 draft: false
 featured: false
 updatedAt: 2020-09-11

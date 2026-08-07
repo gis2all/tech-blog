@@ -4,9 +4,9 @@ description: Jenkins时间表使用的UNIX知名的Cron语法 Cron语法包括�
 publishedAt: 2020-01-09
 category: DevOps
 tags:
-  - Jenkins
-  - Cron表达式
-  - 任务调度
+  - "Jenkins"
+  - "Cron表达式"
+  - "任务调度"
 draft: false
 featured: false
 updatedAt: 2020-01-09

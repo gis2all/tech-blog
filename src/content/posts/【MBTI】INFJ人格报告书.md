@@ -4,8 +4,8 @@ description: 前言。 这是基于16种人格测试分析来的测试报告，�
 publishedAt: 2020-02-12
 category: 阅读与思考
 tags:
-  - Books
-  - infj-t完整报告
+  - "Books"
+  - "infj-t完整报告"
 draft: false
 featured: false
 updatedAt: 2020-02-12

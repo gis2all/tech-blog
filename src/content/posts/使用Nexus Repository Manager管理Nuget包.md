@@ -4,9 +4,9 @@ description: Nexus Repository Manager是什么 Nexus是一个存储库管理器�
 publishedAt: 2021-03-25
 category: DevOps
 tags:
-  - DevOps
-  - nexus
-  - 制品管理
+  - "DevOps"
+  - "nexus"
+  - "制品管理"
 draft: false
 featured: false
 updatedAt: 2021-03-25

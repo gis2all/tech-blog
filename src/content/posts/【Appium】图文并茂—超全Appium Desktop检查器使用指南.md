@@ -4,12 +4,12 @@ description: 其实对于自动化测试而言，脚本的编写其实不算太�
 publishedAt: 2020-04-28
 category: 测试工程
 tags:
-  - Automated Testing
-  - Appium检查器
-  - appium
-  - Inspector
-  - appium desktop
-  - appium测试
+  - "Automated Testing"
+  - "Appium检查器"
+  - "appium"
+  - "Inspector"
+  - "appium desktop"
+  - "appium测试"
 draft: false
 featured: false
 updatedAt: 2020-04-28

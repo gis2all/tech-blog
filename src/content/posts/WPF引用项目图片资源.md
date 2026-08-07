@@ -4,12 +4,12 @@ description: WPF引用图片资源的方式有很多种，分不同项目之间�
 publishedAt: 2021-02-07
 category: 编程开发
 tags:
-  - Coding
-  - WPF
-  - wpf引用图片
-  - WPF 引用
-  - WPF资源文件
-  - wpf xaml相对路径
+  - "Coding"
+  - "WPF"
+  - "wpf引用图片"
+  - "WPF 引用"
+  - "WPF资源文件"
+  - "wpf xaml相对路径"
 draft: false
 featured: false
 updatedAt: 2021-02-07

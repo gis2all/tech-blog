@@ -4,10 +4,10 @@ description: 参考资源 windows CMD命令大全及详细解释和语法 | 符�
 publishedAt: 2020-04-08
 category: 测试工程
 tags:
-  - Automated Testing
-  - bat
-  - bat脚本
-  - 脚本
+  - "Automated Testing"
+  - "bat"
+  - "bat脚本"
+  - "脚本"
 draft: false
 featured: false
 updatedAt: 2020-04-08

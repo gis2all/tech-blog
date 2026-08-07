@@ -4,12 +4,12 @@ description: 使用Visual Studio 2019自带的Android Devices Manager设备管�
 publishedAt: 2020-04-27
 category: 测试工程
 tags:
-  - Automated Testing
-  - appium
-  - appium安卓
-  - appium例子案例
-  - appium测试
-  - appium标准测试
+  - "Automated Testing"
+  - "appium"
+  - "appium安卓"
+  - "appium例子案例"
+  - "appium测试"
+  - "appium标准测试"
 draft: false
 featured: false
 updatedAt: 2020-04-27

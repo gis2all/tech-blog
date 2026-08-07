@@ -4,11 +4,11 @@ description: 【读书笔记】Jenkins 2.x实践指南
 publishedAt: 2020-06-11
 category: 阅读与思考
 tags:
-  - Books
-  - Jenkins
-  - jenkins实践指南
-  - jenkins 2.x
-  - 翟志军
+  - "Books"
+  - "Jenkins"
+  - "jenkins实践指南"
+  - "jenkins 2.x"
+  - "翟志军"
 draft: false
 featured: false
 updatedAt: 2020-06-11

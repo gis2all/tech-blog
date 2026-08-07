@@ -4,9 +4,9 @@ description: ENVI中的裁剪不是很方便，背景值总是容易保留，其
 publishedAt: 2020-03-02
 category: GIS
 tags:
-  - GIS
-  - ENVI去除背景值
-  - ENVI裁剪
+  - "GIS"
+  - "ENVI去除背景值"
+  - "ENVI裁剪"
 draft: false
 featured: false
 updatedAt: 2020-03-02

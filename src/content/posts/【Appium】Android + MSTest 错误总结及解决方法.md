@@ -4,8 +4,8 @@ description: "| 平台 | 自动化测试框架 | 单元测试框架 | | :-- | :-
 publishedAt: 2020-04-29
 category: 测试工程
 tags:
-  - Automated Testing
-  - error starting appium
+  - "Automated Testing"
+  - "error starting appium"
 draft: false
 featured: false
 updatedAt: 2020-04-29

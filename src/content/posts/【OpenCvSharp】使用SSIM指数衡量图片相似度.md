@@ -4,12 +4,12 @@ description: 在自动化测试时，经常需要截图和标准图片对比，�
 publishedAt: 2020-04-03
 category: 测试工程
 tags:
-  - Automated Testing
-  - 对比图片
-  - 图片对比
-  - 图片相似性
-  - 自动化测试
-  - OpenCvSharp
+  - "Automated Testing"
+  - "对比图片"
+  - "图片对比"
+  - "图片相似性"
+  - "自动化测试"
+  - "OpenCvSharp"
 draft: false
 featured: false
 updatedAt: 2020-04-03

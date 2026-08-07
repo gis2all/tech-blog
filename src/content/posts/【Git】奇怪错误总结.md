@@ -4,12 +4,12 @@ description: 使用TortoiseGit进行Git操作时，出现以下错误 TortoiseGi
 publishedAt: 2020-04-04
 category: 编程开发
 tags:
-  - Coding
-  - TortoiseGit
-  - Fatal Error
-  - Git
-  - Error
-  - Plink
+  - "Coding"
+  - "TortoiseGit"
+  - "Fatal Error"
+  - "Git"
+  - "Error"
+  - "Plink"
 draft: false
 featured: false
 updatedAt: 2020-04-04

@@ -4,11 +4,11 @@ description: 在使用Jenkins配置项目的时候，有时会遇到要使用外
 publishedAt: 2020-03-19
 category: DevOps
 tags:
-  - Jenkins
-  - unit test
-  - 脚本
-  - .Net Core
-  - 依赖
+  - "Jenkins"
+  - "unit test"
+  - "脚本"
+  - ".Net Core"
+  - "依赖"
 draft: false
 featured: false
 updatedAt: 2020-03-19

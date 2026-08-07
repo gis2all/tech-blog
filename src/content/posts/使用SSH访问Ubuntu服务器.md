@@ -4,11 +4,11 @@ description: SSH访问的原理很简单，如图所示。被访问的机器称�
 publishedAt: 2021-07-12
 category: DevOps
 tags:
-  - DevOps
-  - ssh
-  - ssh ubuntu
-  - wsl
-  - windows ssh
+  - "DevOps"
+  - "ssh"
+  - "ssh ubuntu"
+  - "wsl"
+  - "windows ssh"
 draft: false
 featured: false
 updatedAt: 2021-07-12

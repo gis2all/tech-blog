@@ -4,11 +4,11 @@ description: 为方便测试，将测试机器上的文件夹共享，结果有�
 publishedAt: 2020-05-09
 category: DevOps
 tags:
-  - Jenkins
-  - 文件夹
-  - 权限
-  - access
-  - permissions
+  - "Jenkins"
+  - "文件夹"
+  - "权限"
+  - "access"
+  - "permissions"
 draft: false
 featured: false
 updatedAt: 2020-05-09

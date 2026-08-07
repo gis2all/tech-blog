@@ -4,12 +4,12 @@ description: Accessibility 508定义可参考 https://dev-preview.cnblogs.com/ks
 publishedAt: 2020-10-13
 category: 编程开发
 tags:
-  - Coding
-  - WPF可用性
-  - 可用性508
+  - "Coding"
+  - "WPF可用性"
+  - "可用性508"
   - "508"
-  - WPF Tab键
-  - WPF Focus
+  - "WPF Tab键"
+  - "WPF Focus"
 draft: false
 featured: false
 updatedAt: 2020-10-13

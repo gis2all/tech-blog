@@ -4,10 +4,10 @@ description: 做桌面程序的自动化测试，难免会涉及到控件的等�
 publishedAt: 2020-09-04
 category: 测试工程
 tags:
-  - Automated Testing
-  - WinAppDriver
-  - 等待时间
-  - WinAppDriver等待
+  - "Automated Testing"
+  - "WinAppDriver"
+  - "等待时间"
+  - "WinAppDriver等待"
 draft: false
 featured: false
 updatedAt: 2020-09-04

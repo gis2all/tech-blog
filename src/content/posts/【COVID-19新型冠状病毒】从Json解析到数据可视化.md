@@ -4,10 +4,10 @@ description: 参考Github上的这项目 wuhan2020/map-viz 我使用的数据是
 publishedAt: 2020-02-03
 category: 编程开发
 tags:
-  - Coding
-  - 数据分析
-  - json
-  - csv
+  - "Coding"
+  - "数据分析"
+  - "json"
+  - "csv"
 draft: false
 featured: false
 updatedAt: 2020-02-03

@@ -4,9 +4,9 @@ description: Google Earth Studio教程专栏 【Google Earth Studio】初步探�
 publishedAt: 2020-01-15
 category: GIS
 tags:
-  - GIS
-  - googleearth
-  - 视频处理
+  - "GIS"
+  - "googleearth"
+  - "视频处理"
 draft: false
 featured: false
 updatedAt: 2020-01-15

@@ -4,11 +4,11 @@ description: 几乎把中文所有C和SonarQube集成的资料看遍了，发现
 publishedAt: 2020-06-16
 category: 编程开发
 tags:
-  - Coding
-  - SonarQube
-  - .Net Core
-  - MSBuild
-  - 代码质量
+  - "Coding"
+  - "SonarQube"
+  - ".Net Core"
+  - "MSBuild"
+  - "代码质量"
 draft: false
 featured: false
 updatedAt: 2020-06-16

@@ -4,12 +4,12 @@ description: 理想中的GUI测试报告应该有一系列按时间顺序的屏�
 publishedAt: 2020-08-19
 category: 测试工程
 tags:
-  - Automated Testing
-  - selenium
-  - GUI测试
-  - GUI测试报告
-  - 高亮控件
-  - 绘制矩形
+  - "Automated Testing"
+  - "selenium"
+  - "GUI测试"
+  - "GUI测试报告"
+  - "高亮控件"
+  - "绘制矩形"
 draft: false
 featured: false
 updatedAt: 2020-08-19

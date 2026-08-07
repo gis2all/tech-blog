@@ -4,9 +4,9 @@ description: 要完成参数化选择Git分支，并Pull分支代码需要以下
 publishedAt: 2020-03-03
 category: DevOps
 tags:
-  - Jenkins
-  - jenkens
-  - git
+  - "Jenkins"
+  - "jenkens"
+  - "git"
 draft: false
 featured: false
 updatedAt: 2020-03-03

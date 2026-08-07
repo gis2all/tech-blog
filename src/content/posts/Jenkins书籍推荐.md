@@ -4,11 +4,11 @@ description: 关于书籍推荐，我一向不建议阅读国人的书籍，有�
 publishedAt: 2021-01-18
 category: DevOps
 tags:
-  - Jenkins
-  - jenkins书籍
-  - Jenkins权威指南
-  - Jenkins 2
-  - Pipeline
+  - "Jenkins"
+  - "jenkins书籍"
+  - "Jenkins权威指南"
+  - "Jenkins 2"
+  - "Pipeline"
 draft: false
 featured: false
 updatedAt: 2021-01-18

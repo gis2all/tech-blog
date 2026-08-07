@@ -4,11 +4,11 @@ description: 文章有些长，可以先直接到最后一步四、Jenkins + Doc
 publishedAt: 2021-07-13
 category: DevOps
 tags:
-  - Jenkins
-  - docker jenkins
-  - Jenkins集成Docker
-  - Jenkins Docker
-  - Docker Dekstop
+  - "Jenkins"
+  - "docker jenkins"
+  - "Jenkins集成Docker"
+  - "Jenkins Docker"
+  - "Docker Dekstop"
 draft: false
 featured: false
 updatedAt: 2021-07-13

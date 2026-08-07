@@ -4,10 +4,10 @@ description: 我们写在Jenkinsfile中写脚本的模式是， 先在IDE中验�
 publishedAt: 2021-07-29
 category: DevOps
 tags:
-  - Jenkins
-  - jenkins groovy
-  - jenkins使用groovy
-  - groovy脚本
+  - "Jenkins"
+  - "jenkins groovy"
+  - "jenkins使用groovy"
+  - "groovy脚本"
 draft: false
 featured: false
 updatedAt: 2021-07-29

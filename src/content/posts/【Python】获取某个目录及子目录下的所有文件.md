@@ -4,11 +4,11 @@ description: 使用 os.walk() 输出结果 为方便知道每次打印结果，�
 publishedAt: 2021-04-12
 category: 编程开发
 tags:
-  - Coding
-  - Python
-  - 获取所有文件
-  - python文件夹
-  - python文件
+  - "Coding"
+  - "Python"
+  - "获取所有文件"
+  - "python文件夹"
+  - "python文件"
 draft: false
 featured: false
 updatedAt: 2021-04-12

@@ -4,10 +4,10 @@ description: 踩得的坑多了，坑也就被踩平了🤷‍♂️ 发现一�
 publishedAt: 2020-06-16
 category: 测试工程
 tags:
-  - Automated Testing
-  - bat
-  - 批处理
-  - 路径空格
+  - "Automated Testing"
+  - "bat"
+  - "批处理"
+  - "路径空格"
 draft: false
 featured: false
 updatedAt: 2020-06-16

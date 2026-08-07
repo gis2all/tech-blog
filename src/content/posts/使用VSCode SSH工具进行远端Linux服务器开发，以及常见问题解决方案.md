@@ -4,12 +4,12 @@ description: SSH客户端设置 安装openssh-clien 生成私钥 SSH服务器设
 publishedAt: 2021-09-01
 category: DevOps
 tags:
-  - DevOps
-  - linux
-  - VS Code
-  - ssh
-  - vscode ssh
-  - ubuntu
+  - "DevOps"
+  - "linux"
+  - "VS Code"
+  - "ssh"
+  - "vscode ssh"
+  - "ubuntu"
 draft: false
 featured: false
 updatedAt: 2021-09-01

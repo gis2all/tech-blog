@@ -4,8 +4,8 @@ description: "| Title | Info | | :-- | :-- | | 书名 | Jenkins权威指南 | | 
 publishedAt: 2020-02-21
 category: 阅读与思考
 tags:
-  - Books
-  - jenkins权威指南2云盘下载
+  - "Books"
+  - "jenkins权威指南2云盘下载"
 draft: false
 featured: false
 updatedAt: 2020-02-21

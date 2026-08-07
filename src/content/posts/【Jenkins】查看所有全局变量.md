@@ -4,8 +4,8 @@ description: 全局变量分为两种，一种是系统全局变量, 一种是Je
 publishedAt: 2020-12-04
 category: DevOps
 tags:
-  - Jenkins
-  - jenkins变量
+  - "Jenkins"
+  - "jenkins变量"
 draft: false
 featured: false
 updatedAt: 2020-12-04

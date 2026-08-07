@@ -4,12 +4,12 @@ description: Appium是用于本机， 混合和移动Web应用程序的 开源�
 publishedAt: 2020-03-22
 category: 测试工程
 tags:
-  - Automated Testing
-  - appium
-  - 安卓自动化测试
-  - android
-  - 自动化测试
-  - 测试
+  - "Automated Testing"
+  - "appium"
+  - "安卓自动化测试"
+  - "android"
+  - "自动化测试"
+  - "测试"
 draft: false
 featured: false
 updatedAt: 2020-03-22

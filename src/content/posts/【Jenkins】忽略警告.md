@@ -4,11 +4,11 @@ description: Jenkins的警告类型分为两种 系统警告 ： 一般提醒用
 publishedAt: 2020-04-21
 category: DevOps
 tags:
-  - Jenkins
-  - jenkins忽略警告
-  - jenkins警告
-  - jinkens忽略
-  - jenkins warning
+  - "Jenkins"
+  - "jenkins忽略警告"
+  - "jenkins警告"
+  - "jinkens忽略"
+  - "jenkins warning"
 draft: false
 featured: false
 updatedAt: 2020-04-21
