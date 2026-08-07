@@ -68,7 +68,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - 阅读历史保存在浏览器 `localStorage`，记录最近 20 篇及阅读进度；首页桌面右栏、移动端文章列表前和正文桌面右栏均最多显示 3 篇并使用 `01` 至 `03` 编号，正文排除当前文章，最近阅读卡片不展示进度或清空操作。
 - 已开启 GitHub Discussions，并在文章详情页通过 Giscus 接入评论；当前使用 `gis2all/tech-blog` 仓库、`Announcements` 分类、`pathname` 映射，开发和生产环境均加载 Giscus 外部脚本；Giscus GitHub App 已授权到该仓库，本地已验证评论区可加载。
 - 已接入 Biome lint/format（`npm run lint` / `npm run format`）与后台 JS 类型检查（`npm run check:admin`，基于 `tsc --checkJs` + `public/admin/admin-globals.d.ts`），并全部进入 CI 门禁；`public/admin` 旧脚本不参与自动格式化，但参与 lint 与类型检查。
-- Vitest 覆盖率范围已扩展至后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`；门禁为全局 75/72/80/75、`src/lib/**` 85/85/85/85、`public/admin/**` 70/70/75/70。
+- Vitest 覆盖率范围已扩展至后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`；门禁为全局 90/82/92/94、`src/lib/**` 95/84/95/98、`public/admin/**` 88/82/90/92（statements/branches/functions/lines）。
 - E2E 新增 Axe 可访问性门禁（`test/e2e/accessibility.spec.ts`，9 个关键页面断言 serious/critical 违规为 0）；新增 Lighthouse 性能预算（`npm run perf`，预算见 `lighthouse-budgets.json`）。
 - 新增后台 UI 自动化 E2E（`test/e2e/admin/`，16 个场景）：覆盖本地登录、六入口导航、文章列表搜索/筛选、草稿视图、编辑器字段与标题校验、编辑预览同步、未保存提醒、深色模式、新建草稿落盘、重复标题拦截、草稿重命名、标签新建/合并、媒体上传与未使用删除；写工作树的场景都自带清理，admin 项目串行执行。
 - 后台可访问性已自动化为门禁：Axe 扫描后台文章列表、标签、媒体页无 serious/critical 违规；为此加深了弱化文字、成功/警告状态的对比度（`--text-faint`、`--status-success`、`--status-warning`）。
@@ -85,15 +85,15 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 npm run check         → 0 errors, 0 warnings, 1 hint
 npm run check:admin   → 0 errors（public/admin 全量 checkJs）
 npm run lint          → Biome 104 files checked, no issues
-npm test              → 31 test files passed, 272 tests passed
-npm run test:coverage → 全局 statements 81.3%, branches 71.1%, functions 90.5%, lines 85.2%
-                        （src/lib 保持 97.5 / 84 / 100 / 100，public/admin 75.2 / 67.8 / 85.3 / 79.6）
+npm test              → 31 test files passed, 287 tests passed
+npm run test:coverage → 全局 statements 93.0%, branches 84.3%, functions 95.5%, lines 96.6%
+                        （src/lib 97.6 / 85.7 / 100 / 100，public/admin 91.7 / 84.0 / 94.9 / 95.6）
 npm run test:e2e      → 59 tests passed（43 前台 + 16 后台 UI，含 Axe 场景）
 npm run build         → 427 pages built
 npm run perf          → Lighthouse 预算通过（首页 275KB，文章 314KB）
 ```
 
-以上是最近一次完整代码验证结果：Astro/TypeScript 检查 0 错误；后台 JS 类型检查 0 错误；Biome lint 全绿；Vitest 31 个文件 272 个测试通过；Playwright 59 个场景通过（43 前台 + 16 后台 UI，Axe serious/critical 为 0）；生产构建 427 页；Lighthouse 性能预算通过。本批改动均未提交。
+以上是最近一次完整代码验证结果：Astro/TypeScript 检查 0 错误；后台 JS 类型检查 0 错误；Biome lint 全绿；Vitest 31 个文件 287 个测试通过；Playwright 59 个场景通过（43 前台 + 16 后台 UI，Axe serious/critical 为 0）；生产构建 427 页；Lighthouse 性能预算通过。本批改动均未提交。
 
 浏览器验证：
 
@@ -572,13 +572,13 @@ public/images/posts/
 - 页面逐项开发期间优先运行语法检查、相关 Vitest 或直接代码核对，不为每个微调重复完整构建、全量浏览器自动化和多轮截图。
 - 一个页面或阶段收口后再统一运行与风险相称的检查；第三阶段完成前至少运行 `npm run check`、相关 Vitest、`npm run build`，并用真实浏览器验证后台导航、搜索、筛选、编辑、标签、媒体、弹窗、浅色/深色和本地保存流程。生产 OAuth 与远端发布只在明确需要时验证。
 - 代码风格与后台类型检查是 CI 门禁：本地改动后先跑 `npm run lint`（Biome）与 `npm run check:admin`（`tsc --checkJs`）；`npm run format` 只格式化 src/test/scripts 与配置文件，`public/admin` 旧脚本不参与自动格式化。
-- Vitest 覆盖率门禁覆盖 `src/lib` 与后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`：全局 75/72/80/75，`src/lib/**` 85/85/85/85，`public/admin/**` 70/70/75/70。
+- Vitest 覆盖率门禁覆盖 `src/lib` 与后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`：全局 90/82/92/94，`src/lib/**` 95/84/95/98，`public/admin/**` 88/82/90/92。
 - `npm run perf` 对生产预览运行 Lighthouse 性能预算（`lighthouse-budgets.json`）；脚本会复用已运行的预览服务，但若 4321 被 `astro dev` 占用会报错并退出，避免把开发态误测成生产性能。
 - 封面缩略图（`*-thumb.webp`）是派生产物：生产在 `postbuild` 阶段生成到 `dist/`，开发态由 Vite 中间件按需生成；不要提交 `dist/`，也不要删除 `cover.webp` 原图（中间件与构建脚本都依赖它）。
 - Docker 容器只覆盖本地开发与 CMS 后端（4321/4322）；Playwright E2E、Lighthouse 和 CI 仍在宿主机/GitHub Actions 运行，容器不安装浏览器。`package.json` 或 `package-lock.json` 变化后需要 `docker compose build` 重建镜像，单纯改源码无需重建。
 - 后台 E2E 用 `npx playwright test --project=admin` 单独运行（或随 `npm run test:e2e` 全量跑）；Playwright 会同时拉起 4321 开发服务与 4322 本地 CMS 后端，admin 项目单 worker 串行执行。修改 `public/admin/*` 后按此回归。
 - 后台 E2E 不与具体内容数量或某篇真实文章绑定：搜索/草稿视图用自建时间戳草稿夹具并自清理，断言只依赖关系（"可见行全部是草稿"、"搜索唯一命中自建标题"）；新增/删除真实文章无需改测试。
-- 覆盖率门禁：全局分支 72、`src/lib/**` 分支 85、`public/admin/**` 分支 70（语句/函数/行阈值见 `vitest.config.ts`）。后台 domain 与 src/lib 的缺口按覆盖率报告的未覆盖行补单测，UI 粘合代码由后台 E2E 兜底。
+- 覆盖率门禁：全局 90/82/92/94、`src/lib/**` 95/84/95/98、`public/admin/**` 88/82/90/92（statements/branches/functions/lines，见 `vitest.config.ts`）。后台 domain 与 src/lib 的缺口按覆盖率报告的未覆盖行补单测，UI 粘合代码由后台 E2E 兜底。
 - Playwright E2E 在 Windows 结束后可能残留 `astro dev` 进程占用 4321；切换开发/预览/构建前先确认端口空闲。
 - Decap 升级回归清单：public/admin/decap-dom-adapter.js 集中了所有 Decap 内部 DOM 选择器（[class*=EditorContainer]、AppMainContainer、ToolbarSectionMeta 等）。升级 decap-cms 后先检查该文件的每个选择器是否仍命中，再跑后台 E2E（
 px playwright test --project=admin）和人工检查导航、编辑器工具栏、预览、发布菜单、媒体库五个区域。public/admin/admin-shell.css 里的 Decap 类名样式是另一处升级风险点。

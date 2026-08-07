@@ -229,7 +229,7 @@ npm run perf
 | `npm run check:admin` | 用 `tsc --checkJs` 检查后台脚本类型 |
 | `npm run lint` | Biome 代码风格与静态检查 |
 | `npm run test` | 运行 Vitest 测试 |
-| `npm run test:coverage` | 覆盖率门禁：全局 75/72/80/75，`src/lib` 85/85/85/85，后台脚本 70/70/75/70 |
+| `npm run test:coverage` | 覆盖率门禁：全局 90/82/92/94，`src/lib` 95/84/95/98，后台脚本 88/82/90/92（语句/分支/函数/行） |
 | `npm run test:e2e` | 运行 Playwright 浏览器测试（前台 43 项 + 后台 UI 16 项，含 Axe 可访问性门禁） |
 | `npm run build` | 验证生产构建并生成 Pagefind 索引 |
 | `npm run perf` | 对生产预览运行 Lighthouse 性能预算 |
