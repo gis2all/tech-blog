@@ -68,7 +68,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - 阅读历史保存在浏览器 `localStorage`，记录最近 20 篇及阅读进度；首页桌面右栏、移动端文章列表前和正文桌面右栏均最多显示 3 篇并使用 `01` 至 `03` 编号，正文排除当前文章，最近阅读卡片不展示进度或清空操作。
 - 已开启 GitHub Discussions，并在文章详情页通过 Giscus 接入评论；当前使用 `gis2all/tech-blog` 仓库、`Announcements` 分类、`pathname` 映射，开发和生产环境均加载 Giscus 外部脚本；Giscus GitHub App 已授权到该仓库，本地已验证评论区可加载。
 - 已接入 Biome lint/format（`npm run lint` / `npm run format`）与后台 JS 类型检查（`npm run check:admin`，基于 `tsc --checkJs` + `public/admin/admin-globals.d.ts`），并全部进入 CI 门禁；`public/admin` 旧脚本不参与自动格式化，但参与 lint 与类型检查。
-- Vitest 覆盖率范围已扩展至后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`；门禁为全局 75/65/80/75、`src/lib/**` 85/80/85/85、`public/admin/**` 70/60/75/70。
+- Vitest 覆盖率范围已扩展至后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`；门禁为全局 75/72/80/75、`src/lib/**` 85/85/85/85、`public/admin/**` 70/70/75/70。
 - E2E 新增 Axe 可访问性门禁（`test/e2e/accessibility.spec.ts`，9 个关键页面断言 serious/critical 违规为 0）；新增 Lighthouse 性能预算（`npm run perf`，预算见 `lighthouse-budgets.json`）。
 - 新增后台 UI 自动化 E2E（`test/e2e/admin/`，16 个场景）：覆盖本地登录、六入口导航、文章列表搜索/筛选、草稿视图、编辑器字段与标题校验、编辑预览同步、未保存提醒、深色模式、新建草稿落盘、重复标题拦截、草稿重命名、标签新建/合并、媒体上传与未使用删除；写工作树的场景都自带清理，admin 项目串行执行。
 - 后台可访问性已自动化为门禁：Axe 扫描后台文章列表、标签、媒体页无 serious/critical 违规；为此加深了弱化文字、成功/警告状态的对比度（`--text-faint`、`--status-success`、`--status-warning`）。
@@ -85,7 +85,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 npm run check         → 0 errors, 0 warnings, 1 hint
 npm run check:admin   → 0 errors（public/admin 全量 checkJs）
 npm run lint          → Biome 104 files checked, no issues
-npm test              → 30 test files passed, 261 tests passed
+npm test              → 31 test files passed, 272 tests passed
 npm run test:coverage → 全局 statements 81.3%, branches 71.1%, functions 90.5%, lines 85.2%
                         （src/lib 保持 97.5 / 84 / 100 / 100，public/admin 75.2 / 67.8 / 85.3 / 79.6）
 npm run test:e2e      → 59 tests passed（43 前台 + 16 后台 UI，含 Axe 场景）
@@ -93,7 +93,7 @@ npm run build         → 427 pages built
 npm run perf          → Lighthouse 预算通过（首页 275KB，文章 314KB）
 ```
 
-以上是最近一次完整代码验证结果：Astro/TypeScript 检查 0 错误；后台 JS 类型检查 0 错误；Biome lint 全绿；Vitest 31 个文件 261 个测试通过；Playwright 59 个场景通过（43 前台 + 16 后台 UI，Axe serious/critical 为 0）；生产构建 427 页；Lighthouse 性能预算通过。本批改动均未提交。
+以上是最近一次完整代码验证结果：Astro/TypeScript 检查 0 错误；后台 JS 类型检查 0 错误；Biome lint 全绿；Vitest 31 个文件 272 个测试通过；Playwright 59 个场景通过（43 前台 + 16 后台 UI，Axe serious/critical 为 0）；生产构建 427 页；Lighthouse 性能预算通过。本批改动均未提交。
 
 浏览器验证：
 
@@ -101,7 +101,7 @@ npm run perf          → Lighthouse 预算通过（首页 275KB，文章 314KB�
 
 - Astro 本地开发固定且仅使用 `http://127.0.0.1:4321/`；不要同时保留多个开发服务，也不要临时切到 4323 等其他端口。若 4321 被占用，先确认并停止/复用该服务，再继续。
 - 本地运行分为开发态和生产预览态：开发态使用 `npm run dev -- --host 127.0.0.1 --port 4321`，用于页面和样式快速开发；生产预览态先运行 `npm run build`，再运行 `npm run preview -- --host 127.0.0.1 --port 4321`，用于验证 `dist/`、Pagefind 搜索、RSS 和站点地图。
-- `astro dev` 不会挂载 `dist/pagefind/`，因此开发态下搜索页提示“搜索索引尚未生成”是正常现象；搜索功能必须在生产预览态验证。
+- 搜索是双轨实现：开发态直接用内置文档数据搜索标题、描述、分类和标签；生产构建后加载 `dist/pagefind/` 提供正文全文索引。开发态验证标题/描述/标签搜索即可，正文全文搜索在生产预览态验证。
 - `.env.example` 只记录变量名；本地实际值放在被 Git 忽略的 `.env` 中，不写入本文。若本地 `.env` 配置了 `PUBLIC_UMAMI_WEBSITE_ID`，生产预览会向 Umami 发送测试访问，验证后可删除该本地变量。
 - 之前 UI 回归覆盖过首页和文章页；后续迁移内容或调整 UI 时，应以当前保留文章重新跑桌面/移动、浅色/深色浏览器验收。
 - 首页只有一个 H1，左右侧栏具名，移动菜单包含 GitHub、主题和后台入口，无横向溢出。
@@ -513,7 +513,7 @@ public/images/posts/
 
 - 前台：无搜索结果、无筛选结果、文章不存在、草稿不公开和 404。
 - 内容构建：Frontmatter 字段错误应由 Content Collections Schema 阻止构建，并定位到具体文件和字段。
-- 搜索：开发态未生成 Pagefind 索引时显示明确提示；生产构建后加载真实索引。
+- 搜索：开发态用内置文档数据搜索标题/描述/分类/标签；生产构建后加载 Pagefind 正文全文索引。
 - 评论：开发和生产环境均加载 Giscus，并由 GitHub Discussions 负责登录、发布和审核状态。Giscus GitHub App 已授权到 `gis2all/tech-blog`，首次评论或 reaction 会自动创建对应的 GitHub Discussion。
 - CMS 认证：本地开发主机使用 proxy backend 并跳过登录；生产环境使用 GitHub OAuth。认证失败、仓库权限不足和网络错误继续由 Decap 反馈。
 - CMS 内容编辑：Decap 负责字段状态和基础保存反馈；标题工作流补充重复标题、已发布标题锁定、草稿重命名和发布字段校验。
@@ -559,8 +559,8 @@ public/images/posts/
 - Windows 环境默认使用 PowerShell 语义，不使用 Bash `&&`。
 - Astro 本地运行端口固定为 `4321`，标准地址为 `http://127.0.0.1:4321/`。后续会话不要为了测试或预览另起 4323 等其他端口；需要重启或切换运行态时，先停止旧的 4321 服务再启动。
 - 开发态用于快速开发：`npm run dev -- --host 127.0.0.1 --port 4321`。生产预览态用于验证构建产物和搜索：`npm run build` 后运行 `npm run preview -- --host 127.0.0.1 --port 4321`。
-- 调试 `/admin/` 时，4321 必须运行 `astro dev`，另开终端执行 `npm run cms:local`；Decap Local Backend 固定监听 `127.0.0.1:4322`。`127.0.0.1`、`localhost` 和 `::1` 自动使用 proxy backend 并跳过登录；后台保存不经过 GitHub、不会产生远端提交或触发部署。生产 `/admin/` 保持 GitHub OAuth；内容保存直接提交 `main`（simple 发布模式）。
-- Pagefind 索引位于 `dist/pagefind/`，只随生产构建生成并由生产预览/部署产物提供；不要在开发态判断搜索是否可用。
+- 调试 `/admin/` 有两种等价方式：Docker（`docker compose up -d`，同时起 4321 与 4322，宿主机仓库挂载进容器，CMS 写工作树立即可见）或本机 Node（4321 运行 `astro dev`，另开终端执行 `npm run cms:local`）；Decap Local Backend 固定监听 `127.0.0.1:4322`。`127.0.0.1`、`localhost` 和 `::1` 自动使用 proxy backend 并跳过登录；后台保存不经过 GitHub、不会产生远端提交或触发部署。生产 `/admin/` 保持 GitHub OAuth；内容保存直接提交 `main`（simple 发布模式）。
+- Pagefind 索引位于 `dist/pagefind/`，只随生产构建生成并由生产预览/部署产物提供；开发态可验证标题/描述/标签的本地搜索，正文全文搜索在生产预览态验证。
 - `.env` 和 `.env.*` 保存本地环境值并保持 Git 忽略，只有 `.env.example` 可以提交；不要在文档、日志或提交中记录实际环境值。
 - 编辑 Markdown、JSON、YAML、HTML、TS/TSX 时优先使用 `apply_patch`，保持 BOM-free UTF-8。
 - 不覆盖用户未提交的修改，不进行无关重构。
@@ -572,9 +572,10 @@ public/images/posts/
 - 页面逐项开发期间优先运行语法检查、相关 Vitest 或直接代码核对，不为每个微调重复完整构建、全量浏览器自动化和多轮截图。
 - 一个页面或阶段收口后再统一运行与风险相称的检查；第三阶段完成前至少运行 `npm run check`、相关 Vitest、`npm run build`，并用真实浏览器验证后台导航、搜索、筛选、编辑、标签、媒体、弹窗、浅色/深色和本地保存流程。生产 OAuth 与远端发布只在明确需要时验证。
 - 代码风格与后台类型检查是 CI 门禁：本地改动后先跑 `npm run lint`（Biome）与 `npm run check:admin`（`tsc --checkJs`）；`npm run format` 只格式化 src/test/scripts 与配置文件，`public/admin` 旧脚本不参与自动格式化。
-- Vitest 覆盖率门禁覆盖 `src/lib` 与后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`：全局 75/65/80/75，`src/lib/**` 85/80/85/85，`public/admin/**` 70/60/75/70。
+- Vitest 覆盖率门禁覆盖 `src/lib` 与后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`：全局 75/72/80/75，`src/lib/**` 85/85/85/85，`public/admin/**` 70/70/75/70。
 - `npm run perf` 对生产预览运行 Lighthouse 性能预算（`lighthouse-budgets.json`）；脚本会复用已运行的预览服务，但若 4321 被 `astro dev` 占用会报错并退出，避免把开发态误测成生产性能。
 - 封面缩略图（`*-thumb.webp`）是派生产物：生产在 `postbuild` 阶段生成到 `dist/`，开发态由 Vite 中间件按需生成；不要提交 `dist/`，也不要删除 `cover.webp` 原图（中间件与构建脚本都依赖它）。
+- Docker 容器只覆盖本地开发与 CMS 后端（4321/4322）；Playwright E2E、Lighthouse 和 CI 仍在宿主机/GitHub Actions 运行，容器不安装浏览器。`package.json` 或 `package-lock.json` 变化后需要 `docker compose build` 重建镜像，单纯改源码无需重建。
 - 后台 E2E 用 `npx playwright test --project=admin` 单独运行（或随 `npm run test:e2e` 全量跑）；Playwright 会同时拉起 4321 开发服务与 4322 本地 CMS 后端，admin 项目单 worker 串行执行。修改 `public/admin/*` 后按此回归。
 - 后台 E2E 不与具体内容数量或某篇真实文章绑定：搜索/草稿视图用自建时间戳草稿夹具并自清理，断言只依赖关系（"可见行全部是草稿"、"搜索唯一命中自建标题"）；新增/删除真实文章无需改测试。
 - 覆盖率门禁：全局分支 72、`src/lib/**` 分支 85、`public/admin/**` 分支 70（语句/函数/行阈值见 `vitest.config.ts`）。后台 domain 与 src/lib 的缺口按覆盖率报告的未覆盖行补单测，UI 粘合代码由后台 E2E 兜底。
