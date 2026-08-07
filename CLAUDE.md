@@ -578,7 +578,7 @@ public/images/posts/
 - 代码风格与后台类型检查是 CI 门禁：本地改动后先跑 `npm run lint`（Biome）与 `npm run check:admin`（`tsc --checkJs`）；`npm run format` 只格式化 src/test/scripts 与配置文件，`public/admin` 旧脚本不参与自动格式化。
 - Vitest 覆盖率门禁覆盖 `src/lib` 与后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`：全局 90/82/92/94，`src/lib/**` 95/84/95/98，`public/admin/**` 88/82/90/92。
 - `npm run perf` 对生产预览运行 Lighthouse 性能预算（`lighthouse-budgets.json`）；脚本会复用已运行的预览服务，但若 4321 被 `astro dev` 占用会报错并退出，避免把开发态误测成生产性能。
-- CI 包含 `npm audit --audit-level=high` 依赖漏洞门禁，与 Dependabot 每周更新配合。
+- CI 包含 `npm audit --audit-level=high` 依赖漏洞门禁；依赖版本在 package.json 中精确锁定，不启用 Dependabot 自动更新。
 - `netlify.toml` 为全站配置安全响应头（HSTS、X-Frame-Options、Permissions-Policy 与 CSP）。CSP 白名单覆盖 Umami、Giscus、Decap CDN 与 GitHub API；新增外部脚本或域名时须同步更新该白名单，部署后先在生产验证 Giscus、Umami、`/admin/` 三条链路。
 - 封面缩略图（`*-thumb.webp`）是派生产物：生产在 `postbuild` 阶段生成到 `dist/`，开发态由 Vite 中间件按需生成；不要提交 `dist/`，也不要删除 `cover.webp` 原图（中间件与构建脚本都依赖它）。
 - Docker 容器只覆盖本地开发与 CMS 后端（4321/4322）；Playwright E2E、Lighthouse 和 CI 仍在宿主机/GitHub Actions 运行，容器不安装浏览器。`package.json` 或 `package-lock.json` 变化后需要 `docker compose build` 重建镜像，单纯改源码无需重建。
