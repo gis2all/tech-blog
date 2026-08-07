@@ -1,0 +1,29 @@
+services:
+  astro-dev:
+    build: .
+    image: zhixing-tech-blog:dev
+    command: npm run dev -- --host 0.0.0.0 --port 4321
+    ports:
+      - "4321:4321"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=false
+    init: true
+
+  cms-local:
+    build: .
+    image: zhixing-tech-blog:dev
+    command: npm run cms:local
+    ports:
+      - "4322:4322"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      - BIND_HOST=0.0.0.0
+    init: true
+
+volumes:
+  node_modules:
