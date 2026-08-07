@@ -4,10 +4,10 @@ description: 需求：需要从文本文件中读取Buildnumber 假设测试的 
 publishedAt: 2021-06-21
 category: 编程开发
 tags:
-  - Coding
-  - batch分割字符
-  - batch读取文本文件
-  - batch读取txt
+  - "Coding"
+  - "batch分割字符"
+  - "batch读取文本文件"
+  - "batch读取txt"
 draft: false
 featured: false
 updatedAt: 2021-06-21

@@ -4,11 +4,11 @@ description: 行为驱动开发（英语：Behavior-driven development，缩写B
 publishedAt: 2020-12-02
 category: 测试工程
 tags:
-  - Automated Testing
-  - BDD
-  - 行为驱动开发
-  - TDD
-  - cucumber
+  - "Automated Testing"
+  - "BDD"
+  - "行为驱动开发"
+  - "TDD"
+  - "cucumber"
 draft: false
 featured: false
 updatedAt: 2020-12-02

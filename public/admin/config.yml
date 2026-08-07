@@ -3,6 +3,12 @@ backend:
   repo: gis2all/tech-blog
   branch: main
 
+# Simple publish mode: saving a post writes directly to the working tree
+# (local backend) or to the configured branch (production GitHub backend).
+# Drafts are controlled by the frontmatter `draft` field, not by workflow
+# statuses. There is no PR review gate for content changes.
+publish_mode: simple
+
 local_backend:
   url: http://127.0.0.1:4322/api/v1
   allowed_hosts: [127.0.0.1, localhost]
@@ -10,7 +16,6 @@ local_backend:
 media_folder: public/images/uploads
 public_folder: /images/uploads
 
-publish_mode: simple
 locale: zh_Hans
 
 editor:

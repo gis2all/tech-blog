@@ -54,10 +54,7 @@ type WidgetInstance = {
   render(): VNode;
 };
 
-type WidgetDefinition = Omit<
-  WidgetInstance,
-  "props" | "state" | "setState"
-> &
+type WidgetDefinition = Omit<WidgetInstance, "props" | "state" | "setState"> &
   Record<string, unknown>;
 
 type TagSelectorHarnessOptions = {
@@ -66,9 +63,7 @@ type TagSelectorHarnessOptions = {
   queryResult?: unknown | (() => unknown);
 };
 
-async function createTagSelectorHarness(
-  options: TagSelectorHarnessOptions = {},
-) {
+async function createTagSelectorHarness(options: TagSelectorHarnessOptions = {}) {
   const [domainSource, selectorSource] = await Promise.all([
     readFile(`${root}public/admin/tag-domain.js`, "utf8"),
     readFile(`${root}public/admin/tag-selector.js`, "utf8"),
@@ -98,8 +93,12 @@ async function createTagSelectorHarness(
   };
   context.window = context;
 
-  runInNewContext(domainSource, context);
-  runInNewContext(selectorSource, context);
+  runInNewContext(domainSource, context, {
+    filename: `${root}public/admin/tag-domain.js`,
+  });
+  runInNewContext(selectorSource, context, {
+    filename: `${root}public/admin/tag-selector.js`,
+  });
 
   if (!widgetDefinition) throw new Error("Tag selector was not registered");
   const definition: WidgetDefinition = widgetDefinition;
@@ -183,10 +182,7 @@ type TagManagerInstance = {
   render(): VNode;
 };
 
-type TagManagerDefinition = Omit<
-  TagManagerInstance,
-  "props" | "state" | "setState"
-> &
+type TagManagerDefinition = Omit<TagManagerInstance, "props" | "state" | "setState"> &
   Record<string, unknown>;
 
 type TagManagerHarnessOptions = {
@@ -194,9 +190,7 @@ type TagManagerHarnessOptions = {
   queryResults?: Array<unknown | (() => unknown)>;
 };
 
-async function createTagManagerHarness(
-  options: TagManagerHarnessOptions = {},
-) {
+async function createTagManagerHarness(options: TagManagerHarnessOptions = {}) {
   const [domainSource, managerSource] = await Promise.all([
     readFile(`${root}public/admin/tag-domain.js`, "utf8"),
     readFile(`${root}public/admin/tag-library-manager.js`, "utf8"),
@@ -224,14 +218,16 @@ async function createTagManagerHarness(
   };
   context.window = context;
 
-  runInNewContext(domainSource, context);
-  runInNewContext(managerSource, context);
+  runInNewContext(domainSource, context, {
+    filename: `${root}public/admin/tag-domain.js`,
+  });
+  runInNewContext(managerSource, context, {
+    filename: `${root}public/admin/tag-library-manager.js`,
+  });
 
   if (!widgetDefinition) throw new Error("Tag manager was not registered");
   const definition: TagManagerDefinition = widgetDefinition;
-  const queryResults = options.queryResults || [
-    { payload: { hits: [] } },
-  ];
+  const queryResults = options.queryResults || [{ payload: { hits: [] } }];
   const props = {
     field: {
       get: (key: string) => {
@@ -342,8 +338,12 @@ async function createTagSyncHarness(options: TagSyncHarnessOptions = {}) {
   };
   context.window = context;
 
-  runInNewContext(await readFile(`${root}public/admin/tag-domain.js`, "utf8"), context);
-  runInNewContext(source, context);
+  runInNewContext(await readFile(`${root}public/admin/tag-domain.js`, "utf8"), context, {
+    filename: `${root}public/admin/tag-domain.js`,
+  });
+  runInNewContext(source, context, {
+    filename: `${root}public/admin/tag-sync.js`,
+  });
 
   const preSave = listeners.preSave;
   if (!preSave) throw new Error("Decap preSave listener was not registered");
@@ -359,8 +359,7 @@ async function createTagSyncHarness(options: TagSyncHarnessOptions = {}) {
 function cmsEntry(collection: string, tags: unknown[]) {
   return {
     get: (key: string) => (key === "collection" ? collection : undefined),
-    getIn: (path: string[]) =>
-      path.join(".") === "data.tags" ? tags : undefined,
+    getIn: (path: string[]) => (path.join(".") === "data.tags" ? tags : undefined),
   };
 }
 
@@ -422,10 +421,7 @@ function callNodeHandler(node: VNode, prop: string, ...args: unknown[]) {
   return handler(...args);
 }
 
-function findNodes(
-  node: unknown,
-  predicate: (candidate: VNode) => boolean,
-): VNode[] {
+function findNodes(node: unknown, predicate: (candidate: VNode) => boolean): VNode[] {
   if (Array.isArray(node)) {
     return node.flatMap((child) => findNodes(child, predicate));
   }
@@ -450,18 +446,25 @@ async function loadTagDomain() {
   const source = await readFile(`${root}public/admin/tag-domain.js`, "utf8");
   const window: Record<string, unknown> = {};
 
-  runInNewContext(source, { window });
+  runInNewContext(
+    source,
+    { window },
+    {
+      filename: `${root}public/admin/tag-domain.js`,
+    },
+  );
 
   return window.DecapTagDomain as {
     normalizeTag(value: unknown): string;
     uniqueTags(values: unknown[]): string[];
     missingTags(selected: unknown[], library: unknown[]): string[];
     mergeTags(library: unknown[], additions: unknown[]): string[];
-    countUsage(
-      entries: Array<{ data?: { tags?: unknown[] } }>,
-    ): Record<string, number>;
+    countUsage(entries: Array<{ data?: { tags?: unknown[] } }>): Record<string, number>;
     canDelete(tag: string, usage?: Record<string, number> | null): boolean;
-    tagStats(tags: string[], usage: Record<string, number>): Array<{
+    tagStats(
+      tags: string[],
+      usage: Record<string, number>,
+    ): Array<{
       name: string;
       count: number;
       used: boolean;
@@ -495,10 +498,7 @@ describe("Decap tag domain", () => {
   test("deduplicates exact names without folding case", async () => {
     const domain = await loadTagDomain();
 
-    expect(domain.uniqueTags([" Git ", "Git", "git", "", null])).toEqual([
-      "Git",
-      "git",
-    ]);
+    expect(domain.uniqueTags([" Git ", "Git", "git", "", null])).toEqual(["Git", "git"]);
   });
 
   test("keeps case variants distinct when finding and merging tags", async () => {
@@ -539,7 +539,7 @@ describe("Decap tag domain", () => {
     ]);
 
     prototypeTags.forEach((tag) => {
-      expect(Object.prototype.hasOwnProperty.call(usage, tag)).toBe(true);
+      expect(Object.hasOwn(usage, tag)).toBe(true);
       expect(usage[tag]).toBe(2);
     });
   });
@@ -566,10 +566,7 @@ describe("Decap tag domain", () => {
 
   test("searches, filters, and sorts tag statistics", async () => {
     const domain = await loadTagDomain();
-    const items = domain.tagStats(
-      ["Astro", "Decap", "Unused"],
-      { Astro: 2, Decap: 5 },
-    );
+    const items = domain.tagStats(["Astro", "Decap", "Unused"], { Astro: 2, Decap: 5 });
 
     expect(domain.filterTagStats(items, "a", "used", "usage")).toEqual([
       { name: "Decap", count: 5, used: true },
@@ -586,12 +583,9 @@ describe("Decap tag domain", () => {
     expect(domain.replaceTag(["Old", "Target", "Old"], "Old", "Target")).toEqual([
       "Target",
     ]);
-    expect(domain.mergePlan(
-      ["Old", "Target", "Other"],
-      "Old",
-      "Target",
-      { Old: 3 },
-    )).toEqual({
+    expect(
+      domain.mergePlan(["Old", "Target", "Other"], "Old", "Target", { Old: 3 }),
+    ).toEqual({
       source: "Old",
       target: "Target",
       affectedCount: 3,
@@ -763,7 +757,9 @@ describe("Decap tag selector", () => {
       keyEvent("Enter", { nativeEvent: { isComposing: true } }),
     ];
 
-    events.forEach((event) => instance.handleKeyDown(event));
+    events.forEach((event) => {
+      instance.handleKeyDown(event);
+    });
 
     events.forEach((event) => {
       expect.soft(event.preventDefaultCalls).toBe(0);
@@ -785,9 +781,7 @@ describe("Decap tag selector", () => {
     )[0];
     instance.handleKeyDown(keyEvent("Enter"));
 
-    expect(combobox.props["aria-activedescendant"]).toBe(
-      "tag-field-suggestions-1",
-    );
+    expect(combobox.props["aria-activedescendant"]).toBe("tag-field-suggestions-1");
     expect(changes).toEqual([["Decap"]]);
   });
 
@@ -807,26 +801,19 @@ describe("Decap tag selector", () => {
     expect.soft(instance.state.isOpen).toBe(false);
 
     instance.handleInput({ target: { value: "Ignored" } });
-    const escape = keyEvent("Escape");
-    instance.handleKeyDown(escape);
+    const escapeEvent = keyEvent("Escape");
+    instance.handleKeyDown(escapeEvent);
     const rendered = instance.render();
-    const combobox = findNodes(
-      rendered,
-      (node) => node.props.role === "combobox",
-    )[0];
+    const combobox = findNodes(rendered, (node) => node.props.role === "combobox")[0];
 
-    expect.soft(escape.preventDefaultCalls).toBe(1);
-    expect.soft(escape.stopPropagationCalls).toBe(1);
+    expect.soft(escapeEvent.preventDefaultCalls).toBe(1);
+    expect.soft(escapeEvent.stopPropagationCalls).toBe(1);
     expect.soft(instance.state.query).toBe("");
     expect.soft(instance.state.activeIndex).toBe(0);
     expect.soft(instance.state.isOpen).toBe(false);
     expect.soft(combobox.props["aria-expanded"]).toBe(false);
-    expect
-      .soft(combobox.props["aria-activedescendant"])
-      .toBeUndefined();
-    expect.soft(findNodes(rendered, (node) => node.props.role === "listbox")).toEqual(
-      [],
-    );
+    expect.soft(combobox.props["aria-activedescendant"]).toBeUndefined();
+    expect.soft(findNodes(rendered, (node) => node.props.role === "listbox")).toEqual([]);
   });
 
   test("automatically retries one transient tag-library query failure", async () => {
@@ -898,9 +885,7 @@ describe("Decap tag selector", () => {
     const textRule = css.match(
       /\.cms-tag-selector__tag\s*>\s*span,\s*\.cms-tag-selector__suggestion\s*\{([^}]*)\}/,
     )?.[1];
-    const removeRule = css.match(
-      /\.cms-tag-selector__remove\s*\{([^}]*)\}/,
-    )?.[1];
+    const removeRule = css.match(/\.cms-tag-selector__remove\s*\{([^}]*)\}/)?.[1];
 
     expect.soft(textRule).toContain("min-width: 0");
     expect.soft(textRule).toContain("max-width: 100%");
@@ -916,14 +901,9 @@ describe("Decap tag selector", () => {
     instance.handleInput({ target: { value: "新标签" } });
 
     const rendered = instance.render();
-    const combobox = findNodes(
-      rendered,
-      (node) => node.props.role === "combobox",
-    )[0];
+    const combobox = findNodes(rendered, (node) => node.props.role === "combobox")[0];
 
-    expect(combobox.props["aria-activedescendant"]).toBe(
-      "tag-field-suggestions-0",
-    );
+    expect(combobox.props["aria-activedescendant"]).toBe("tag-field-suggestions-0");
     expect(renderedText(rendered)).toContain("创建“新标签”");
     expect(renderedText(rendered)).toContain("保存文章后加入标签库");
   });
@@ -964,10 +944,7 @@ describe("Decap tag library manager", () => {
       queryResults: [
         {
           payload: {
-            hits: [
-              { data: { tags: ["Astro"] } },
-              { data: { tags: ["Astro", "Other"] } },
-            ],
+            hits: [{ data: { tags: ["Astro"] } }, { data: { tags: ["Astro", "Other"] } }],
           },
         },
       ],
@@ -1046,12 +1023,8 @@ describe("Decap tag library manager", () => {
 
     expect(initialFailure.instance.state.loadError).toBe(true);
     expect(alert).toBeDefined();
-    expect(renderedText(initialFailure.instance.render())).toContain(
-      "统计失败",
-    );
-    expect(renderedText(initialFailure.instance.render())).not.toContain(
-      "未使用",
-    );
+    expect(renderedText(initialFailure.instance.render())).toContain("统计失败");
+    expect(renderedText(initialFailure.instance.render())).not.toContain("未使用");
     initialFailure.instance.requestDelete("Unused");
     expect(initialFailure.instance.state.confirmingTag).toBeNull();
 
@@ -1086,9 +1059,7 @@ describe("Decap atomic tag synchronization", () => {
   test("observes preSave without replacing Decap entry data", async () => {
     const harness = await createTagSyncHarness();
 
-    expect(
-      harness.preSave({ entry: cmsEntry("posts", ["New"]) }),
-    ).toBeUndefined();
+    expect(harness.preSave({ entry: cmsEntry("posts", ["New"]) })).toBeUndefined();
   });
 
   for (const backendName of ["github", "proxy"] as const) {
@@ -1174,9 +1145,9 @@ describe("Decap atomic tag synchronization", () => {
       persistEntry(entry: PersistEntry, options: unknown): Promise<void>;
     };
 
-    await expect(
-      implementation.persistEntry(articlePersistEntry(), {}),
-    ).rejects.toThrow("Persist failed");
+    await expect(implementation.persistEntry(articlePersistEntry(), {})).rejects.toThrow(
+      "Persist failed",
+    );
     expect(harness.persistCalls).toHaveLength(1);
   });
 
@@ -1191,9 +1162,9 @@ describe("Decap atomic tag synchronization", () => {
       persistEntry(entry: PersistEntry, options: unknown): Promise<void>;
     };
 
-    await expect(
-      implementation.persistEntry(articlePersistEntry(), {}),
-    ).rejects.toThrow("请刷新后台后重试");
+    await expect(implementation.persistEntry(articlePersistEntry(), {})).rejects.toThrow(
+      "请刷新后台后重试",
+    );
     expect(harness.persistCalls).toHaveLength(1);
   });
 
@@ -1228,8 +1199,8 @@ describe("Decap atomic tag synchronization", () => {
     const html = await readFile(`${root}public/admin/index.html`, "utf8");
     const manualIndex = html.indexOf("window.CMS_MANUAL_INIT = true");
     const decapIndex = html.indexOf("decap-cms@3.15.1");
-    const syncIndex = html.indexOf('/admin/tag-sync.js');
-    const selectorIndex = html.indexOf('/admin/tag-selector.js');
+    const syncIndex = html.indexOf("/admin/tag-sync.js");
+    const selectorIndex = html.indexOf("/admin/tag-selector.js");
     const initIndex = html.indexOf("/admin/cms-init.js");
 
     expect(manualIndex).toBeGreaterThan(-1);

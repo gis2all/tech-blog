@@ -4,12 +4,12 @@ description: python安装sphinx 安装完毕后转到任意目录测试，例如
 publishedAt: 2021-07-02
 category: 阅读与思考
 tags:
-  - Books
-  - 在线博客
-  - sphinx博客
-  - 搭建博客
-  - sphinx教程
-  - 自建博客
+  - "Books"
+  - "在线博客"
+  - "sphinx博客"
+  - "搭建博客"
+  - "sphinx教程"
+  - "自建博客"
 draft: false
 featured: false
 updatedAt: 2021-07-02

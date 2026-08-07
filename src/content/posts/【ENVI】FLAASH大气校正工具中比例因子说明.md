@@ -4,9 +4,9 @@ description: FLAASH要求输入数据的像元值具有物理意义，其单位�
 publishedAt: 2020-03-02
 category: GIS
 tags:
-  - GIS
-  - FLAASH
-  - ENVI
+  - "GIS"
+  - "FLAASH"
+  - "ENVI"
 draft: false
 featured: false
 updatedAt: 2020-03-02

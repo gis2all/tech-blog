@@ -9,14 +9,13 @@ const longArticlePath = `/posts/${encodeURIComponent("《工作的意义》读�
 test.describe("mobile article controls", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("keeps long code lines within the mobile article viewport", async ({
-    page,
-  }) => {
+  test("keeps long code lines within the mobile article viewport", async ({ page }) => {
     await page.goto(groovyArticlePath);
     await page.locator(".prose").evaluate((prose) => {
       const pre = document.createElement("pre");
       const code = document.createElement("code");
-      code.textContent = "PipelineSharedLibraryCompatibilityIdentifierWithoutAnyBreakOpportunity";
+      code.textContent =
+        "PipelineSharedLibraryCompatibilityIdentifierWithoutAnyBreakOpportunity";
       pre.append(code);
       prose.prepend(pre);
     });
@@ -64,16 +63,15 @@ test.describe("article progress and code controls", () => {
   test("uses compact fenced code typography", async ({ page }) => {
     await page.goto(codeArticlePath);
 
-    const fontSize = await page.locator(".prose pre code").first().evaluate(
-      (code) => getComputedStyle(code).fontSize,
-    );
+    const fontSize = await page
+      .locator(".prose pre code")
+      .first()
+      .evaluate((code) => getComputedStyle(code).fontSize);
 
     expect(fontSize).toBe("14px");
   });
 
-  test("uses an icon-only copy control with an accessible tooltip", async ({
-    page,
-  }) => {
+  test("uses an icon-only copy control with an accessible tooltip", async ({ page }) => {
     await page.goto(codeArticlePath);
 
     const copyButton = page.locator(".copy-button").first();
@@ -102,17 +100,11 @@ test("keeps all article tags outside the homepage", async ({ page }) => {
   ]);
 });
 
-test("loads Giscus comments in development", async ({
-  page,
-}) => {
+test("loads Giscus comments in development", async ({ page }) => {
   await page.goto(codeArticlePath);
 
-  await expect(
-    page.getByRole("heading", { name: "评论与讨论" }),
-  ).toBeVisible();
-  await expect(
-    page.locator('script[src="https://giscus.app/client.js"]'),
-  ).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "评论与讨论" })).toBeVisible();
+  await expect(page.locator('script[src="https://giscus.app/client.js"]')).toHaveCount(1);
 });
 
 test("uses the same author category and series rail on article pages", async ({
@@ -166,16 +158,11 @@ test("shows all articles in place when all is clicked from an article", async ({
   const rail = page.getByRole("complementary", { name: "作者、分类与专题" });
   await rail.locator("[data-filter-all]").click();
 
-  await expect(page).toHaveURL(
-    /\/posts\/.+\?view=all$/,
-  );
+  await expect(page).toHaveURL(/\/posts\/.+\?view=all$/);
   await expect(page.locator("[data-article-view]")).toBeHidden();
   await expect(page.locator("[data-article-filter-view] .article-row")).toHaveCount(105, {
     timeout: 15_000,
   });
-  await expect(rail.locator("[data-filter-all]")).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
+  await expect(rail.locator("[data-filter-all]")).toHaveAttribute("aria-current", "page");
   await expect(rail.locator(".taxonomy-row.active")).toHaveCount(0);
 });

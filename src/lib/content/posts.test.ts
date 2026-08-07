@@ -1,20 +1,51 @@
 import { describe, expect, test } from "vitest";
 import {
   calculateReadingTime,
+  compareTagNames,
   getAdjacentPosts,
+  getCoverThumb,
   getFeaturedPosts,
   getPostSlug,
   getPublicPosts,
   getRelatedPosts,
   getSeriesPosts,
+  getTagInitial,
   groupPostsByArchive,
   groupPostsByCategory,
   groupPostsByTag,
   groupTagsByInitial,
-  getTagInitial,
   sortPostsByDate,
-  validateUniquePostSlugs
+  validateUniquePostSlugs,
 } from "./posts";
+
+describe("getCoverThumb", () => {
+  test("maps raster covers to the -thumb.webp variant", () => {
+    expect(getCoverThumb("/images/posts/A/cover.webp")).toBe(
+      "/images/posts/A/cover-thumb.webp",
+    );
+    expect(getCoverThumb("/images/posts/A/cover.png")).toBe(
+      "/images/posts/A/cover-thumb.webp",
+    );
+    expect(getCoverThumb("/images/posts/A/cover.jpeg")).toBe(
+      "/images/posts/A/cover-thumb.webp",
+    );
+  });
+
+  test("keeps non-raster covers unchanged", () => {
+    expect(getCoverThumb("/images/posts/A/cover.svg")).toBe("/images/posts/A/cover.svg");
+    expect(getCoverThumb("/images/posts/A/cover.gif")).toBe("/images/posts/A/cover.gif");
+    expect(getCoverThumb("/images/posts/A/animation.mp4")).toBe(
+      "/images/posts/A/animation.mp4",
+    );
+  });
+});
+
+describe("compareTagNames", () => {
+  test("falls back to zh-CN ordering when pinyin sort keys tie", () => {
+    expect(compareTagNames("重", "种")).not.toBe(0);
+    expect(compareTagNames("Git", "Git")).toBe(0);
+  });
+});
 
 const posts = [
   {
@@ -25,8 +56,8 @@ const posts = [
       publishedAt: new Date("2026-07-01"),
       category: "DevOps",
       tags: ["Docker"],
-      draft: false
-    }
+      draft: false,
+    },
   },
   {
     id: "new-post.md",
@@ -36,8 +67,8 @@ const posts = [
       publishedAt: new Date("2026-07-20"),
       category: "前端工程",
       tags: ["Astro", "TypeScript"],
-      draft: false
-    }
+      draft: false,
+    },
   },
   {
     id: "draft-post.md",
@@ -47,9 +78,9 @@ const posts = [
       publishedAt: new Date("2026-07-25"),
       category: "工程实践",
       tags: ["Git"],
-      draft: true
-    }
-  }
+      draft: true,
+    },
+  },
 ];
 
 const directoryPosts = [
@@ -61,8 +92,8 @@ const directoryPosts = [
       publishedAt: new Date("2026-07-18"),
       category: "工具",
       tags: ["Astro"],
-      draft: false
-    }
+      draft: false,
+    },
   },
   {
     id: "docker-post.md",
@@ -72,8 +103,8 @@ const directoryPosts = [
       publishedAt: new Date("2026-07-17"),
       category: "DevOps",
       tags: ["Docker", "读书笔记"],
-      draft: false
-    }
+      draft: false,
+    },
   },
   {
     id: "automation-post.md",
@@ -83,8 +114,8 @@ const directoryPosts = [
       publishedAt: new Date("2026-07-16"),
       category: "测试",
       tags: ["自动化测试"],
-      draft: false
-    }
+      draft: false,
+    },
   },
   {
     id: "ignored-draft.md",
@@ -94,9 +125,9 @@ const directoryPosts = [
       publishedAt: new Date("2026-07-15"),
       category: "工具",
       tags: ["Git"],
-      draft: true
-    }
-  }
+      draft: true,
+    },
+  },
 ];
 
 describe("post helpers", () => {
@@ -105,8 +136,8 @@ describe("post helpers", () => {
     expect(
       getPostSlug({
         ...posts[0],
-        data: { ...posts[0].data, title: "中文文章标题" }
-      })
+        data: { ...posts[0].data, title: "中文文章标题" },
+      }),
     ).toBe("中文文章标题");
   });
 
@@ -116,10 +147,10 @@ describe("post helpers", () => {
       expect(() =>
         getPostSlug({
           ...posts[0],
-          data: { ...posts[0].data, title }
-        })
+          data: { ...posts[0].data, title },
+        }),
       ).toThrow("Article title cannot contain URL-reserved characters");
-    }
+    },
   );
 
   test.each([
@@ -135,13 +166,13 @@ describe("post helpers", () => {
     "标题.",
     "CON",
     "con.txt",
-    ".."
+    "..",
   ])("getPostSlug rejects filesystem-unsafe title %s", (title) => {
     expect(() =>
       getPostSlug({
         ...posts[0],
-        data: { ...posts[0].data, title }
-      })
+        data: { ...posts[0].data, title },
+      }),
     ).toThrow("Article title is not filesystem-safe");
   });
 
@@ -153,11 +184,11 @@ describe("post helpers", () => {
     const duplicate = {
       ...posts[1],
       id: "duplicate-title.md",
-      data: { ...posts[1].data, title: posts[0].data.title }
+      data: { ...posts[1].data, title: posts[0].data.title },
     };
 
     expect(() => validateUniquePostSlugs([...posts, duplicate])).toThrow(
-      "Duplicate article slug: Old Post"
+      "Duplicate article slug: Old Post",
     );
   });
 
@@ -165,15 +196,15 @@ describe("post helpers", () => {
     expect(() =>
       getPostSlug({
         ...posts[0],
-        data: { ...posts[0].data, title: "   " }
-      })
+        data: { ...posts[0].data, title: "   " },
+      }),
     ).toThrow("Article title cannot be empty");
   });
 
   test("getPublicPosts filters drafts and sorts newest first", () => {
     expect(getPublicPosts(posts).map((post) => post.data.title)).toEqual([
       "New Post",
-      "Old Post"
+      "Old Post",
     ]);
   });
 
@@ -183,7 +214,7 @@ describe("post helpers", () => {
     expect(sorted.map((post) => post.data.title)).toEqual([
       "Draft Post",
       "New Post",
-      "Old Post"
+      "Old Post",
     ]);
     expect(posts[0].data.title).toBe("Old Post");
   });
@@ -194,17 +225,19 @@ describe("post helpers", () => {
   });
 
   test("groupPostsByCategory ignores drafts", () => {
-    expect(groupPostsByCategory(posts).map((group) => [group.name, group.count])).toEqual([
-      ["前端工程", 1],
-      ["DevOps", 1]
-    ]);
+    expect(groupPostsByCategory(posts).map((group) => [group.name, group.count])).toEqual(
+      [
+        ["前端工程", 1],
+        ["DevOps", 1],
+      ],
+    );
   });
 
   test("groupPostsByTag ignores drafts and counts each tag", () => {
     expect(groupPostsByTag(posts).map((group) => [group.name, group.count])).toEqual([
       ["Astro", 1],
       ["Docker", 1],
-      ["TypeScript", 1]
+      ["TypeScript", 1],
     ]);
   });
 
@@ -213,9 +246,9 @@ describe("post helpers", () => {
       groupPostsByTag([
         {
           ...posts[0],
-          data: { ...posts[0].data, tags: undefined }
-        }
-      ])
+          data: { ...posts[0].data, tags: undefined },
+        },
+      ]),
     ).toEqual([]);
   });
 
@@ -229,10 +262,9 @@ describe("post helpers", () => {
     const grouped = groupTagsByInitial(directoryPosts);
 
     expect(grouped.map((group) => group.initial)).toEqual(["A", "D", "Z"]);
-    expect(grouped.find((group) => group.initial === "D")?.tags.map((tag) => tag.name)).toEqual([
-      "Docker",
-      "读书笔记"
-    ]);
+    expect(
+      grouped.find((group) => group.initial === "D")?.tags.map((tag) => tag.name),
+    ).toEqual(["Docker", "读书笔记"]);
     expect(grouped.find((group) => group.initial === "D")?.postsCount).toBe(2);
     expect(grouped.some((group) => group.initial === "G")).toBe(false);
   });
@@ -241,11 +273,11 @@ describe("post helpers", () => {
     const archivePosts = [
       {
         ...posts[0],
-        data: { ...posts[0].data, publishedAt: new Date("2026-07-01") }
+        data: { ...posts[0].data, publishedAt: new Date("2026-07-01") },
       },
       {
         ...posts[1],
-        data: { ...posts[1].data, publishedAt: new Date("2026-06-20") }
+        data: { ...posts[1].data, publishedAt: new Date("2026-06-20") },
       },
       {
         ...posts[0],
@@ -253,9 +285,9 @@ describe("post helpers", () => {
         data: {
           ...posts[0].data,
           title: "Archived Post",
-          publishedAt: new Date("2025-12-31")
-        }
-      }
+          publishedAt: new Date("2025-12-31"),
+        },
+      },
     ];
 
     expect(groupPostsByArchive(archivePosts)).toEqual([
@@ -265,14 +297,14 @@ describe("post helpers", () => {
           {
             month: 7,
             label: "七月",
-            posts: [archivePosts[0]]
+            posts: [archivePosts[0]],
           },
           {
             month: 6,
             label: "六月",
-            posts: [archivePosts[1]]
-          }
-        ]
+            posts: [archivePosts[1]],
+          },
+        ],
       },
       {
         year: 2025,
@@ -280,10 +312,10 @@ describe("post helpers", () => {
           {
             month: 12,
             label: "十二月",
-            posts: [archivePosts[2]]
-          }
-        ]
-      }
+            posts: [archivePosts[2]],
+          },
+        ],
+      },
     ]);
   });
 
@@ -294,29 +326,31 @@ describe("post helpers", () => {
         data: {
           ...posts[0].data,
           series: "jenkins-pipeline-engineering",
-          seriesOrder: 2
-        }
+          seriesOrder: 2,
+        },
       },
       {
         ...posts[1],
         data: {
           ...posts[1].data,
           series: "jenkins-pipeline-engineering",
-          seriesOrder: 1
-        }
+          seriesOrder: 1,
+        },
       },
       {
         ...posts[2],
         data: {
           ...posts[2].data,
           series: "other-series",
-          seriesOrder: 1
-        }
-      }
+          seriesOrder: 1,
+        },
+      },
     ];
 
     expect(
-      getSeriesPosts(seriesPosts, "jenkins-pipeline-engineering").map((post) => post.data.title)
+      getSeriesPosts(seriesPosts, "jenkins-pipeline-engineering").map(
+        (post) => post.data.title,
+      ),
     ).toEqual(["New Post", "Old Post"]);
   });
 
@@ -331,10 +365,10 @@ describe("post helpers", () => {
             ...posts[0].data,
             title: "Second Year Post",
             publishedAt: new Date("2025-01-01"),
-            draft: false
-          }
-        }
-      ]).map((group) => group.year)
+            draft: false,
+          },
+        },
+      ]).map((group) => group.year),
     ).toEqual([2026, 2025]);
   });
 
@@ -346,22 +380,22 @@ describe("post helpers", () => {
           {
             month: 7,
             label: "七月",
-            posts: [posts[1], posts[0]]
-          }
-        ]
-      }
+            posts: [posts[1], posts[0]],
+          },
+        ],
+      },
     ]);
   });
 
   test("getFeaturedPosts returns flagged public posts first without duplicates", () => {
     const featuredPosts = posts.map((post, index) => ({
       ...post,
-      data: { ...post.data, featured: index === 0 }
+      data: { ...post.data, featured: index === 0 },
     }));
 
     expect(getFeaturedPosts(featuredPosts, 2).map((post) => post.data.title)).toEqual([
       "Old Post",
-      "New Post"
+      "New Post",
     ]);
   });
 
@@ -375,8 +409,8 @@ describe("post helpers", () => {
           category: "DevOps",
           tags: ["Jenkins", "Groovy"],
           series: "pipeline",
-          draft: false
-        }
+          draft: false,
+        },
       },
       {
         id: "same-series.md",
@@ -386,8 +420,8 @@ describe("post helpers", () => {
           category: "其他",
           tags: [],
           series: "pipeline",
-          draft: false
-        }
+          draft: false,
+        },
       },
       {
         id: "shared-tags.md",
@@ -396,8 +430,8 @@ describe("post helpers", () => {
           publishedAt: new Date("2026-06-01"),
           category: "其他",
           tags: ["Jenkins", "Groovy"],
-          draft: false
-        }
+          draft: false,
+        },
       },
       {
         id: "same-category.md",
@@ -406,8 +440,8 @@ describe("post helpers", () => {
           publishedAt: new Date("2026-07-20"),
           category: "DevOps",
           tags: [],
-          draft: false
-        }
+          draft: false,
+        },
       },
       {
         id: "newest-fallback.md",
@@ -416,8 +450,8 @@ describe("post helpers", () => {
           publishedAt: new Date("2026-07-25"),
           category: "其他",
           tags: [],
-          draft: false
-        }
+          draft: false,
+        },
       },
       {
         id: "draft-series.md",
@@ -427,18 +461,18 @@ describe("post helpers", () => {
           category: "DevOps",
           tags: ["Jenkins"],
           series: "pipeline",
-          draft: true
-        }
-      }
+          draft: true,
+        },
+      },
     ];
 
     expect(
-      getRelatedPosts(relatedPosts, relatedPosts[0], 4).map((post) => post.id)
+      getRelatedPosts(relatedPosts, relatedPosts[0], 4).map((post) => post.id),
     ).toEqual([
       "same-series.md",
       "shared-tags.md",
       "same-category.md",
-      "newest-fallback.md"
+      "newest-fallback.md",
     ]);
   });
 
@@ -450,8 +484,8 @@ describe("post helpers", () => {
         publishedAt: new Date("2026-07-01"),
         category: "DevOps",
         tags: ["Jenkins"],
-        draft: false
-      }
+        draft: false,
+      },
     };
     const duplicate = {
       id: "duplicate.md",
@@ -460,14 +494,14 @@ describe("post helpers", () => {
         publishedAt: new Date("2026-06-01"),
         category: "DevOps",
         tags: ["Jenkins"],
-        draft: false
-      }
+        draft: false,
+      },
     };
 
     expect(
       getRelatedPosts([current, duplicate, { ...duplicate }], current, 4).map(
-        (post) => post.id
-      )
+        (post) => post.id,
+      ),
     ).toEqual(["duplicate.md"]);
   });
 

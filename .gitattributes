@@ -1,0 +1,18 @@
+# Normalize all text files to LF in the repository and in every checkout,
+# regardless of platform, so tooling (Biome, Astro, tests) sees stable files.
+* text=auto eol=lf
+
+# Binary assets must never be treated as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.mp4 binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary

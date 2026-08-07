@@ -4,8 +4,8 @@ description: 在进行ArcGIS Pro Add-in插件开发之前，确保电脑安装�
 publishedAt: 2020-03-05
 category: GIS
 tags:
-  - GIS
-  - arcgis
+  - "GIS"
+  - "arcgis"
 draft: false
 featured: false
 updatedAt: 2020-03-05

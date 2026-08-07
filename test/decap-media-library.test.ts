@@ -1,16 +1,16 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { parse } from "yaml";
 import { describe, expect, test } from "vitest";
+import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 describe("Decap custom article media library", () => {
   test("registers a standalone external media library", async () => {
     const [configSource, index, library] = await Promise.all([
-      readFile(root + "public/admin/config.yml", "utf8"),
-      readFile(root + "public/admin/index.html", "utf8"),
-      readFile(root + "public/admin/media-library.js", "utf8"),
+      readFile(`${root}public/admin/config.yml`, "utf8"),
+      readFile(`${root}public/admin/index.html`, "utf8"),
+      readFile(`${root}public/admin/media-library.js`, "utf8"),
     ]);
     const config = parse(configSource) as { media_library?: { name?: string } };
 
@@ -24,8 +24,8 @@ describe("Decap custom article media library", () => {
 
   test("supports grouping, search, metadata, unused filtering, and confirmed batch deletion", async () => {
     const [source, shellCss] = await Promise.all([
-      readFile(root + "public/admin/media-library.js", "utf8"),
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(`${root}public/admin/media-library.js`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
     for (const behavior of [
@@ -49,9 +49,9 @@ describe("Decap custom article media library", () => {
 
   test("supports an embedded management page while retaining picker modal mode", async () => {
     const [library, shell, shellCss] = await Promise.all([
-      readFile(root + "public/admin/media-library.js", "utf8"),
-      readFile(root + "public/admin/admin-shell.js", "utf8"),
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(`${root}public/admin/media-library.js`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.js`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
     expect(library).toContain("mountStandalone");
@@ -72,20 +72,24 @@ describe("Decap custom article media library", () => {
     expect(shell).toContain("function clearNativeSidebarCurrent");
     expect(shellCss).toContain("[data-admin-media-page]");
     expect(shellCss).toContain("body.cms-media-page");
-    expect(shellCss).toContain('body.cms-media-page #nc-root aside a[href*="#/collections/"][aria-current="page"]');
+    expect(shellCss).toContain(
+      'body.cms-media-page #nc-root aside a[href*="#/collections/"][aria-current="page"]',
+    );
   });
 
   test("keeps discovered image dimensions stable across media page rerenders", async () => {
-    const source = await readFile(root + "public/admin/media-library.js", "utf8");
+    const source = await readFile(`${root}public/admin/media-library.js`, "utf8");
 
     expect(source).toContain("dimensionsByPath: Object.create(null)");
     expect(source).toContain("function dimensionsLabel");
     expect(source).toContain("state.dimensionsByPath[file.path] = label");
-    expect(source).toContain('if (standalonePanel === container && mode === "page") return;');
+    expect(source).toContain(
+      'if (standalonePanel === container && mode === "page") return;',
+    );
   });
 
   test("keeps media search and upload title inputs mounted while typing", async () => {
-    const source = await readFile(root + "public/admin/media-library.js", "utf8");
+    const source = await readFile(`${root}public/admin/media-library.js`, "utf8");
 
     expect(source).toContain("function renderMediaContent");
     expect(source).toContain("function updateUploadButton");
@@ -98,8 +102,8 @@ describe("Decap custom article media library", () => {
 
   test("selects all currently visible unused media without touching hidden selections", async () => {
     const [source, css] = await Promise.all([
-      readFile(root + "public/admin/media-library.js", "utf8"),
-      readFile(root + "public/admin/admin-shell.css", "utf8"),
+      readFile(`${root}public/admin/media-library.js`, "utf8"),
+      readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
     expect(source).toContain("data-media-select-all");
@@ -113,7 +117,7 @@ describe("Decap custom article media library", () => {
   });
 
   test("supports selecting an existing article title before uploading", async () => {
-    const source = await readFile(root + "public/admin/media-library.js", "utf8");
+    const source = await readFile(`${root}public/admin/media-library.js`, "utf8");
 
     expect(source).toContain("function uploadTitleError");
     expect(source).toContain("function selectUploadTitle");
@@ -128,8 +132,8 @@ describe("Decap custom article media library", () => {
 
   test("supports click-to-zoom media previews with outside and Escape close", async () => {
     const [source, css] = await Promise.all([
-      readFile(root + "public/admin/media-library.js", "utf8"),
-      readFile(root + "public/admin/media-library.css", "utf8"),
+      readFile(`${root}public/admin/media-library.js`, "utf8"),
+      readFile(`${root}public/admin/media-library.css`, "utf8"),
     ]);
 
     expect(source).toContain("function showZoom");
@@ -146,7 +150,7 @@ describe("Decap custom article media library", () => {
   });
 
   test("routes uploads by collection and includes the global uploads directory", async () => {
-    const source = await readFile(root + "public/admin/media-library.js", "utf8");
+    const source = await readFile(`${root}public/admin/media-library.js`, "utf8");
 
     expect(source).toContain("UPLOADS_MEDIA_ROOT");
     expect(source).toContain("function collectionFromRoute");

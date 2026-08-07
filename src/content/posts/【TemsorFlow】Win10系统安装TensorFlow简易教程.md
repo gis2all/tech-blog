@@ -4,8 +4,8 @@ description: 下载地址：https://www.continuum.io/downloads 一路默认安�
 publishedAt: 2017-08-01
 category: 编程开发
 tags:
-  - Coding
-  - tensorflow
+  - "Coding"
+  - "tensorflow"
 draft: false
 featured: false
 updatedAt: 2017-08-01

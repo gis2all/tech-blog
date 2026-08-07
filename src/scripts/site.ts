@@ -209,14 +209,18 @@ function updateReadProgress() {
   const start = Math.min(maxScroll, Math.max(0, articleTop - viewportHeight * 0.15));
   const nominalEnd = articleTop + rect.height - viewportHeight * 0.55;
   const end = Math.min(maxScroll, Math.max(start, nominalEnd));
-  const percent = end <= start
-    ? window.scrollY >= end ? 100 : 0
-    : Math.round(((Math.min(end, Math.max(start, window.scrollY)) - start) / (end - start)) * 100);
+  const percent =
+    end <= start
+      ? window.scrollY >= end
+        ? 100
+        : 0
+      : Math.round(
+          ((Math.min(end, Math.max(start, window.scrollY)) - start) / (end - start)) *
+            100,
+        );
   if (readBar) readBar.style.width = `${percent}%`;
   if (readPercent) readPercent.textContent = `${percent}%`;
-  document.dispatchEvent(
-    new CustomEvent("reading-progress", { detail: { percent } })
-  );
+  document.dispatchEvent(new CustomEvent("reading-progress", { detail: { percent } }));
 }
 
 updateReadProgress();

@@ -4,9 +4,9 @@ description: 1\. Jenkin安装插件 2\. 配置插件 GitHub Server API Credentia
 publishedAt: 2020-01-09
 category: DevOps
 tags:
-  - Jenkins
-  - pullrequast
-  - pr
+  - "Jenkins"
+  - "pullrequast"
+  - "pr"
 draft: false
 featured: false
 updatedAt: 2020-01-09

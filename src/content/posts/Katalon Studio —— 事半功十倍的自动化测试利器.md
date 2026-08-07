@@ -4,12 +4,12 @@ description: 做了大半年的自动化测试，无奈项目进度一直很慢�
 publishedAt: 2020-12-14
 category: 测试工程
 tags:
-  - Automated Testing
-  - katalon studio
-  - Katalon
-  - Katalon教程
-  - GUI测试
-  - 测试开发
+  - "Automated Testing"
+  - "katalon studio"
+  - "Katalon"
+  - "Katalon教程"
+  - "GUI测试"
+  - "测试开发"
 draft: false
 featured: false
 updatedAt: 2020-12-14

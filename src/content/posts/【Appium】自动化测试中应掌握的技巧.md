@@ -4,10 +4,10 @@ description: 在寻找控件的过程中经常会出现控件延时出现的情�
 publishedAt: 2020-12-02
 category: 测试工程
 tags:
-  - Automated Testing
-  - appium
-  - Python
-  - 自动化测试技巧
+  - "Automated Testing"
+  - "appium"
+  - "Python"
+  - "自动化测试技巧"
 draft: false
 featured: false
 updatedAt: 2020-12-02

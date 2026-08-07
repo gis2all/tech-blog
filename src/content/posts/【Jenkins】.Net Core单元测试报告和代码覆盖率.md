@@ -4,11 +4,11 @@ description: 在我们使用vstext.console运行单元测试命令，加入/logg
 publishedAt: 2020-03-19
 category: DevOps
 tags:
-  - Jenkins
-  - 单元测试
-  - unit test
-  - .Net Core
-  - 自动化测试
+  - "Jenkins"
+  - "单元测试"
+  - "unit test"
+  - ".Net Core"
+  - "自动化测试"
 draft: false
 featured: false
 updatedAt: 2020-03-19

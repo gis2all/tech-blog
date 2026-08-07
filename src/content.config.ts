@@ -4,7 +4,7 @@ import { z } from "astro/zod";
 
 const changelogSchema = z.object({
   date: z.coerce.date(),
-  note: z.string()
+  note: z.string(),
 });
 
 const posts = defineCollection({
@@ -22,8 +22,8 @@ const posts = defineCollection({
     featured: z.boolean().default(false),
     series: z.string().optional(),
     seriesOrder: z.number().int().positive().optional(),
-    changelog: z.array(changelogSchema).default([])
-  })
+    changelog: z.array(changelogSchema).default([]),
+  }),
 });
 
 const series = defineCollection({
@@ -35,8 +35,8 @@ const series = defineCollection({
     image: z.string(),
     imageAlt: z.string(),
     order: z.number().int().positive().optional(),
-    draft: z.boolean().default(false)
-  })
+    draft: z.boolean().default(false),
+  }),
 });
 
 const projects = defineCollection({
@@ -52,8 +52,8 @@ const projects = defineCollection({
     order: z.number().int().positive(),
     featured: z.boolean().default(false),
     publishedAt: z.coerce.date(),
-    draft: z.boolean().default(false)
-  })
+    draft: z.boolean().default(false),
+  }),
 });
 
 export const collections = { posts, series, projects };

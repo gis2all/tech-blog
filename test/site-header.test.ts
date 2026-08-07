@@ -11,8 +11,12 @@ describe("site header", () => {
       "utf8",
     );
 
-    expect(header).toContain('import { Menu, Moon, Search, SquarePen, X } from "@lucide/astro";');
-    expect(header).toContain('<div class="mobile-nav-actions" data-mobile-actions aria-label="移动站点操作">');
+    expect(header).toContain(
+      'import { Menu, Moon, Search, SquarePen, X } from "@lucide/astro";',
+    );
+    expect(header).toContain(
+      '<div class="mobile-nav-actions" data-mobile-actions aria-label="移动站点操作">',
+    );
     expect(header).toContain('<a class="mobile-nav-action" href="/admin/">');
     expect(header).toContain('<SquarePen size={18} aria-hidden="true" />');
     expect(header).toContain("<span>后台</span>");

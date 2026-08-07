@@ -14,10 +14,7 @@ const chineseWordSegmenter =
     : null;
 
 export function normalizeSearchText(value: string): string {
-  return value
-    .normalize("NFKC")
-    .toLocaleLowerCase()
-    .replace(ignoredSearchCharacters, "");
+  return value.normalize("NFKC").toLocaleLowerCase().replace(ignoredSearchCharacters, "");
 }
 
 export type SearchMatchRange = {
@@ -42,10 +39,7 @@ function getSearchWordSegments(value: string): SearchWordSegment[] {
     .filter((segment) => segment.value.length > 0);
 }
 
-function findChinesePhraseRange(
-  value: string,
-  query: string,
-): SearchMatchRange | null {
+function findChinesePhraseRange(value: string, query: string): SearchMatchRange | null {
   const querySegments = getSearchWordSegments(query);
   const valueSegments = getSearchWordSegments(value);
 
@@ -124,10 +118,7 @@ export function hasContiguousSearchMatch(value: string, query: string): boolean 
 export function buildPagefindQuery(query: string): string {
   const normalizedQuery = normalizeSearchText(query);
 
-  if (
-    normalizedQuery.length > 1 &&
-    chineseCharacterPattern.test(normalizedQuery)
-  ) {
+  if (normalizedQuery.length > 1 && chineseCharacterPattern.test(normalizedQuery)) {
     return `"${query.replaceAll('"', "").trim()}"`;
   }
 
@@ -157,12 +148,9 @@ export function findLocalSearchMatches(
   return documents
     .map((document, index) => ({ document, index }))
     .filter(({ document }) =>
-      [
-        document.title,
-        document.description,
-        document.category,
-        ...document.tags,
-      ].some((value) => hasContiguousSearchMatch(value, normalizedQuery)),
+      [document.title, document.description, document.category, ...document.tags].some(
+        (value) => hasContiguousSearchMatch(value, normalizedQuery),
+      ),
     )
     .sort(
       (a, b) =>

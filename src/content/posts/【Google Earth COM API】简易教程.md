@@ -4,9 +4,9 @@ description: 这段时间因为要做自己项目的SDK，所以参考了一下G
 publishedAt: 2020-03-03
 category: GIS
 tags:
-  - GIS
-  - google earth
-  - googleearth
+  - "GIS"
+  - "google earth"
+  - "googleearth"
 draft: false
 featured: false
 updatedAt: 2020-03-03

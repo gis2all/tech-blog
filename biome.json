@@ -1,0 +1,76 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
+  "files": {
+    "includes": [
+      "**/*.js",
+      "**/*.mjs",
+      "**/*.cjs",
+      "**/*.ts",
+      "**/*.json",
+      "!**/node_modules",
+      "!dist",
+      "!coverage",
+      "!.astro",
+      "!.git",
+      "!.codex-temp",
+      "!.migration",
+      "!.playwright-cli",
+      "!.superpowers",
+      "!.worktrees",
+      "!test-results",
+      "!playwright-report",
+      "!package-lock.json",
+      "!public/images"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 90
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended"
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["public/admin/*.js"],
+      "formatter": {
+        "enabled": false
+      },
+      "linter": {
+        "rules": {
+          "preset": "recommended",
+          "complexity": {
+            "useArrowFunction": "off",
+            "useOptionalChain": "off",
+            "noArguments": "off"
+          },
+          "correctness": {
+            "noInnerDeclarations": "off"
+          },
+          "style": {
+            "useTemplate": "off"
+          },
+          "suspicious": {
+            "noRedundantUseStrict": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["test/**/*.ts"],
+      "linter": {
+        "rules": {
+          "preset": "recommended",
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    }
+  ]
+}

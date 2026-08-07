@@ -43,15 +43,11 @@ describe("typography scale", () => {
 
     expect(css).toMatch(/\.tag-hot a\s*\{[^}]*font-weight:\s*500/s);
     expect(css).toMatch(/\.tag-alpha a\s*\{[^}]*font:\s*600 12px\/1/s);
-    expect(css).toMatch(
-      /\.tag-badge\s*\{[^}]*font-size:\s*16px[^}]*font-weight:\s*700/s,
-    );
+    expect(css).toMatch(/\.tag-badge\s*\{[^}]*font-size:\s*16px[^}]*font-weight:\s*700/s);
     expect(css).toMatch(
       /\.tag-item h3\s*\{[^}]*font-size:\s*15px[^}]*font-weight:\s*400/s,
     );
-    expect(css).toMatch(
-      /\.tag-count\s*\{[^}]*font-size:\s*17px[^}]*font-weight:\s*400/s,
-    );
+    expect(css).toMatch(/\.tag-count\s*\{[^}]*font-size:\s*17px[^}]*font-weight:\s*400/s);
   });
 
   test("uses calmer article, section, list, and card headings", async () => {

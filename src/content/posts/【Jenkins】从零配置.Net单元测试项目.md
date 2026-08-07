@@ -4,11 +4,11 @@ description: 经常忘，还是做个总结吧
 publishedAt: 2020-03-21
 category: DevOps
 tags:
-  - Jenkins
-  - 单元测试
-  - .net
-  - .net core
-  - 配置单元测试
+  - "Jenkins"
+  - "单元测试"
+  - ".net"
+  - ".net core"
+  - "配置单元测试"
 draft: false
 featured: false
 updatedAt: 2020-03-21

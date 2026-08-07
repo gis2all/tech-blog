@@ -1,15 +1,13 @@
 import {
   parseReadingHistory,
   READING_HISTORY_KEY,
+  type ReadingHistoryEntry,
   serializeReadingHistory,
   upsertReadingHistory,
-  type ReadingHistoryEntry
 } from "../lib/reading-history/history";
 
 const article = document.querySelector<HTMLElement>("[data-reading-article]");
-const historyContainers = document.querySelectorAll<HTMLElement>(
-  "[data-recent-reading]"
-);
+const historyContainers = document.querySelectorAll<HTMLElement>("[data-recent-reading]");
 
 function readHistory(): ReadingHistoryEntry[] {
   try {
@@ -21,10 +19,7 @@ function readHistory(): ReadingHistoryEntry[] {
 
 function writeHistory(entries: ReadingHistoryEntry[]): boolean {
   try {
-    localStorage.setItem(
-      READING_HISTORY_KEY,
-      serializeReadingHistory(entries)
-    );
+    localStorage.setItem(READING_HISTORY_KEY, serializeReadingHistory(entries));
     return true;
   } catch {
     return false;
@@ -49,14 +44,11 @@ function getArticleEntry(): ReadingHistoryEntry | undefined {
     title,
     category,
     visitedAt: Date.now(),
-    progress: previous?.progress ?? 0
+    progress: previous?.progress ?? 0,
   };
 }
 
-function createHistoryItem(
-  entry: ReadingHistoryEntry,
-  index: number
-): HTMLLIElement {
+function createHistoryItem(entry: ReadingHistoryEntry, index: number): HTMLLIElement {
   const item = document.createElement("li");
   item.className = "recent-reading-item";
 
@@ -85,9 +77,7 @@ function createHistoryItem(
 
 function renderHistory(entries: ReadingHistoryEntry[]) {
   historyContainers.forEach((container) => {
-    const list = container.querySelector<HTMLOListElement>(
-      "[data-reading-history-list]"
-    );
+    const list = container.querySelector<HTMLOListElement>("[data-reading-history-list]");
     const limit = Number.parseInt(container.dataset.historyLimit ?? "0", 10);
     const excludeSlug = container.dataset.historyExcludeSlug?.trim();
     const visibleEntries = entries
@@ -95,7 +85,7 @@ function renderHistory(entries: ReadingHistoryEntry[]) {
       .slice(0, Math.max(0, limit));
 
     list?.replaceChildren(
-      ...visibleEntries.map((entry, index) => createHistoryItem(entry, index))
+      ...visibleEntries.map((entry, index) => createHistoryItem(entry, index)),
     );
     container.hidden = visibleEntries.length === 0;
   });
@@ -123,7 +113,7 @@ function flushPendingProgress() {
   currentEntry = {
     ...currentEntry,
     visitedAt: Date.now(),
-    progress: Math.max(currentEntry.progress, pendingProgress)
+    progress: Math.max(currentEntry.progress, pendingProgress),
   };
   writeHistory(upsertReadingHistory(readHistory(), currentEntry));
   pendingProgress = undefined;

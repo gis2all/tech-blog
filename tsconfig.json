@@ -6,5 +6,5 @@
       "@/*": ["src/*"]
     }
   },
-  "exclude": ["coverage", "dist", "test-results", "playwright-report"]
+  "exclude": ["coverage", "dist", "test-results", "playwright-report", "public/admin"]
 }

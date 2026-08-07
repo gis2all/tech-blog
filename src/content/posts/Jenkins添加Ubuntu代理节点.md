@@ -4,11 +4,11 @@ description: 原理如下， Jenkins通过ip连接ubuntu，ubuntu使用SSH验证
 publishedAt: 2021-07-12
 category: DevOps
 tags:
-  - Jenkins
-  - jenkins添加ubuntu
-  - jenkins子节点
-  - jenkins ubuntu
-  - ubuntu代理节点
+  - "Jenkins"
+  - "jenkins添加ubuntu"
+  - "jenkins子节点"
+  - "jenkins ubuntu"
+  - "ubuntu代理节点"
 draft: false
 featured: false
 updatedAt: 2021-07-12

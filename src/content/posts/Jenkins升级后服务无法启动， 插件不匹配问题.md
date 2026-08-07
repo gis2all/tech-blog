@@ -4,11 +4,11 @@ description: Jenkins升级至最新版本后从服务里启动失败 结论 - Je
 publishedAt: 2022-08-08
 category: DevOps
 tags:
-  - Jenkins
-  - jenkins版本
-  - jenkins服务启动
-  - jdk
-  - java11
+  - "Jenkins"
+  - "jenkins版本"
+  - "jenkins服务启动"
+  - "jdk"
+  - "java11"
 draft: false
 featured: false
 updatedAt: 2022-08-08

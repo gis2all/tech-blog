@@ -126,7 +126,7 @@
   function prependLucideIcon(element, name) {
     if (!element) return;
     if (element.querySelector('svg[data-admin-icon="' + name + '"]')) return;
-    Array.from(element.querySelectorAll("span[class*=IconWrapper]")).forEach(function (wrapper) {
+    Array.from(window.DecapDomAdapter.iconWrappers(element)).forEach(function (wrapper) {
       wrapper.remove();
     });
     Array.from(element.querySelectorAll("svg")).forEach(function (icon) {
@@ -196,28 +196,29 @@
         "title",
         next === "dark" ? "切换浅色模式" : "切换深色模式",
       );
-      try { window.localStorage.setItem("theme", next); } catch (error) {}
+      try { window.localStorage.setItem("theme", next); } catch {}
       syncPreviewTheme();
     });
   }
 
   function syncPreviewTheme() {
     var isDark = document.documentElement?.getAttribute("data-theme") === "dark";
-    document.querySelectorAll("#nc-root iframe").forEach(function (frame) {
+    window.DecapDomAdapter.previewFrames().forEach(function (frame) {
       try {
         var root = frame.contentDocument && frame.contentDocument.documentElement;
         if (!root) return;
         if (isDark) root.setAttribute("data-theme", "dark");
         else root.removeAttribute("data-theme");
-      } catch (error) {}
+      } catch {}
     });
   }
 
   function refreshInlinePreview() {
-    var toggle = select("#nc-root [class*=EditorContainer] [data-admin-preview-toggle]");
+    var editor = window.DecapDomAdapter.editorContainer();
+    var toggle = editor && editor.querySelector("[data-admin-preview-toggle]");
     if (!toggle) return;
 
-    var previewPane = select("#nc-root [class*=EditorContainer] .Pane2");
+    var previewPane = window.DecapDomAdapter.previewPane(editor);
     var previewVisible = previewPane && window.getComputedStyle(previewPane).display !== "none";
     if (!previewVisible) {
       toggle.click();
@@ -239,14 +240,14 @@
     document.addEventListener("click", function (event) {
       var origin = event.target;
       var previewButton = origin && typeof origin.closest === "function"
-        ? origin.closest("#nc-root [class*=EditorContainer] [data-admin-preview-toggle]")
+        ? origin.closest("[data-admin-preview-toggle]")
         : null;
       if (previewButton) {
         window.requestAnimationFrame(decorateEditorToolbarControls);
         return;
       }
       var button = origin && typeof origin.closest === "function"
-        ? origin.closest("#nc-root [class*=EditorContainer] [data-admin-refresh-preview]")
+        ? origin.closest("[data-admin-refresh-preview]")
         : null;
       if (!button) return;
       event.preventDefault();
@@ -256,7 +257,7 @@
   }
 
   function decorateEditorPublishMenu(editor) {
-    var trigger = editor.querySelector("[class*=PublishButton][class*=DropdownButton]");
+    var trigger = window.DecapDomAdapter.publishTrigger(editor);
     if (trigger) trigger.setAttribute("data-admin-publish-trigger", "true");
 
     var menu = editor.querySelector('[role="menu"]');
@@ -279,14 +280,13 @@
     );
     if (refresh) return refresh;
 
-    Array.from(editor.querySelectorAll("[class*=RefreshPreviewButton]")).forEach(
+    window.DecapDomAdapter.nativeRefreshButtons(editor).forEach(
       function (button) {
         button.setAttribute("data-admin-native-refresh", "true");
       },
     );
 
-    var target = editor.querySelector("[class*=ToolbarSectionMeta]") ||
-      editor.querySelector("[class*=ToolbarSubSectionLast]");
+    var target = window.DecapDomAdapter.toolbarMeta(editor);
     if (!target) return null;
 
     refresh = document.createElement("button");
@@ -298,16 +298,16 @@
   }
 
   function decorateEditorToolbarControls() {
-    var editor = select("#nc-root [class*=EditorContainer]");
+    var editor = window.DecapDomAdapter.editorContainer();
     if (!editor) return;
 
     decorateEditorPublishMenu(editor);
 
-    var preview = editor.querySelector(
-      '[data-admin-preview-toggle], [class*=PreviewToggleButton], button[title="打开/关闭预览"]',
-    );
+    var preview =
+      editor.querySelector('[data-admin-preview-toggle], button[title="打开/关闭预览"]') ||
+      window.DecapDomAdapter.nativePreviewToggle(editor);
     if (preview) {
-      var previewPane = editor.querySelector(".Pane2");
+      var previewPane = window.DecapDomAdapter.previewPane(editor);
       var previewVisible = Boolean(
         previewPane && window.getComputedStyle(previewPane).display !== "none",
       );
@@ -340,7 +340,7 @@
       if (label.textContent !== "刷新") label.textContent = "刷新";
     }
 
-    var avatar = editor.querySelector("[class*=AvatarDropdownButton]");
+    var avatar = window.DecapDomAdapter.editorAvatar(editor);
     if (avatar && avatar.dataset.adminIcon !== "user") {
       replaceWithLucideIcon(avatar, "user");
     }
@@ -390,8 +390,8 @@
     themeControl = themeControl || select("[data-cms-theme-toggle]");
     globalSearchControl = globalSearchControl || select("[data-cms-global-search]");
     backToSiteControl = backToSiteControl || select("[data-cms-back-to-site]");
-    var header = select("#nc-root > header > div");
-    var actions = select("#nc-root > header [class*=AppHeaderActions]");
+    var header = window.DecapDomAdapter.headerContainer();
+    var actions = window.DecapDomAdapter.headerActions();
 
     if (header && actions) {
       if (globalSearchControl && globalSearchControl.parentElement !== header) {
@@ -419,8 +419,7 @@
 
   function decorateShellIcons() {
     var headerIcons = { "内容": "file-text", "媒体": "image" };
-    Array.from(document.querySelectorAll("#nc-root > header nav a, #nc-root > header nav button"))
-      .forEach(function (element) {
+    window.DecapDomAdapter.headerNavItems().forEach(function (element) {
         var name = headerIcons[element.textContent.trim()];
         if (name) prependLucideIcon(element, name);
       });
@@ -431,8 +430,7 @@
       "#/collections/series": "list-tree",
       "#/collections/projects": "folder-kanban",
     };
-    Array.from(document.querySelectorAll("#nc-root aside a[href]"))
-      .forEach(function (link) {
+    window.DecapDomAdapter.sidebarLinks().forEach(function (link) {
         var name = link.dataset.testid === "drafts-shortcut"
           ? "file-pen-line"
           : sidebarIcons[link.getAttribute("href")];
@@ -442,7 +440,7 @@
     var mediaShortcut = select("[data-admin-media-shortcut] button");
     if (mediaShortcut) prependLucideIcon(mediaShortcut, "images");
 
-    var avatar = select("#nc-root > header [class*=AvatarDropdownButton]");
+    var avatar = window.DecapDomAdapter.headerAvatar();
     if (avatar) replaceWithLucideIcon(avatar, "user");
     if (backToSiteControl) {
       replaceWithLucideIcon(backToSiteControl, "house");
@@ -452,7 +450,7 @@
   }
 
   function decorateQuickNew() {
-    var button = select('#nc-root > header [class*=AppHeaderQuickNewButton]');
+    var button = window.DecapDomAdapter.quickNewButton();
     if (!button || button.dataset.cmsQuickNewDecorated) return;
     button.dataset.cmsQuickNewDecorated = "true";
     button.textContent = "新建";
@@ -462,7 +460,7 @@
   }
 
   function decorateLoginButton() {
-    var button = select("#nc-root [class*=LoginButton]");
+    var button = window.DecapDomAdapter.loginButton();
     if (!button || button.dataset.cmsLoginDecorated) return;
     button.dataset.cmsLoginDecorated = "true";
     var label = document.createElement("span");
@@ -477,7 +475,7 @@
     try {
       var saved = window.localStorage.getItem("theme");
       if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
-    } catch (error) {}
+    } catch {}
   }
 
   function findFilterButton() {
@@ -572,7 +570,9 @@
 
     if (!draftLink) {
       var item = document.createElement("li");
-      draftLink = postsLink.cloneNode(true);
+      draftLink = /** @type {HTMLAnchorElement} */ (
+        postsLink.cloneNode(true)
+      );
       draftLink.href = DRAFT_ROUTE;
       draftLink.dataset.testid = "drafts-shortcut";
       draftLink.lastChild.textContent = "草稿";

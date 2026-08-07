@@ -4,11 +4,11 @@ description: 最近遇到了一个非常特别的issue，测试的pipeline项目
 publishedAt: 2022-08-08
 category: DevOps
 tags:
-  - Jenkins
-  - 运维
-  - jenkins子节点
-  - windows节点cmd
-  - jenkins cmd
+  - "Jenkins"
+  - "运维"
+  - "jenkins子节点"
+  - "windows节点cmd"
+  - "jenkins cmd"
 draft: false
 featured: false
 updatedAt: 2022-08-08

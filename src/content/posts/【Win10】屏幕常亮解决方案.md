@@ -4,8 +4,8 @@ description: 在做自动化测试的时候，需要模拟鼠标键盘操作事�
 publishedAt: 2020-03-31
 category: 测试工程
 tags:
-  - Automated Testing
-  - 进入屏保时为什么还很亮
+  - "Automated Testing"
+  - "进入屏保时为什么还很亮"
 draft: false
 featured: false
 updatedAt: 2020-03-31

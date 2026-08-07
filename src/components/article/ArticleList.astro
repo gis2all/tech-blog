@@ -1,6 +1,6 @@
 ---
 import ArticleMeta from "./ArticleMeta.astro";
-import { getPostSlug, type PostLike } from "../../lib/content/posts";
+import { getCoverThumb, getPostSlug, type PostLike } from "../../lib/content/posts";
 
 type Props = {
   posts: PostLike[];
@@ -30,7 +30,7 @@ const {
       {post.data.cover && !compact && (
         <a class="article-thumb" href={`/posts/${getPostSlug(post)}/`} aria-label={`阅读：${post.data.title}`}>
           <img
-            src={post.data.cover}
+            src={getCoverThumb(post.data.cover)}
             alt={post.data.coverAlt ?? ""}
             width="120"
             height="80"

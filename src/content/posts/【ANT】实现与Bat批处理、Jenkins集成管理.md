@@ -4,12 +4,12 @@ description: 迁移到ANT的原因是最近公司的VM在更新，很多测试�
 publishedAt: 2020-05-21
 category: 测试工程
 tags:
-  - Automated Testing
-  - ant
-  - bat
-  - Jenkins
-  - ant集成
-  - jenkins ant
+  - "Automated Testing"
+  - "ant"
+  - "bat"
+  - "Jenkins"
+  - "ant集成"
+  - "jenkins ant"
 draft: false
 featured: false
 updatedAt: 2020-05-21

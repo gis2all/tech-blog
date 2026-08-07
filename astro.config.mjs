@@ -1,6 +1,7 @@
-import { defineConfig } from "astro/config";
-import sitemap from "@astrojs/sitemap";
 import { satteri } from "@astrojs/markdown-satteri";
+import sitemap from "@astrojs/sitemap";
+import { defineConfig } from "astro/config";
+import coverThumbnailDevPlugin from "./src/lib/dev-cover-thumbnail-plugin.mjs";
 import createImagePerformancePlugin from "./src/lib/markdown/satteri-image-performance.mjs";
 
 export default defineConfig({
@@ -8,11 +9,14 @@ export default defineConfig({
   integrations: [sitemap()],
   markdown: {
     processor: satteri({
-      hastPlugins: [createImagePerformancePlugin()]
+      hastPlugins: [createImagePerformancePlugin()],
     }),
     shikiConfig: {
       theme: "github-dark",
-      wrap: true
-    }
-  }
+      wrap: true,
+    },
+  },
+  vite: {
+    plugins: [coverThumbnailDevPlugin()],
+  },
 });

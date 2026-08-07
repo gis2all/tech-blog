@@ -4,8 +4,8 @@ description: 前段时间手滑不小心点错Jenkins登录设置，结果再怎
 publishedAt: 2020-03-03
 category: DevOps
 tags:
-  - Jenkins
-  - jenkins loginerror
+  - "Jenkins"
+  - "jenkins loginerror"
 draft: false
 featured: false
 updatedAt: 2020-03-03

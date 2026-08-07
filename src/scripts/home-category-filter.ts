@@ -101,7 +101,13 @@ function setupHomeDiscoveryFilter() {
 
   links.forEach((link) => {
     link.addEventListener("click", (event) => {
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      if (
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
         return;
       }
 
@@ -118,7 +124,13 @@ function setupHomeDiscoveryFilter() {
   });
 
   clearLink.addEventListener("click", (event) => {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
       return;
     }
 

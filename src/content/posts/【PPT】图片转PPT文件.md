@@ -4,11 +4,11 @@ description: 先把实现的代码放上来，再详聊遇到的问题。代码�
 publishedAt: 2020-05-30
 category: 编程开发
 tags:
-  - Coding
-  - ppt
-  - image
-  - image2ppt
-  - 图片转ppt
+  - "Coding"
+  - "ppt"
+  - "image"
+  - "image2ppt"
+  - "图片转ppt"
 draft: false
 featured: false
 updatedAt: 2020-05-30

@@ -4,11 +4,11 @@ description: 读取文件 获取系统变量 获取当前时间 替换字符串
 publishedAt: 2021-04-14
 category: 编程开发
 tags:
-  - Coding
-  - Groovy
-  - Groovy读取文件
-  - Groovy字符串
-  - Groovy日期
+  - "Coding"
+  - "Groovy"
+  - "Groovy读取文件"
+  - "Groovy字符串"
+  - "Groovy日期"
 draft: false
 featured: false
 updatedAt: 2021-04-14

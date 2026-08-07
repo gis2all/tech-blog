@@ -4,12 +4,12 @@ description: 在一次更换密码的过程中，意外的丢失了大多数Jenk
 publishedAt: 2020-11-13
 category: DevOps
 tags:
-  - Jenkins
-  - jenkins backup
-  - Jnekins备份
-  - jenkins备份
-  - jenkins配置
-  - ThinBackup
+  - "Jenkins"
+  - "jenkins backup"
+  - "Jnekins备份"
+  - "jenkins备份"
+  - "jenkins配置"
+  - "ThinBackup"
 draft: false
 featured: false
 updatedAt: 2020-11-13

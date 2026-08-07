@@ -1,8 +1,8 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
-import { parse } from "yaml";
 import { describe, expect, test } from "vitest";
+import { parse } from "yaml";
 
 const root = path.resolve(import.meta.dirname, "..");
 const postsRoot = path.join(root, "src/content/posts");
@@ -41,14 +41,14 @@ describe("title-driven article storage", () => {
       for (const reference of references) {
         expect(
           decodeURIComponent(reference).startsWith(
-            "/images/posts/" + post.data.title.trim() + "/",
+            `/images/posts/${post.data.title.trim()}/`,
           ),
-          post.filename + ": " + reference,
+          `${post.filename}: ${reference}`,
         ).toBe(true);
       }
       if (post.data.cover) {
         expect(decodeURIComponent(post.data.cover)).toBe(
-          "/images/posts/" + post.data.title.trim() + "/cover.webp",
+          `/images/posts/${post.data.title.trim()}/cover.webp`,
         );
       }
     }
@@ -75,7 +75,9 @@ describe("title-driven article storage", () => {
 
     for (const post of posts) {
       const directory = path.join(mediaRoot, post.data.title.trim());
-      const exists = await stat(directory).then(() => true).catch(() => false);
+      const exists = await stat(directory)
+        .then(() => true)
+        .catch(() => false);
       if (!exists) continue;
 
       const files = await readdir(directory);
@@ -87,7 +89,9 @@ describe("title-driven article storage", () => {
 
         if (filename.endsWith(".webp")) {
           const metadata = await sharp(filePath).metadata();
-          expect(Math.max(metadata.width || 0, metadata.height || 0)).toBeLessThanOrEqual(1600);
+          expect(Math.max(metadata.width || 0, metadata.height || 0)).toBeLessThanOrEqual(
+            1600,
+          );
         }
       }
     }

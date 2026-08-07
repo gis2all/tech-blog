@@ -4,10 +4,10 @@ description: 环境变量包括 系统环境变量 和自定义环境变量 系�
 publishedAt: 2020-05-09
 category: DevOps
 tags:
-  - Jenkins
-  - Pipeline
-  - ant
-  - variable
+  - "Jenkins"
+  - "Pipeline"
+  - "ant"
+  - "variable"
 draft: false
 featured: false
 updatedAt: 2020-05-09

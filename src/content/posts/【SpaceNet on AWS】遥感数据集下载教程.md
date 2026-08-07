@@ -4,12 +4,12 @@ description: 前言。 这片文章内容比较多，可以直接点击目录跳
 publishedAt: 2017-08-03
 category: GIS
 tags:
-  - GIS
-  - aws
-  - SpaceNet
-  - 遥感数据集
-  - 大数据
-  - 深度学习
+  - "GIS"
+  - "aws"
+  - "SpaceNet"
+  - "遥感数据集"
+  - "大数据"
+  - "深度学习"
 draft: false
 featured: false
 updatedAt: 2017-08-03

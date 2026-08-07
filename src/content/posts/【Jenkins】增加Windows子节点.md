@@ -4,11 +4,11 @@ description: 在Jenkins上增加 Linux 系统(Mac，Ubantu)的子节点比较容
 publishedAt: 2020-09-16
 category: DevOps
 tags:
-  - Jenkins
-  - Windows slave
-  - windows节点
-  - jenkins windows
-  - windows node
+  - "Jenkins"
+  - "Windows slave"
+  - "windows节点"
+  - "jenkins windows"
+  - "windows node"
 draft: false
 featured: false
 updatedAt: 2020-09-16

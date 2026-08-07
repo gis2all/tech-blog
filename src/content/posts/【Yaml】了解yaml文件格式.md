@@ -4,10 +4,10 @@ description: YAML 是一种较为人性化的数据序列化语言，可以配�
 publishedAt: 2021-06-30
 category: DevOps
 tags:
-  - DevOps
-  - yaml
-  - yaml配置文件
-  - yaml文件
+  - "DevOps"
+  - "yaml"
+  - "yaml配置文件"
+  - "yaml文件"
 draft: false
 featured: false
 updatedAt: 2021-06-30

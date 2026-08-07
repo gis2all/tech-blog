@@ -4,9 +4,9 @@ description: 在默认的情况下，一旦设置了新的环境变量，那么�
 publishedAt: 2020-05-26
 category: DevOps
 tags:
-  - Jenkins
-  - Pipeline
-  - withEnv
+  - "Jenkins"
+  - "Pipeline"
+  - "withEnv"
 draft: false
 featured: false
 updatedAt: 2020-05-26

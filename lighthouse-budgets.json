@@ -1,0 +1,20 @@
+{
+  "routes": {
+    "/": {
+      "performanceScore": 80,
+      "firstContentfulPaintMs": 2500,
+      "largestContentfulPaintMs": 3500,
+      "totalBlockingTimeMs": 400,
+      "cumulativeLayoutShift": 0.15,
+      "totalByteWeightKb": 3200
+    },
+    "article": {
+      "performanceScore": 80,
+      "firstContentfulPaintMs": 2500,
+      "largestContentfulPaintMs": 4000,
+      "totalBlockingTimeMs": 400,
+      "cumulativeLayoutShift": 0.15,
+      "totalByteWeightKb": 2600
+    }
+  }
+}

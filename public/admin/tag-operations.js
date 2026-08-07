@@ -34,8 +34,10 @@
     var parts = text.split("---");
     if (parts.length < 3) return null;
     var frontmatter = parts[1];
-    var tags = DecapTagDomain.replaceTag(readTags(text), source, target);
-    if (!tags.length && !readTags(text).length) return null;
+    var existingTags = readTags(text);
+    var tags = DecapTagDomain.replaceTag(existingTags, source, target);
+    if (!tags.length && !existingTags.length) return null;
+    if (existingTags.indexOf(source) === -1) return null;
     var lines = frontmatter.split(/\r?\n/);
     var tagIndex = lines.findIndex(function (line) { return /^tags:[ \t]*$/.test(line); });
     if (tagIndex === -1) {
@@ -91,8 +93,11 @@
     }));
     var plan = DecapTagDomain.mergePlan(library, source, target, usage);
     plan.entries = entries.map(function (entry) {
-      var raw = replaceTagsInRaw(entry.raw, plan.source, plan.target);
-      return raw ? { path: entry.path, slug: entry.slug, raw: raw } : null;
+      var original = entry.raw;
+      var raw = replaceTagsInRaw(original, plan.source, plan.target);
+      return raw && raw !== original
+        ? { path: entry.path, slug: entry.slug, raw: raw }
+        : null;
     }).filter(Boolean);
     return plan;
   }

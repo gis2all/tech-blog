@@ -19,7 +19,7 @@
 - 使用浏览器本地存储在首页和正文侧栏展示最近阅读，不保存到服务端
 - 生成 RSS、站点地图、canonical URL 和静态 404 页面
 - 支持浅色/深色主题、桌面端和移动端布局
-- 通过 Vitest 和 Playwright 验证内容规则与关键交互
+- 通过 Vitest、Playwright、Axe 与 Lighthouse 验证内容规则、关键交互、可访问性和性能预算，Biome 与 tsc 门禁代码风格和后台脚本类型
 - 由 Netlify 构建并发布静态站点
 
 ## 技术栈
@@ -35,33 +35,41 @@
 | Netlify | 生产构建和静态托管 |
 | Vitest | 内容规则和组件约定测试 |
 | Playwright | 关键页面与交互回归测试 |
+| Axe / Lighthouse | 可访问性门禁与性能预算 |
+| Biome / tsc | 代码风格检查和后台脚本类型检查 |
 
-## 环境要求
-
-- Node.js 22
-- npm
 
 ## 快速开始
 
-安装依赖：
+### 一、本机 Node 方式
 
+安装依赖：
 ```text
 npm install
 ```
 
-启动开发服务：
+启动 Astro 开发服务和 Decap 本地后端：
 
 ```text
 npm run dev -- --host 127.0.0.1 --port 4321
+npm run cms:local
 ```
 
-访问：
+启动后访问：http://127.0.0.1:4321/
+
+### 二、Docker 方式
 
 ```text
-http://127.0.0.1:4321/
+docker compose up -d
 ```
 
-项目约定本地统一使用 4321 端口。同一时间只运行一个开发或预览服务。
+- 同时启动 Astro 开发服务（`4321`）与 Decap 本地后端（`4322`）；
+- 宿主机仓库目录挂载进容器，CMS 保存的文章和图片直接写入当前工作树；
+- 查看日志 `docker compose logs -f`，停止 `docker compose down`；
+- 依赖变化后重建 `docker compose build`（仅改源码无需重建）。
+
+启动后访问：http://127.0.0.1:4321/
+
 
 ## 开发态与生产预览
 
@@ -78,33 +86,17 @@ npm run build
 npm run preview -- --host 127.0.0.1 --port 4321
 ```
 
-`astro dev` 不会提供生产构建生成的 `dist/pagefind/`。开发态下搜索页提示索引尚未生成属于正常现象，完整搜索需要在生产预览态验证。
+开发态使用内置文档数据直接搜索文章标题、描述、分类和标签；`astro dev` 不加载生产构建生成的 `dist/pagefind/`，正文全文索引需要在生产预览态或部署产物中验证。
 
 ## 本地 CMS 调试
 
-本地调试后台时，先停止占用 `4321` 的生产预览服务；后台必须运行在 Astro 开发态，而不是 `npm run preview`。
-
-终端 1 启动 Astro 开发服务：
-
-```text
-npm run dev -- --host 127.0.0.1 --port 4321
-```
-
-终端 2 启动 Decap 本地后端：
-
-```text
-npm run cms:local
-```
-
-该服务固定监听 `http://127.0.0.1:4322`；`4321` 只供 Astro 开发服务器使用。
-
-访问：
+`/admin/` 在 `127.0.0.1` 或 `localhost` 上会自动使用本地后端，无需 GitHub OAuth。保存文章或上传图片只会写入当前本地工作树，不会向 GitHub 提交，也不会触发 Netlify 部署；用 `git diff` 检查内容后，按正常 Git 流程提交和推送。
 
 ```text
 http://127.0.0.1:4321/admin/
 ```
 
-`/admin/` 在 `127.0.0.1` 或 `localhost` 上会自动使用本地后端，无需 GitHub OAuth。保存文章或上传图片只会写入当前本地工作树，不会向 GitHub 提交，也不会触发 Netlify 部署；用 `git diff` 检查内容后，按正常 Git 流程提交和推送。完成后台调试后，停止这两个进程，再按“开发态与生产预览”运行 `npm run build` 和 `npm run preview` 验证生产产物。
+调试前先停止占用 `4321` 的生产预览服务；后台必须运行在 Astro 开发态，而不是 `npm run preview`。完成后台调试后，再按“开发态与生产预览”运行 `npm run build` 和 `npm run preview` 验证生产产物。
 
 ## 环境变量
 
@@ -155,10 +147,10 @@ title: 使用 Astro 构建技术博客
 description: 记录内容集合、静态搜索和部署流程
 publishedAt: 2026-07-30
 updatedAt: 2026-07-30
-category: Web
+category: 工程实践
 tags:
-  - Astro
-  - Blog
+  - "Astro"
+  - "Blog"
 cover: /images/posts/astro-blog/cover.webp
 coverAlt: Astro 博客页面
 draft: false
@@ -190,8 +182,8 @@ npm run build
 
 ## Decap CMS
 
-- 线上从 `/admin/` 登录，Decap CMS 通过 GitHub OAuth 直接提交 `main`，随后由 Netlify 构建发布。
-- 本地调试同时运行 `npm run dev -- --host 127.0.0.1 --port 4321` 和 `npm run cms:local`；后台保存只写入当前工作树，不会提交 GitHub。
+- 线上从 `/admin/` 登录，Decap CMS 通过 GitHub OAuth 将内容直接提交 `main`，Netlify 自动构建发布（simple 发布模式，无 PR 审核环节）。
+- 本地调试见“快速开始”（本机 Node 或 Docker 两种方式）；后台保存只写入当前工作树，不会提交 GitHub。
 - 文章标题决定文件名、公开地址和媒体目录：文章保存在 `src/content/posts/<标题>.md`，图片保存在 `public/images/posts/<标题>/`。已发布文章标题锁定，草稿改名会一并更新引用和媒体目录。
 - 后台保留 Decap 的认证、内容和编辑器内核，并通过与网站一致的自定义管理界面提供文章预览、保存校验、未保存离开提醒、嵌入式标签管理和文章媒体库。
 - JPEG、PNG 和 WebP 图片上传时会转为 WebP，最长边限制为 1600px，并保持原始宽高比；GIF、SVG 和 MP4 按各自限制保留原格式。
@@ -206,16 +198,15 @@ Giscus GitHub App 已授权访问 `gis2all/tech-blog` 仓库，本地已验证�
 
 ## Netlify 部署
 
-部署配置位于 `netlify.toml`：
+Netlify 部署配置位于 `netlify.toml`：
 
 ```text
 build command: npm run build
-postbuild: pagefind --site dist
 publish directory: dist
 Node.js: 22
 ```
 
-`npm run build` 先生成 Astro 静态页面，随后 npm 自动执行 `postbuild` 创建 Pagefind 索引，最终由 Netlify 发布整个 `dist/` 目录。
+`npm run build` 先生成 Astro 静态页面，随后 npm 自动执行 `package.json` 中的 `postbuild`（生成封面缩略图并创建 Pagefind 索引），最终由 Netlify 发布整个 `dist/` 目录。
 
 在 Netlify 的生产环境变量中设置 `PUBLIC_UMAMI_WEBSITE_ID` 即可启用访问统计。未设置时不会加载 Umami 脚本，也不会影响构建。
 
@@ -223,21 +214,27 @@ Node.js: 22
 
 ```text
 npm run check
+npm run check:admin
+npm run lint
 npm run test
 npm run test:coverage
 npm run test:e2e
 npm run build
+npm run perf
 ```
 
 | 命令 | 用途 |
 | --- | --- |
 | `npm run check` | 检查 Astro 和 TypeScript |
+| `npm run check:admin` | 用 `tsc --checkJs` 检查后台脚本类型 |
+| `npm run lint` | Biome 代码风格与静态检查 |
 | `npm run test` | 运行 Vitest 测试 |
-| `npm run test:coverage` | 运行 Vitest 覆盖率门禁：语句、函数和行不低于 85%，分支不低于 80% |
-| `npm run test:e2e` | 运行 Playwright 浏览器测试 |
+| `npm run test:coverage` | 覆盖率门禁：全局 90/82/92/94，`src/lib` 95/84/95/98，后台脚本 88/82/90/92（语句/分支/函数/行） |
+| `npm run test:e2e` | 运行 Playwright 浏览器测试（前台 43 项 + 后台 UI 16 项，含 Axe 可访问性门禁） |
 | `npm run build` | 验证生产构建并生成 Pagefind 索引 |
+| `npm run perf` | 对生产预览运行 Lighthouse 性能预算 |
 
-GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Astro/TypeScript 检查、Vitest、覆盖率、Playwright Chromium 和生产构建。`main` 验证通过后，工作流会将真实覆盖率徽章和 HTML 报告发布到 GitHub Pages；博客站点仍由 Netlify 发布。
+GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Astro/TypeScript 检查、后台类型检查、Biome、Vitest、覆盖率、Playwright Chromium（含 Axe）、生产构建和 Lighthouse 性能预算。`main` 验证通过后，工作流会将真实覆盖率徽章和 HTML 报告发布到 GitHub Pages；博客站点仍由 Netlify 发布。
 
 ## 许可证
 
@@ -253,6 +250,8 @@ GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Ast
 - 不公开 `draft: true` 的文章
 - 评论依赖 GitHub Discussions 和 Giscus App，不在项目中保存评论数据
 - `docs/` 用于本地规划和交接，不进入 GitHub 仓库
+- 生产内容发布直接提交 `main` 触发 Netlify 构建（simple 发布模式，无 PR 审核环节）；本地后台仍只写工作树
+- 改动后先跑 `npm run lint` 和 `npm run check:admin`，再按风险运行测试、构建和浏览器验证
 - 修改页面和交互后，按风险运行检查、测试、构建和浏览器验证
 
 更完整的项目上下文、架构决策和接管信息见 [`CLAUDE.md`](./CLAUDE.md)。

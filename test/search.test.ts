@@ -4,8 +4,8 @@ import {
   findLocalSearchMatches,
   findSearchMatchRange,
   hasContiguousSearchMatch,
-  normalizeSearchText,
   type LocalSearchDocument,
+  normalizeSearchText,
 } from "../src/lib/search/client";
 
 const documents: LocalSearchDocument[] = [
@@ -92,7 +92,9 @@ describe("local search fallback", () => {
       },
     ];
 
-    expect(findLocalSearchMatches(rankingDocs, "Jenkins").map((item) => item.url)).toEqual([
+    expect(
+      findLocalSearchMatches(rankingDocs, "Jenkins").map((item) => item.url),
+    ).toEqual([
       "/posts/exact/",
       "/posts/prefix/",
       "/posts/substring/",
@@ -119,13 +121,42 @@ describe("local search fallback", () => {
   });
 
   test("returns the original text range for normalized title highlighting", () => {
-    expect(findSearchMatchRange("Jenkins Pipeline 工程实践", "jenkins-pipeline")).toEqual({
-      start: 0,
-      end: 16,
-    });
+    expect(findSearchMatchRange("Jenkins Pipeline 工程实践", "jenkins-pipeline")).toEqual(
+      {
+        start: 0,
+        end: 16,
+      },
+    );
     expect(findSearchMatchRange("认证资料，已过", "已过")).toEqual({
       start: 5,
       end: 7,
     });
+  });
+
+  test("ranks description-only matches as the lowest rank", () => {
+    const descriptionOnlyA: LocalSearchDocument = {
+      title: "部署手册",
+      url: "/posts/manual-a/",
+      description: "本文介绍 jenkins 的安装步骤",
+      category: "GIS",
+      tags: [],
+    };
+    const descriptionOnlyB: LocalSearchDocument = {
+      title: "巡检记录",
+      url: "/posts/manual-b/",
+      description: "jenkins 构建日志分析",
+      category: "GIS",
+      tags: [],
+    };
+
+    const matches = findLocalSearchMatches(
+      [descriptionOnlyA, descriptionOnlyB],
+      "jenkins",
+    );
+
+    expect(matches.map((item) => item.url)).toEqual([
+      "/posts/manual-a/",
+      "/posts/manual-b/",
+    ]);
   });
 });

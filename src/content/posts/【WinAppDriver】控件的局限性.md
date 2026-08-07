@@ -4,8 +4,8 @@ description: 对于大多数控件而言，WinAppDriver都可以正确识别，�
 publishedAt: 2020-09-14
 category: 测试工程
 tags:
-  - Automated Testing
-  - winappdriver缺点
+  - "Automated Testing"
+  - "winappdriver缺点"
 draft: false
 featured: false
 updatedAt: 2020-09-14

@@ -4,12 +4,12 @@ description: 网上看了一些SonarQube的教程，感觉还是太繁琐😠，
 publishedAt: 2020-06-15
 category: 编程开发
 tags:
-  - Coding
-  - SonarQube
-  - 代码质量
-  - .Net Core
-  - sonar
-  - 代码
+  - "Coding"
+  - "SonarQube"
+  - "代码质量"
+  - ".Net Core"
+  - "sonar"
+  - "代码"
 draft: false
 featured: false
 updatedAt: 2020-06-15

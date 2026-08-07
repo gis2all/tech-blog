@@ -6,10 +6,12 @@ import { describe, expect, test } from "vitest";
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 async function loadDomain() {
-  const source = await readFile(root + "public/admin/admin-shell-domain.js", "utf8");
+  const source = await readFile(`${root}public/admin/admin-shell-domain.js`, "utf8");
   const context: Record<string, unknown> = {};
   context.window = context;
-  runInNewContext(source, context);
+  runInNewContext(source, context, {
+    filename: `${root}public/admin/admin-shell-domain.js`,
+  });
   return context.DecapAdminShellDomain as {
     entryMatches(entry: { category: string; title: string }, query: string): boolean;
     entryStatus(hash: string): string;
@@ -26,7 +28,10 @@ async function loadDomain() {
       searchPlaceholder?: string;
       view: string;
     } | null;
-    parseEntrySummary(summary: string, collection: string): {
+    parseEntrySummary(
+      summary: string,
+      collection: string,
+    ): {
       category: string;
       detail: string;
       isDraft: boolean;
@@ -101,12 +106,16 @@ describe("Decap admin shell domain", () => {
   test("parses series and project summaries without post-only assumptions", async () => {
     const domain = await loadDomain();
 
-    expect(domain.parseEntrySummary("Jenkins Pipeline 工程实践 · 排序 4 · false", "series")).toMatchObject({
+    expect(
+      domain.parseEntrySummary("Jenkins Pipeline 工程实践 · 排序 4 · false", "series"),
+    ).toMatchObject({
       title: "Jenkins Pipeline 工程实践",
       detail: "排序 4",
       isDraft: false,
     });
-    expect(domain.parseEntrySummary("tech-blog · 2026-08-01 · true", "projects")).toMatchObject({
+    expect(
+      domain.parseEntrySummary("tech-blog · 2026-08-01 · true", "projects"),
+    ).toMatchObject({
       title: "tech-blog",
       detail: "2026-08-01",
       isDraft: true,
@@ -121,7 +130,9 @@ describe("Decap admin shell domain", () => {
       isNew: true,
       title: "新建文章",
     });
-    expect(domain.editorProfile("#/collections/projects/entries/tech-blog")).toMatchObject({
+    expect(
+      domain.editorProfile("#/collections/projects/entries/tech-blog"),
+    ).toMatchObject({
       collection: "projects",
       isNew: false,
       title: "编辑项目",
@@ -129,14 +140,14 @@ describe("Decap admin shell domain", () => {
   });
 
   test("keeps only the original list link when an entry has an action link", async () => {
-    const source = await readFile(root + "public/admin/admin-shell.js", "utf8");
+    const source = await readFile(`${root}public/admin/admin-shell.js`, "utf8");
 
     expect(source).toContain("data-admin-entry-source");
-    expect(source).toContain('a[data-admin-entry-source]');
+    expect(source).toContain("window.DecapDomAdapter.entryLinks()");
   });
 
   test("keeps cached summary metadata separate from rendered table columns", async () => {
-    const source = await readFile(root + "public/admin/admin-shell.js", "utf8");
+    const source = await readFile(`${root}public/admin/admin-shell.js`, "utf8");
 
     expect(source).toContain("dataset.adminSummaryCategory");
     expect(source).not.toContain("dataset.adminEntryCategory =");
@@ -147,5 +158,22 @@ describe("Decap admin shell domain", () => {
     const domain = await loadDomain();
 
     expect("pagination" in domain).toBe(false);
+  });
+
+  test("parses non-post collections with a draft flag", async () => {
+    const domain = await loadDomain();
+
+    expect(domain.parseEntrySummary("专题A · 2026-08-01 · 5 · true", "series")).toEqual({
+      category: "",
+      detail: "2026-08-01 · 5",
+      isDraft: true,
+      title: "专题A",
+      updated: "",
+    });
+    expect(domain.parseSummary("只有标题")).toEqual({
+      category: "未分类",
+      title: "只有标题",
+      updated: "未填写日期",
+    });
   });
 });

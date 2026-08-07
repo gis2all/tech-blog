@@ -4,10 +4,10 @@ description: Jenkins自带的图标样式不太美观，我们可以自己定义
 publishedAt: 2020-01-09
 category: DevOps
 tags:
-  - Jenkins
-  - 主题
-  - jenkin主题
-  - jenkins皮肤
+  - "Jenkins"
+  - "主题"
+  - "jenkin主题"
+  - "jenkins皮肤"
 draft: false
 featured: false
 updatedAt: 2020-01-09

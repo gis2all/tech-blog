@@ -6,12 +6,11 @@ import { describe, expect, test } from "vitest";
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 async function loadDomain() {
-  const source = await readFile(
-    `${root}public/admin/editorial-domain.js`,
-    "utf8",
-  );
+  const source = await readFile(`${root}public/admin/editorial-domain.js`, "utf8");
   const context: Record<string, unknown> = {};
-  runInNewContext(source, context);
+  runInNewContext(source, context, {
+    filename: `${root}public/admin/editorial-domain.js`,
+  });
   return context.DecapEditorialDomain as {
     validateTitle(title: unknown): string[];
     articlePath(title: string): string;
@@ -22,6 +21,7 @@ async function loadDomain() {
       warnings: string[];
     };
     findMediaReferences(source: string): string[];
+    countDraftEntries(entries: Array<{ data?: unknown; raw?: unknown } | null>): number;
   };
 }
 
@@ -29,15 +29,9 @@ describe("Decap editorial domain", () => {
   test("derives every article identity from the trimmed title", async () => {
     const domain = await loadDomain();
 
-    expect(domain.articlePath("  中文文章  ")).toBe(
-      "src/content/posts/中文文章.md",
-    );
-    expect(domain.mediaFolder("  中文文章  ")).toBe(
-      "public/images/posts/中文文章",
-    );
-    expect(domain.publicArticlePath("  中文文章  ")).toBe(
-      "/posts/中文文章/",
-    );
+    expect(domain.articlePath("  中文文章  ")).toBe("src/content/posts/中文文章.md");
+    expect(domain.mediaFolder("  中文文章  ")).toBe("public/images/posts/中文文章");
+    expect(domain.publicArticlePath("  中文文章  ")).toBe("/posts/中文文章/");
   });
 
   test.each([
@@ -52,13 +46,10 @@ describe("Decap editorial domain", () => {
     "标题|管道",
     "标题#锚点",
     "标题%编码",
-  ])(
-    "rejects a title that cannot be one stable URL and filename: %s",
-    async (title) => {
-      const domain = await loadDomain();
-      expect(domain.validateTitle(title)).not.toEqual([]);
-    },
-  );
+  ])("rejects a title that cannot be one stable URL and filename: %s", async (title) => {
+    const domain = await loadDomain();
+    expect(domain.validateTitle(title)).not.toEqual([]);
+  });
 
   test.each(["标题.", "标题 ", "CON", "con.txt", ".."])(
     "rejects Windows-unsafe title %s",
@@ -127,9 +118,7 @@ describe("Decap editorial domain", () => {
       expect.arrayContaining([expect.stringContaining("替代文本")]),
     );
     expect(result.warnings).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining("封面"),
-      ]),
+      expect.arrayContaining([expect.stringContaining("封面")]),
     );
   });
 
@@ -149,5 +138,77 @@ describe("Decap editorial domain", () => {
       "/images/posts/文章/cover.webp",
       "/images/posts/文章/image-01.webp",
     ]);
+  });
+
+  test("validates publish-only rules for completed posts", async () => {
+    const domain = await loadDomain();
+
+    expect(domain.validatePost({ title: "x" })).toMatchObject({
+      errors: expect.arrayContaining(["正文不能为空"]),
+      warnings: expect.arrayContaining(["文章尚未设置封面"]),
+    });
+    expect(
+      domain.validatePost({
+        title: "x",
+        description: "d",
+        body: "b",
+        category: "DevOps",
+        publishedAt: "2026-08-07",
+        cover: "/images/cover.webp",
+      }),
+    ).toMatchObject({ errors: ["设置封面后必须填写封面替代文本"] });
+    expect(
+      domain.validatePost({
+        title: "x",
+        description: "d",
+        body: "![ ](img.webp)",
+        category: "DevOps",
+        publishedAt: "2026-08-07",
+      }),
+    ).toMatchObject({ errors: ["正文图片必须填写替代文本后才能发布"] });
+    expect(
+      domain.validatePost({
+        title: "x",
+        description: "d",
+        body: "b",
+        category: "DevOps",
+        publishedAt: "2026-08-07",
+        series: "s",
+      }),
+    ).toMatchObject({ errors: ["选择专题后必须填写专题顺序"] });
+    expect(
+      domain.validatePost({
+        title: "x",
+        description: "d",
+        body: "b",
+        category: "DevOps",
+        publishedAt: "2026-08-07",
+        seriesOrder: 1,
+      }),
+    ).toMatchObject({ errors: ["填写专题顺序前必须选择专题"] });
+    expect(
+      domain.validatePost({
+        title: "x",
+        description: "d",
+        body: "b",
+        category: "DevOps",
+        publishedAt: "2026-08-07",
+        updatedAt: "2026-08-01",
+      }),
+    ).toMatchObject({ errors: ["更新日期不能早于发布日期"] });
+  });
+
+  test("counts drafts from entry data and raw sources", async () => {
+    const domain = await loadDomain();
+
+    expect(
+      domain.countDraftEntries([
+        { data: "---\ndraft: true\n---\n" },
+        { raw: "---\ndraft: true\n---\n" },
+        { raw: "---\ndraft: false\n---\n" },
+        { data: 42 },
+        null,
+      ]),
+    ).toBe(2);
   });
 });

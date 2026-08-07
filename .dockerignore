@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build and test output
+dist/
+.astro/
+coverage/
+test-results/
+playwright-report/
+output/
+
+# Local data and tooling
+.git/
+docs/
+.migration/
+.codex-temp/
+.playwright-cli/
+.superpowers/
+.worktrees/
+.env
+.env.*
+!.env.example
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

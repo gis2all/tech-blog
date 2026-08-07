@@ -4,11 +4,11 @@ description: 作为一位QA Engineer，日常工作中见到太多因为书写�
 publishedAt: 2020-12-02
 category: 阅读与思考
 tags:
-  - Books
-  - github
-  - log issue
-  - issue格式
-  - markdown
+  - "Books"
+  - "github"
+  - "log issue"
+  - "issue格式"
+  - "markdown"
 draft: false
 featured: false
 updatedAt: 2020-12-02

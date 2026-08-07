@@ -4,12 +4,12 @@ description: 一个页面(窗口)中默认的使用Tab键时，默认Focus元素
 publishedAt: 2020-07-08
 category: 编程开发
 tags:
-  - Coding
-  - wpf
-  - tab
-  - focus
-  - IsTabStop
-  - TabIndex
+  - "Coding"
+  - "wpf"
+  - "tab"
+  - "focus"
+  - "IsTabStop"
+  - "TabIndex"
 draft: false
 featured: false
 updatedAt: 2020-07-08

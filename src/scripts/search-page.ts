@@ -3,8 +3,8 @@ import {
   findLocalSearchMatches,
   findSearchMatchRange,
   hasContiguousSearchMatch,
-  normalizeSearchText,
   type LocalSearchDocument,
+  normalizeSearchText,
 } from "../lib/search/client";
 
 type PagefindData = {

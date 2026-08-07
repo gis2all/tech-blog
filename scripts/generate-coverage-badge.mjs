@@ -11,9 +11,7 @@ export function getLineCoverage(summary) {
     percentage < 0 ||
     percentage > 100
   ) {
-    throw new Error(
-      "coverage summary does not contain a valid total.lines.pct value",
-    );
+    throw new Error("coverage summary does not contain a valid total.lines.pct value");
   }
 
   return percentage;
@@ -22,12 +20,7 @@ export function getLineCoverage(summary) {
 export function buildCoverageBadge(percentage) {
   const value = `${percentage}%`;
   const label = `coverage: ${value}`;
-  const color =
-    percentage >= 90
-      ? "#2ea44f"
-      : percentage >= 80
-        ? "#dfb317"
-        : "#d73a49";
+  const color = percentage >= 90 ? "#2ea44f" : percentage >= 80 ? "#dfb317" : "#d73a49";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="126" height="20" role="img" aria-label="${label}">
   <title>${label}</title>
@@ -53,9 +46,7 @@ const currentFile = fileURLToPath(import.meta.url);
 const entryFile = process.argv[1] ? resolve(process.argv[1]) : "";
 
 if (entryFile === currentFile) {
-  const summaryPath = resolve(
-    process.argv[2] ?? "coverage/coverage-summary.json",
-  );
+  const summaryPath = resolve(process.argv[2] ?? "coverage/coverage-summary.json");
   const outputPath = resolve(process.argv[3] ?? "coverage/badge.svg");
 
   await generateCoverageBadge(summaryPath, outputPath);

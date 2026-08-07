@@ -5,7 +5,8 @@ import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../", import.meta.url)).replace(/\\/g, "/");
 const postsDirectory = `${root}src/content/posts`;
-const ownCsdnLinkPattern = /https?:\/\/blog\.csdn\.net\/DynastyRumble\/article\/details\/\d+/gi;
+const ownCsdnLinkPattern =
+  /https?:\/\/blog\.csdn\.net\/DynastyRumble\/article\/details\/\d+/gi;
 const internalPostLinkPattern = /\[[^\]]*\]\((\/posts\/[^)\s]+\/)\)/g;
 
 async function readPublishedPosts() {
@@ -38,7 +39,10 @@ describe("internal post links", () => {
     const posts = await readPublishedPosts();
     const titles = new Set(posts.map(({ title }) => title));
     const internalLinks = posts.flatMap(({ file, source }) =>
-      Array.from(source.matchAll(internalPostLinkPattern), ([, href]) => ({ file, href })),
+      Array.from(source.matchAll(internalPostLinkPattern), ([, href]) => ({
+        file,
+        href,
+      })),
     );
 
     expect(internalLinks.length).toBeGreaterThanOrEqual(25);

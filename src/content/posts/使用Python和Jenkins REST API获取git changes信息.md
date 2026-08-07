@@ -4,10 +4,10 @@ description: 因为工作中发生过很严重的 Regression Issue，当时的�
 publishedAt: 2021-06-01
 category: 编程开发
 tags:
-  - Coding
-  - Python
-  - git
-  - python操作git
+  - "Coding"
+  - "Python"
+  - "git"
+  - "python操作git"
 draft: false
 featured: false
 updatedAt: 2021-06-01

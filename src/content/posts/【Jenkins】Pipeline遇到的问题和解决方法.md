@@ -4,10 +4,10 @@ description: 一个项目完整Build时间过长，如果想从某个阶段运�
 publishedAt: 2020-04-22
 category: DevOps
 tags:
-  - Jenkins
-  - Pipeline
-  - jenkins流水线
-  - jenkins回放
+  - "Jenkins"
+  - "Pipeline"
+  - "jenkins流水线"
+  - "jenkins回放"
 draft: false
 featured: false
 updatedAt: 2020-04-22

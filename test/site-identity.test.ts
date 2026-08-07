@@ -22,26 +22,18 @@ describe("site identity", () => {
     expect(css).toContain(
       '--font-code: "Cascadia Code", "JetBrains Mono", "Fira Code", Consolas, monospace;',
     );
-    expect(css).toMatch(
-      /\.prose code\s*\{[^}]*font-family:\s*var\(--font-code\)/s,
-    );
-    expect(css).toMatch(
-      /\.prose pre\s*\{[^}]*font-family:\s*var\(--font-code\)/s,
-    );
+    expect(css).toMatch(/\.prose code\s*\{[^}]*font-family:\s*var\(--font-code\)/s);
+    expect(css).toMatch(/\.prose pre\s*\{[^}]*font-family:\s*var\(--font-code\)/s);
     expect(css).toMatch(
       /\.author-avatar-frame\.author-avatar-profile\s*\{[^}]*box-shadow:\s*0 0 0 4px var\(--brand-soft\)/s,
     );
-    expect(css).toMatch(
-      /\.author-avatar-image\s*\{[^}]*object-fit:\s*cover/s,
-    );
-    expect(css).toMatch(
-      /\.author-avatar-frame\s*\{[^}]*display:\s*block/s,
-    );
+    expect(css).toMatch(/\.author-avatar-image\s*\{[^}]*object-fit:\s*cover/s);
+    expect(css).toMatch(/\.author-avatar-frame\s*\{[^}]*display:\s*block/s);
     const avatar = await readFile(
       `${root}src/components/common/AuthorAvatar.astro`,
       "utf8",
     );
-    expect(avatar).toContain('`author-avatar-${size}`');
+    expect(avatar).toContain(`\`author-avatar-\${size}\``);
   });
 
   test("does not render the retired initials avatar", async () => {
@@ -79,9 +71,10 @@ describe("site identity", () => {
     );
 
     for (const source of sources) {
-      const currentCopy = source.file === "CLAUDE.md"
-        ? source.content.replace("“知行录 · 现代技术博客首页”", "")
-        : source.content;
+      const currentCopy =
+        source.file === "CLAUDE.md"
+          ? source.content.replace("“知行录 · 现代技术博客首页”", "")
+          : source.content;
       expect(currentCopy, source.file).not.toContain("知行录");
       expect(currentCopy, source.file).not.toContain("林舟");
       expect(currentCopy, source.file).not.toContain("authorInitials");

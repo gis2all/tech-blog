@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "types": []
+  },
+  "include": ["public/admin/*.js", "public/admin/*.d.ts"]
+}

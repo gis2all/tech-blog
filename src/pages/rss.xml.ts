@@ -1,6 +1,6 @@
 import rss from "@astrojs/rss";
-import { getAllPosts } from "../lib/content/queries";
 import { getPostSlug } from "../lib/content/posts";
+import { getAllPosts } from "../lib/content/queries";
 import { site } from "../lib/site";
 
 export async function GET(context: { site?: URL }) {
@@ -14,7 +14,7 @@ export async function GET(context: { site?: URL }) {
       title: post.data.title,
       description: post.data.description,
       pubDate: post.data.publishedAt,
-      link: `/posts/${getPostSlug(post)}/`
-    }))
+      link: `/posts/${getPostSlug(post)}/`,
+    })),
   });
 }
