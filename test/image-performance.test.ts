@@ -14,12 +14,9 @@ describe("Markdown image performance", () => {
   });
 
   test("adds lazy loading, async decoding, and dimensions to local images", async () => {
-    const { html } = await markdownToHtml(
-      "![avatar](/images/avatar-gis2all.png)",
-      {
-        hastPlugins: [createImagePerformancePlugin({ publicDir: `${root}public` })],
-      },
-    );
+    const { html } = await markdownToHtml("![avatar](/images/avatar-gis2all.png)", {
+      hastPlugins: [createImagePerformancePlugin({ publicDir: `${root}public` })],
+    });
 
     expect(html).toMatch(
       /<img[^>]*loading="lazy"[^>]*decoding="async"[^>]*width="\d+"[^>]*height="\d+"/,
@@ -27,12 +24,9 @@ describe("Markdown image performance", () => {
   });
 
   test("adds loading attributes without inventing dimensions for remote images", async () => {
-    const { html } = await markdownToHtml(
-      "![remote](https://example.com/image.png)",
-      {
-        hastPlugins: [createImagePerformancePlugin({ publicDir: `${root}public` })],
-      },
-    );
+    const { html } = await markdownToHtml("![remote](https://example.com/image.png)", {
+      hastPlugins: [createImagePerformancePlugin({ publicDir: `${root}public` })],
+    });
 
     expect(html).toContain('loading="lazy"');
     expect(html).toContain('decoding="async"');
@@ -109,9 +103,7 @@ describe("site image delivery", () => {
   test("enables the Markdown image plugin in Astro", async () => {
     const config = await readFile(`${root}astro.config.mjs`, "utf8");
 
-    expect(config).toContain(
-      'import { satteri } from "@astrojs/markdown-satteri";',
-    );
+    expect(config).toContain('import { satteri } from "@astrojs/markdown-satteri";');
     expect(config).toContain(
       'import createImagePerformancePlugin from "./src/lib/markdown/satteri-image-performance.mjs";',
     );

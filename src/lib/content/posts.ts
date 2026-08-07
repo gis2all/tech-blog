@@ -55,14 +55,13 @@ const monthLabels = [
   "九月",
   "十月",
   "十一月",
-  "十二月"
+  "十二月",
 ];
 
 const asciiLetterPattern = /^[A-Za-z]$/;
 const reservedPostSlugPattern = /[/?#%]/u;
 const unsafePostFilenamePattern = /[\\:*"<>|]/u;
-const windowsReservedPostNamePattern =
-  /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/iu;
+const windowsReservedPostNamePattern = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/iu;
 
 function compareTagInitials(a: string, b: string): number {
   if (a === b) return 0;
@@ -78,7 +77,7 @@ function getTagSortKey(name: string): string {
 
       const [charPinyin] = pinyin(char, {
         toneType: "none",
-        type: "array"
+        type: "array",
       });
 
       return (charPinyin ?? char).toLowerCase();
@@ -89,7 +88,7 @@ function getTagSortKey(name: string): string {
 export function compareTagNames(a: string, b: string): number {
   return (
     getTagSortKey(a).localeCompare(getTagSortKey(b), "en", {
-      sensitivity: "base"
+      sensitivity: "base",
     }) || a.localeCompare(b, "zh-CN")
   );
 }
@@ -103,9 +102,7 @@ export function getPostSlug(post: Pick<PostLike, "id" | "data">): string {
   }
 
   if (reservedPostSlugPattern.test(slug)) {
-    throw new Error(
-      `Article title cannot contain URL-reserved characters: ${post.id}`
-    );
+    throw new Error(`Article title cannot contain URL-reserved characters: ${post.id}`);
   }
 
   if (
@@ -116,15 +113,25 @@ export function getPostSlug(post: Pick<PostLike, "id" | "data">): string {
     /[. ]$/u.test(slug) ||
     windowsReservedPostNamePattern.test(slug)
   ) {
-    throw new Error("Article title is not filesystem-safe: " + post.id);
+    throw new Error(`Article title is not filesystem-safe: ${post.id}`);
   }
 
   return slug;
 }
 
-export function validateUniquePostSlugs<TPost extends PostLike>(
-  posts: TPost[]
-): void {
+const rasterCoverPattern = /\.(webp|png|jpe?g|avif)$/i;
+
+/**
+ * Cover thumbnails are generated next to the original as `<name>-thumb.webp`
+ * (build time for production, on-demand by the dev middleware). Non-raster
+ * covers (SVG/GIF/MP4) have no thumb and keep the original URL.
+ */
+export function getCoverThumb(cover: string): string {
+  if (!rasterCoverPattern.test(cover)) return cover;
+  return cover.replace(rasterCoverPattern, "-thumb.webp");
+}
+
+export function validateUniquePostSlugs<TPost extends PostLike>(posts: TPost[]): void {
   const seen = new Set<string>();
 
   for (const post of posts) {
@@ -140,7 +147,7 @@ export function validateUniquePostSlugs<TPost extends PostLike>(
 
 export function sortPostsByDate<TPost extends PostLike>(posts: TPost[]): TPost[] {
   return [...posts].sort(
-    (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime()
+    (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
   );
 }
 
@@ -150,7 +157,7 @@ export function getPublicPosts<TPost extends PostLike>(posts: TPost[]): TPost[] 
 
 export function getFeaturedPosts<TPost extends PostLike>(
   posts: TPost[],
-  limit = 3
+  limit = 3,
 ): TPost[] {
   const publicPosts = getPublicPosts(posts);
   const preferred = publicPosts.filter((post) => post.data.featured);
@@ -162,7 +169,7 @@ export function getFeaturedPosts<TPost extends PostLike>(
 export function getRelatedPosts<TPost extends PostLike>(
   posts: TPost[],
   currentPost: TPost,
-  limit = 4
+  limit = 4,
 ): TPost[] {
   const currentSlug = getPostSlug(currentPost);
   const currentTags = new Set(currentPost.data.tags ?? []);
@@ -178,17 +185,17 @@ export function getRelatedPosts<TPost extends PostLike>(
     .map((post) => ({
       post,
       sameSeries: Boolean(
-        currentPost.data.series && post.data.series === currentPost.data.series
+        currentPost.data.series && post.data.series === currentPost.data.series,
       ),
       sharedTags: new Set(post.data.tags ?? []).intersection(currentTags).size,
-      sameCategory: post.data.category === currentPost.data.category
+      sameCategory: post.data.category === currentPost.data.category,
     }))
     .sort(
       (a, b) =>
         Number(b.sameSeries) - Number(a.sameSeries) ||
         b.sharedTags - a.sharedTags ||
         Number(b.sameCategory) - Number(a.sameCategory) ||
-        b.post.data.publishedAt.getTime() - a.post.data.publishedAt.getTime()
+        b.post.data.publishedAt.getTime() - a.post.data.publishedAt.getTime(),
     )
     .slice(0, Math.max(0, limit))
     .map(({ post }) => post);
@@ -196,18 +203,16 @@ export function getRelatedPosts<TPost extends PostLike>(
 
 export function getAdjacentPosts<TPost extends PostLike>(
   posts: TPost[],
-  currentSlug: string
+  currentSlug: string,
 ): { previous?: TPost; next?: TPost } {
   const publicPosts = getPublicPosts(posts);
-  const currentIndex = publicPosts.findIndex(
-    (post) => getPostSlug(post) === currentSlug
-  );
+  const currentIndex = publicPosts.findIndex((post) => getPostSlug(post) === currentSlug);
 
   if (currentIndex === -1) return {};
 
   return {
     previous: publicPosts[currentIndex + 1],
-    next: publicPosts[currentIndex - 1]
+    next: publicPosts[currentIndex - 1],
   };
 }
 
@@ -217,7 +222,7 @@ export function calculateReadingTime(body = ""): number {
 }
 
 export function groupPostsByCategory<TPost extends PostLike>(
-  posts: TPost[]
+  posts: TPost[],
 ): TaxonomyGroup<TPost>[] {
   const groups = new Map<string, TPost[]>();
 
@@ -230,12 +235,12 @@ export function groupPostsByCategory<TPost extends PostLike>(
   return [...groups.entries()].map(([name, groupedPosts]) => ({
     name,
     count: groupedPosts.length,
-    posts: groupedPosts
+    posts: groupedPosts,
   }));
 }
 
 export function groupPostsByTag<TPost extends PostLike>(
-  posts: TPost[]
+  posts: TPost[],
 ): TaxonomyGroup<TPost>[] {
   const groups = new Map<string, TPost[]>();
 
@@ -252,7 +257,7 @@ export function groupPostsByTag<TPost extends PostLike>(
     .map(([name, groupedPosts]) => ({
       name,
       count: groupedPosts.length,
-      posts: groupedPosts
+      posts: groupedPosts,
     }));
 }
 
@@ -265,7 +270,7 @@ export function getTagInitial(name: string): string {
   const [firstPinyin] = pinyin(firstChar, {
     pattern: "first",
     toneType: "none",
-    type: "array"
+    type: "array",
   });
 
   if (firstPinyin && asciiLetterPattern.test(firstPinyin)) {
@@ -276,7 +281,7 @@ export function getTagInitial(name: string): string {
 }
 
 export function groupTagsByInitial<TPost extends PostLike>(
-  posts: TPost[]
+  posts: TPost[],
 ): TagDirectoryGroup<TPost>[] {
   const groups = new Map<string, TaxonomyGroup<TPost>[]>();
 
@@ -296,13 +301,13 @@ export function groupTagsByInitial<TPost extends PostLike>(
         initial,
         count: sortedTags.length,
         postsCount: sortedTags.reduce((sum, tag) => sum + tag.count, 0),
-        tags: sortedTags
+        tags: sortedTags,
       };
     });
 }
 
 export function groupPostsByArchive<TPost extends PostLike>(
-  posts: TPost[]
+  posts: TPost[],
 ): ArchiveYear<TPost>[] {
   const years = new Map<number, Map<number, TPost[]>>();
 
@@ -326,14 +331,14 @@ export function groupPostsByArchive<TPost extends PostLike>(
         .map(([month, monthPosts]) => ({
           month,
           label: monthLabels[month - 1] ?? `${month}月`,
-          posts: monthPosts
-        }))
+          posts: monthPosts,
+        })),
     }));
 }
 
 export function getSeriesPosts<TPost extends PostLike>(
   posts: TPost[],
-  seriesSlug: string
+  seriesSlug: string,
 ): TPost[] {
   return getPublicPosts(posts)
     .filter((post) => post.data.series === seriesSlug)

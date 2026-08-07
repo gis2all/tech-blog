@@ -11,9 +11,8 @@ function normalizeLocalAssetUrl(src) {
   const suffix = separatorIndex === -1 ? "" : src.slice(separatorIndex);
 
   return (
-    pathname.replace(
-      /%(21|24|26|27|28|29|2A|2B|2C|3B|3D|40)/gi,
-      (match) => decodeURIComponent(match),
+    pathname.replace(/%(21|24|26|27|28|29|2A|2B|2C|3B|3D|40)/gi, (match) =>
+      decodeURIComponent(match),
     ) + suffix
   );
 }
