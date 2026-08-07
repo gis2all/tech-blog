@@ -54,12 +54,12 @@
 
   function entries() {
     var decorated = Array.from(
-      document.querySelectorAll('#nc-root main:not([data-admin-route-snapshot-main]) a[data-admin-entry-source]'),
+      window.DecapDomAdapter.entryLinks(),
     );
     if (decorated.length) return decorated;
 
     return Array.from(
-      document.querySelectorAll('#nc-root main:not([data-admin-route-snapshot-main]) a[href*="/entries/"]'),
+      window.DecapDomAdapter.fallbackEntryLinks(),
     ).filter(function (link) {
       return !link.hasAttribute("data-admin-entry-action");
     });
@@ -77,11 +77,11 @@
   }
 
   function adminMain() {
-    return document.querySelector("#nc-root main:not([data-admin-route-snapshot-main])");
+    return window.DecapDomAdapter.main();
   }
 
   function adminAside() {
-    var root = document.querySelector("#nc-root");
+    var root = window.DecapDomAdapter.root();
     if (!root) return null;
     return Array.from(root.querySelectorAll("aside")).find(function (aside) {
       return !closest(aside, "[data-admin-route-snapshot]");
@@ -102,12 +102,12 @@
 
   function createRouteSnapshot() {
     if (routeSnapshot) return;
-    var root = document.querySelector("#nc-root");
+    var root = window.DecapDomAdapter.root();
     var main = adminMain();
     if (!root || !main) return;
 
     var parent = main.parentElement;
-    var layout = main.closest ? main.closest("[class*=AppMainContainer]") : null;
+    var layout = window.DecapDomAdapter.appMainContainer(main);
     var source = layout && layout.querySelector("aside")
       ? layout
       : parent && parent.querySelector(":scope > aside")
@@ -247,8 +247,8 @@
       }
       var origin = event.target;
       if (!origin || typeof origin.closest !== "function") return;
-      var link = origin.closest('#nc-root aside a[href*="#/collections/"]');
-      var headerLink = origin.closest('#nc-root > header nav a[href^="#"]');
+      var link = window.DecapDomAdapter.sidebarCollectionLink(origin);
+      var headerLink = window.DecapDomAdapter.headerNavLink(origin);
       var mediaButton = origin.closest("#nc-root aside [data-admin-media-shortcut] button");
       var route = link
         ? String(link.hash || "")
@@ -1327,7 +1327,7 @@
     main.dataset.adminView = page.view;
 
     var heading = main.querySelector("h1");
-    var newButton = main.querySelector('[class*="CollectionTopNewButton"]');
+    var newButton = window.DecapDomAdapter.collectionNewButton(main);
     var titles = { posts: "文章", series: "专题", projects: "项目" };
     var title = page.view === "drafts" ? "草稿" : titles[page.collection];
     var buttonLabels = { posts: "+ 新建文章", series: "+ 新建专题", projects: "+ 新建项目" };
@@ -1340,7 +1340,7 @@
 
   function editorControlPane(editor) {
     if (!editor) return null;
-    var controls = Array.from(editor.querySelectorAll("[class*=ControlPaneContainer]"));
+    var controls = window.DecapDomAdapter.editorControlPanes(editor);
     var control = controls.find(function (candidate) {
       return Array.from(candidate.children).some(function (child) {
         return String(child.className || "").includes("ControlContainer");
@@ -1359,7 +1359,7 @@
 
   function ensureEditorHeading() {
     var page = domain.editorProfile(global.location.hash);
-    var editor = document.querySelector("#nc-root [class*=EditorContainer]");
+    var editor = window.DecapDomAdapter.editorContainer();
     var existing = document.querySelector("[data-admin-editor-heading]");
     if (!page || !editor) {
       if (existing) existing.remove();
@@ -1394,8 +1394,8 @@
 
   function ensureEditorToolbar() {
     var page = domain.editorProfile(global.location.hash);
-    var back = document.querySelector("#nc-root [class*=ToolbarSectionBackLink]");
-    var collection = back && back.querySelector("[class*=BackCollection]");
+    var back = window.DecapDomAdapter.editorBackLink();
+    var collection = back && window.DecapDomAdapter.backCollection(back);
     if (!page || !back || !collection) return;
 
     var labels = { posts: "文章", series: "专题", projects: "项目" };
@@ -1403,7 +1403,7 @@
     if (collection.textContent !== text) collection.textContent = text;
     collection.setAttribute("data-admin-editor-back-label", page.collection);
 
-    var arrow = back.querySelector("[class*=BackArrow]");
+    var arrow = window.DecapDomAdapter.backArrow(back);
     if (arrow && !arrow.querySelector("[data-admin-editor-arrow]")) {
       var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("viewBox", "0 0 24 24");
@@ -1425,7 +1425,7 @@
   }
 
   function ensureEditorFields() {
-    var editor = document.querySelector("#nc-root [class*=EditorContainer]");
+    var editor = window.DecapDomAdapter.editorContainer();
     var control = editorControlPane(editor);
     if (!editor || !control) return;
 
@@ -1446,8 +1446,8 @@
       "更新记录": "changelog",
     };
 
-    Array.from(control.querySelectorAll("[class*=ControlContainer]")).forEach(function (container) {
-      var label = container.querySelector("[class*=FieldLabel]");
+    window.DecapDomAdapter.editorControls(control).forEach(function (container) {
+      var label = window.DecapDomAdapter.fieldLabel(container);
       if (!label) return;
       var text = String(label.textContent || "").replace(/\s*\(.+?\)\s*$/, "").trim();
       var name = fieldNames[text];

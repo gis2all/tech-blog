@@ -39,6 +39,7 @@ interface Window {
   DecapAdminShell?: DecapRuntimeObject;
   DecapAdminShellDomain?: DecapRuntimeObject;
   DecapAdminNavigation?: DecapRuntimeObject;
+  DecapDomAdapter?: DecapRuntimeObject;
 }
 
 /**
