@@ -69,8 +69,59 @@
     };
   }
 
+  function decodeHtmlEntities(value) {
+    var text = String(value || "");
+    return text.replace(
+      /&(?:#x([0-9a-f]+)|#([0-9]+)|(amp|lt|gt|quot|apos));/gi,
+      function (match, hex, decimal, named) {
+        var codePoint = hex
+          ? parseInt(hex, 16)
+          : decimal
+            ? parseInt(decimal, 10)
+            : null;
+        if (codePoint !== null) {
+          return codePoint > 0 &&
+            codePoint <= 0x10ffff &&
+            !(codePoint >= 0xd800 && codePoint <= 0xdfff)
+            ? String.fromCodePoint(codePoint)
+            : "\uFFFD";
+        }
+        if (named === "amp") return "&";
+        if (named === "lt") return "<";
+        if (named === "gt") return ">";
+        if (named === "quot") return '"';
+        if (named === "apos") return "'";
+        return match;
+      },
+    );
+  }
+
+  /**
+   * Blacklist-style SVG safety check for the CMS upload path.
+   *
+   * The check runs before an SVG enters the repository, so it rejects
+   * executable content instead of sanitizing it in place. To close the
+   * common encoding bypasses it first decodes HTML entities and removes
+   * whitespace, then scans for script/foreignObject elements, event
+   * handler attributes, javascript: URLs and inline data: payloads.
+   *
+   * This is deliberately conservative: legitimate SVGs containing these
+   * literal strings are rejected. A full allowlist parser would be more
+   * precise and is the recommended upgrade if SVG uploads ever become
+   * multi-user.
+   */
   function isSafeSvg(source) {
-    return !/<script\b|on\w+\s*=|javascript:|<foreignObject\b/i.test(String(source || ""));
+    var decoded = decodeHtmlEntities(String(source || ""));
+    var compact = decoded.replace(/\s+/g, "");
+    return !(
+      /<script\b/i.test(compact) ||
+      /<foreignobject\b/i.test(compact) ||
+      /on[a-z]+\s*=/i.test(compact) ||
+      /javascript:/i.test(compact) ||
+      /(?:href|xlink:href|src)\s*=\s*["']?data:|url\(\s*["']?data:|@import\s*["']?data:/i.test(
+        compact,
+      )
+    );
   }
 
   function normalizeMediaReference(value) {
