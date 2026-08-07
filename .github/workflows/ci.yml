@@ -30,6 +30,12 @@ jobs:
       - name: Check Astro and TypeScript
         run: npm run check
 
+      - name: Lint and format (Biome)
+        run: npm run lint
+
+      - name: Type-check admin shell scripts
+        run: npm run check:admin
+
       - name: Run Vitest
         run: npm test
 
@@ -44,6 +50,9 @@ jobs:
 
       - name: Build site
         run: npm run build
+
+      - name: Verify Lighthouse performance budgets
+        run: npm run perf
 
       - name: Configure GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

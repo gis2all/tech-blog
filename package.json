@@ -7,9 +7,13 @@
     "dev": "astro dev",
     "cms:local": "node scripts/start-decap-server.mjs",
     "build": "astro build",
-    "postbuild": "pagefind --site dist",
+    "postbuild": "node scripts/generate-thumbnails.mjs && pagefind --site dist",
     "preview": "astro preview",
     "check": "astro check",
+    "check:admin": "tsc -p tsconfig.admin.json",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "perf": "node scripts/run-lighthouse.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "coverage:badge": "node scripts/generate-coverage-badge.mjs",
@@ -27,10 +31,13 @@
     "typescript": "6.0.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@biomejs/biome": "^2.5.7",
     "@playwright/test": "^1.62.0",
     "@types/node": "^26.1.2",
     "@vitest/coverage-v8": "^4.1.10",
     "decap-server": "3.10.0",
+    "lighthouse": "^13.4.1",
     "pinyin-pro": "^3.28.2",
     "vitest": "^4.1.10",
     "yaml": "^2.9.0"

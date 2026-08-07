@@ -196,7 +196,7 @@
         "title",
         next === "dark" ? "切换浅色模式" : "切换深色模式",
       );
-      try { window.localStorage.setItem("theme", next); } catch (error) {}
+      try { window.localStorage.setItem("theme", next); } catch {}
       syncPreviewTheme();
     });
   }
@@ -209,7 +209,7 @@
         if (!root) return;
         if (isDark) root.setAttribute("data-theme", "dark");
         else root.removeAttribute("data-theme");
-      } catch (error) {}
+      } catch {}
     });
   }
 
@@ -477,7 +477,7 @@
     try {
       var saved = window.localStorage.getItem("theme");
       if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
-    } catch (error) {}
+    } catch {}
   }
 
   function findFilterButton() {
@@ -572,7 +572,9 @@
 
     if (!draftLink) {
       var item = document.createElement("li");
-      draftLink = postsLink.cloneNode(true);
+      draftLink = /** @type {HTMLAnchorElement} */ (
+        postsLink.cloneNode(true)
+      );
       draftLink.href = DRAFT_ROUTE;
       draftLink.dataset.testid = "drafts-shortcut";
       draftLink.lastChild.textContent = "草稿";
