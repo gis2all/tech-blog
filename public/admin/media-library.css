@@ -226,11 +226,11 @@ body.cms-media-open {
 }
 
 .cms-media__used {
-  color: #16845b;
+  color: #0f6b46;
 }
 
 .cms-media__unused {
-  color: #bd6718;
+  color: #96500f;
 }
 
 .cms-media__actions {

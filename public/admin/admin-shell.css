@@ -8,13 +8,13 @@
   --cms-scroll-thumb: rgb(136 146 157 / 44%);
   --cms-text: var(--text-primary, #20242b);
   --cms-muted: var(--text-muted, #5d6670);
-  --cms-faint: var(--text-faint, #8a939c);
+  --cms-faint: var(--text-faint, #5d6670);
   --cms-ink: var(--color-brand-ink, #18324a);
   --cms-brand: var(--color-brand, #0b7285);
   --cms-brand-strong: var(--color-brand-strong, #075e6e);
   --cms-brand-soft: var(--color-brand-soft, #e7f5f7);
   --cms-danger: var(--status-danger, #c63d48);
-  --cms-warning: var(--status-warning, #bd6718);
+  --cms-warning: var(--status-warning, #96500f);
   --cms-success: var(--status-success, #16845b);
   --cms-radius: var(--control-radius, 6px);
   --cms-control-height: var(--control-height, 36px);

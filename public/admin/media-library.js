@@ -622,6 +622,7 @@
     }
     var file = element("input");
     file.type = "file";
+    file.setAttribute("aria-label", "选择要上传的图片或视频");
     file.accept = isCoverField()
       ? "image/jpeg,image/png,image/webp"
       : "image/jpeg,image/png,image/webp,image/gif,image/svg+xml,video/mp4";

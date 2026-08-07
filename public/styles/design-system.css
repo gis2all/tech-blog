@@ -5,15 +5,15 @@
   --surface-soft: #f8fafc;
   --text-primary: #20242b;
   --text-muted: #5d6670;
-  --text-faint: #8a939c;
+  --text-faint: #5d6670;
   --border-default: #e3e7eb;
   --border-strong: #cfd7dd;
   --color-brand-ink: #18324a;
   --color-brand: #0b7285;
   --color-brand-strong: #075e6e;
   --color-brand-soft: #e7f5f7;
-  --status-success: #16845b;
-  --status-warning: #bd6718;
+  --status-success: #0f6b46;
+  --status-warning: #96500f;
   --status-danger: #c63d48;
   --shadow-low: 0 1px 3px rgb(15 23 42 / 6%);
   --shadow-menu: 0 10px 28px rgb(15 23 42 / 14%);
