@@ -143,7 +143,7 @@ describe("Decap admin shell domain", () => {
     const source = await readFile(`${root}public/admin/admin-shell.js`, "utf8");
 
     expect(source).toContain("data-admin-entry-source");
-    expect(source).toContain("a[data-admin-entry-source]");
+    expect(source).toContain("window.DecapDomAdapter.entryLinks()");
   });
 
   test("keeps cached summary metadata separate from rendered table columns", async () => {

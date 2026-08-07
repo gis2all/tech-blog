@@ -6,6 +6,40 @@ import { parse } from "yaml";
 import { site } from "../src/lib/site";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
+const adminDomAdapter = {
+  root: () => null,
+  main: () => null,
+  entryLinks: () => [],
+  fallbackEntryLinks: () => [],
+  aside: () => null,
+  appMainContainer: () => null,
+  collectionNewButton: () => null,
+  editorContainer: () => null,
+  editorControlPanes: () => [],
+  editorControls: () => [],
+  fieldLabel: () => null,
+  editorBackLink: () => null,
+  backCollection: () => null,
+  backArrow: () => null,
+  publishTrigger: () => null,
+  nativeRefreshButtons: () => [],
+  toolbarMeta: () => null,
+  editorAvatar: () => null,
+  headerAvatar: () => null,
+  headerActions: () => null,
+  headerContainer: () => null,
+  quickNewButton: () => null,
+  loginButton: () => null,
+  headerNavItems: () => [],
+  sidebarLinks: () => [],
+  previewFrames: () => [],
+  iconWrappers: () => [],
+  previewPane: () => null,
+  nativePreviewToggle: () => null,
+  sidebarCollectionLink: () => null,
+  headerNavLink: () => null,
+};
+
 const productionUrl = "https://blog.gis2all.top";
 
 function getCollection(config: unknown, name: string) {
@@ -382,6 +416,7 @@ describe("Decap CMS schema", () => {
       addEventListener: () => undefined,
       setTimeout: () => 0,
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);
@@ -453,6 +488,7 @@ describe("Decap CMS schema", () => {
       },
       setTimeout: () => 0,
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);
@@ -504,6 +540,7 @@ describe("Decap CMS schema", () => {
       },
       setTimeout: () => 0,
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);
@@ -547,6 +584,7 @@ describe("Decap CMS schema", () => {
         return scheduled.length;
       },
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);
@@ -585,6 +623,7 @@ describe("Decap CMS schema", () => {
       addEventListener: () => undefined,
       setTimeout: () => 0,
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);
@@ -622,6 +661,7 @@ describe("Decap CMS schema", () => {
       addEventListener: () => undefined,
       setTimeout: () => 0,
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);
@@ -675,6 +715,7 @@ describe("Decap CMS schema", () => {
         return scheduled.length;
       },
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);
@@ -715,6 +756,7 @@ describe("Decap CMS schema", () => {
       addEventListener: () => undefined,
       setTimeout: () => 0,
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);
@@ -778,6 +820,7 @@ describe("Decap CMS schema", () => {
         return 0;
       },
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);
@@ -816,6 +859,7 @@ describe("Decap CMS schema", () => {
         return scheduled.length;
       },
     };
+    context.DecapDomAdapter = adminDomAdapter;
     context.window = context;
 
     runInNewContext(navigationSource, context);

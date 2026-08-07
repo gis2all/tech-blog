@@ -187,9 +187,8 @@ describe("Decap phase-two editorial UI", () => {
     expect(shellScript).toContain('setAttribute("aria-busy", "true")');
     expect(shellScript).toContain('global.addEventListener("hashchange", function ()');
     expect(shellScript).toContain("beginRouteTransition(global.location.hash);");
-    expect(shellScript).toContain(
-      "origin.closest('#nc-root aside a[href*=\"#/collections/\"]')",
-    );
+    expect(shellScript).toContain("window.DecapDomAdapter.sidebarCollectionLink(origin)");
+    expect(shellScript).toContain("window.DecapDomAdapter.headerNavLink(origin)");
     expect(shellScript).toContain('document.addEventListener("click"');
     expect(shellScript).toContain("}, true);");
     expect(shell).toMatch(
@@ -437,9 +436,7 @@ describe("Decap phase-two editorial UI", () => {
     expect(navigation).toContain("data-admin-preview-toggle");
     expect(navigation).toContain('preview.setAttribute("aria-pressed",');
     expect(navigation).toContain('previewVisible ? "隐藏预览" : "显示预览"');
-    expect(navigation).toContain(
-      'origin.closest("#nc-root [class*=EditorContainer] [data-admin-refresh-preview]")',
-    );
+    expect(navigation).toContain('origin.closest("[data-admin-refresh-preview]")');
     expect(navigation).toContain('label.textContent = "刷新"');
     expect(navigation).toContain('replaceWithLucideIcon(refresh, "refresh-cw")');
     expect(navigation).toContain("function decorateEditorPublishMenu");
@@ -501,7 +498,7 @@ describe("Decap phase-two editorial UI", () => {
     expect(navigation).toContain("LUCIDE_ICON_NODES");
     expect(navigation).toContain("createLucideIcon");
     expect(navigation).toContain("moveHeaderControls");
-    expect(navigation).toContain("span[class*=IconWrapper]");
+    expect(navigation).toContain("window.DecapDomAdapter.iconWrappers(element)");
     expect(navigation).toContain('button.textContent = "新建"');
     expect(shell).toContain("min-width: 104px !important");
     expect(shell).toContain("display: none !important");
