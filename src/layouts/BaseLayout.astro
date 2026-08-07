@@ -24,8 +24,9 @@ const {
 } = Astro.props;
 const pageTitle = title === site.title ? title : `${title} · ${site.title}`;
 const canonical = new URL(Astro.url.pathname, site.url).toString();
-const absoluteImage = image ? new URL(image, site.url).toString() : undefined;
-const twitterCard = absoluteImage ? "summary_large_image" : "summary";
+const socialImage = image ?? "/social-card.png";
+const absoluteImage = new URL(socialImage, site.url).toString();
+const twitterCard = "summary_large_image";
 const jsonLdText = jsonLd
   ? JSON.stringify(jsonLd).replace(/</g, "\\u003c")
   : undefined;
@@ -68,11 +69,11 @@ const umamiWebsiteId = getUmamiWebsiteId(
     <meta property="og:description" content={description} />
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonical} />
-    {absoluteImage && <meta property="og:image" content={absoluteImage} />}
+    <meta property="og:image" content={absoluteImage} />
     <meta name="twitter:card" content={twitterCard} />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
-    {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
+    <meta name="twitter:image" content={absoluteImage} />
     {jsonLdText && <script is:inline type="application/ld+json" set:html={jsonLdText} />}
     <link rel="alternate" type="application/rss+xml" title={`${site.title} RSS`} href="/rss.xml" />
   </head>
