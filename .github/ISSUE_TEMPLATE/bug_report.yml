@@ -1,0 +1,54 @@
+name: Bug 报告
+description: 提交一个可复现的缺陷
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢报告问题。请尽量完整填写以下信息，便于快速定位和复现。
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 实际发生了什么？预期应该是什么？
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤
+      description: 从首页进入的最小复现路径。
+      placeholder: |
+        1. 打开 http://127.0.0.1:4321/
+        2. 点击 …
+        3. 看到 …
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: 问题页面 / URL
+      description: 线上地址或本地路径，注明是开发态、生产预览还是部署后的站点。
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 运行环境
+      description: 在哪种环境复现？
+      options:
+        - 本地开发态（npm run dev）
+        - 本地生产预览（npm run build && npm run preview）
+        - 线上 blog.gis2all.top
+        - 后台 /admin/
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: 浏览器与版本
+      description: 例如 Chrome 138 / Edge 138 / Safari 18
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志与截图
+      description: 终端报错、控制台输出或截图（可直接粘贴图片）。

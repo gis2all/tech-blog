@@ -102,6 +102,8 @@ describe("production metadata", () => {
     expect(layout).toContain('name="twitter:card"');
     expect(layout).toContain('name="twitter:title"');
     expect(layout).toContain('name="twitter:description"');
+    expect(layout).toContain("social-card.png");
+    expect(layout).toContain("summary_large_image");
   });
 
   test("restores the dark theme before the first stylesheet is loaded", async () => {
