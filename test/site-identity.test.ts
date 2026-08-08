@@ -2,6 +2,7 @@ import { access, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 import { site } from "../src/lib/site";
+import { readAllStyles } from "./support/styles";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -17,7 +18,7 @@ describe("site identity", () => {
   });
 
   test("uses a programming font token for Markdown code", async () => {
-    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+    const css = await readAllStyles();
 
     expect(css).toContain(
       '--font-code: "Cascadia Code", "JetBrains Mono", "Fira Code", Consolas, monospace;',

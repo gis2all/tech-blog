@@ -1,20 +1,20 @@
 {
   "routes": {
     "/": {
-      "performanceScore": 80,
-      "firstContentfulPaintMs": 2500,
-      "largestContentfulPaintMs": 3500,
-      "totalBlockingTimeMs": 400,
-      "cumulativeLayoutShift": 0.15,
-      "totalByteWeightKb": 3200
+      "performanceScore": 90,
+      "firstContentfulPaintMs": 1500,
+      "largestContentfulPaintMs": 2500,
+      "totalBlockingTimeMs": 300,
+      "cumulativeLayoutShift": 0.1,
+      "totalByteWeightKb": 1500
     },
     "article": {
-      "performanceScore": 80,
-      "firstContentfulPaintMs": 2500,
-      "largestContentfulPaintMs": 4000,
-      "totalBlockingTimeMs": 400,
-      "cumulativeLayoutShift": 0.15,
-      "totalByteWeightKb": 2600
+      "performanceScore": 90,
+      "firstContentfulPaintMs": 1500,
+      "largestContentfulPaintMs": 2500,
+      "totalBlockingTimeMs": 300,
+      "cumulativeLayoutShift": 0.1,
+      "totalByteWeightKb": 1500
     }
   }
 }

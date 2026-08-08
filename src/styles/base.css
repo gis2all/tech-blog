@@ -1,0 +1,114 @@
+:root {
+  color-scheme: light;
+  --bg: var(--surface-canvas, #f5f6f7);
+  --panel: var(--surface-panel, #ffffff);
+  --soft: var(--surface-soft, #f8fafc);
+  --text: var(--text-primary, #20242b);
+  --muted: var(--text-muted, #5d6670);
+  --line: var(--border-default, #e3e7eb);
+  --brand-ink: var(--color-brand-ink, #18324a);
+  --brand: var(--color-brand, #0b7285);
+  --brand-strong: var(--color-brand-strong, #075e6e);
+  --brand-soft: var(--color-brand-soft, #e7f5f7);
+  --warm: #f4b860;
+  --green: var(--status-success, #16845b);
+  --orange: var(--status-warning, #bd6718);
+  --red: var(--status-danger, #c63d48);
+  --shadow: var(--shadow-low, 0 1px 3px rgba(15, 23, 42, 0.06));
+  --radius: var(--control-radius, 6px);
+  --nav: 62px;
+  --font-code: "Cascadia Code", "JetBrains Mono", "Fira Code", Consolas, monospace;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: var(--surface-canvas, #101318);
+  --panel: var(--surface-panel, #181c22);
+  --soft: var(--surface-soft, #20252d);
+  --text: var(--text-primary, #e8ebef);
+  --muted: var(--text-muted, #aeb6bf);
+  --line: var(--border-default, #2c333d);
+  --brand-ink: var(--color-brand-ink, #0e5965);
+  --brand: var(--color-brand, #55bdc8);
+  --brand-strong: var(--color-brand-strong, #6dccd5);
+  --brand-soft: var(--color-brand-soft, #17363c);
+  --shadow: var(--shadow-low, none);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  max-width: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body.menu-open,
+body.toc-open {
+  overflow: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--focus-outline, 3px solid rgba(11, 114, 133, 0.32));
+  outline-offset: 2px;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.article-animation {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 1.1em;
+  background: var(--soft);
+}
+
+/* 键盘用户跳转链接：默认移出视口，聚焦时回到页首；保持可聚焦（不能用 visibility: hidden）。 */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 10px 16px;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 0 0 6px 0;
+  transform: translateY(-200%);
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}

@@ -53,3 +53,20 @@ test("has no serious or critical axe violations on an article page", async ({ pa
     })),
   ).toEqual([]);
 });
+
+test("provides a working skip-to-main link", async ({ page }) => {
+  await page.goto("/");
+  const skipLink = page.locator("a.skip-link");
+
+  await expect(skipLink).toHaveAttribute("href", "#main-content");
+  await expect(page.locator("main#main-content")).toHaveCount(1);
+
+  const offscreen = await skipLink.boundingBox();
+  expect(offscreen?.y).toBeLessThan(0);
+
+  await page.keyboard.press("Tab");
+  await expect(skipLink).toBeFocused();
+  await expect
+    .poll(async () => (await skipLink.boundingBox())?.y)
+    .toBeGreaterThanOrEqual(0);
+});

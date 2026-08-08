@@ -20,7 +20,7 @@ const { category, categories, totalCount } = Astro.props;
 ---
 
 <BaseLayout title={category.name} description={`浏览 ${category.name} 分类下的文章`}>
-  <main class="wrap">
+  <main id="main-content" class="wrap">
     <div class="page-head">
       <div>
         <h1>{category.name}</h1>

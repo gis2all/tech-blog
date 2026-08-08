@@ -1,19 +1,16 @@
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
-
-const root = fileURLToPath(new URL("../", import.meta.url));
+import { readAllStyles } from "./support/styles";
 
 describe("typography scale", () => {
   test("uses supported interface font weights", async () => {
-    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+    const css = await readAllStyles();
 
     expect(css).not.toMatch(/font-weight:\s*(650|750|800)/);
     expect(css).not.toMatch(/font:\s*(650|750|800)\b/);
   });
 
   test("keeps archive typography below the page heading", async () => {
-    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+    const css = await readAllStyles();
 
     expect(css).toMatch(/\.archive-year-heading\s*\{[^}]*font-size:\s*22px/s);
     expect(css).toMatch(
@@ -25,7 +22,7 @@ describe("typography scale", () => {
   });
 
   test("uses compact archive dots and aligns month labels with the first date", async () => {
-    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+    const css = await readAllStyles();
 
     expect(css).toMatch(
       /\.archive-month-label\s*\{[^}]*align-self:\s*start[^}]*margin:\s*9px 0 0/s,
@@ -39,7 +36,7 @@ describe("typography scale", () => {
   });
 
   test("reduces competing emphasis on the tag directory", async () => {
-    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+    const css = await readAllStyles();
 
     expect(css).toMatch(/\.tag-hot a\s*\{[^}]*font-weight:\s*500/s);
     expect(css).toMatch(/\.tag-alpha a\s*\{[^}]*font:\s*600 12px\/1/s);
@@ -51,7 +48,7 @@ describe("typography scale", () => {
   });
 
   test("uses calmer article, section, list, and card headings", async () => {
-    const css = await readFile(`${root}src/styles/global.css`, "utf8");
+    const css = await readAllStyles();
 
     expect(css).toMatch(/\.article-head h1\s*\{[^}]*font-size:\s*36px/s);
     expect(css).toMatch(/\.prose h2\s*\{[^}]*font-size:\s*22px/s);

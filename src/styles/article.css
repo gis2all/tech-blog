@@ -1,0 +1,333 @@
+.article-page {
+  min-width: 0;
+  padding: 34px 42px;
+}
+
+.about-page {
+  min-width: 0;
+  padding: 34px 42px;
+}
+
+.about-page .prose h2 {
+  margin: 24px 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.about-page .prose > h2:first-child {
+  margin-top: 0;
+}
+
+.about-author {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.about-author-identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.about-author-copy h2 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.about-author-copy p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.about-author-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.article-main,
+.article-right,
+.article-filter-page {
+  min-width: 0;
+}
+
+.article-filter-page {
+  overflow: hidden;
+}
+
+[data-article-view][hidden],
+[data-article-filter-view][hidden],
+[data-article-toc-view][hidden],
+[data-article-discovery-view][hidden] {
+  display: none;
+}
+
+.article-head {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.article-head h1 {
+  margin: 7px 0 10px;
+  font-size: 36px;
+  line-height: 1.22;
+  letter-spacing: 0;
+}
+
+.article-head .dek {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.byline {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+}
+
+.byline > div:last-child {
+  min-width: 0;
+}
+
+.article-head > .article-meta {
+  margin-top: 14px;
+}
+
+.author-avatar-frame.author-avatar-mini {
+  width: 38px;
+  height: 38px;
+}
+
+.prose {
+  font-size: 16px;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+
+.prose h2,
+.prose h3 {
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 2em 0 0.65em;
+}
+
+.prose h2 {
+  font-size: 22px;
+}
+
+.prose h3 {
+  font-size: 18px;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 1.1em;
+}
+
+.prose a {
+  color: var(--brand);
+  border-bottom: 1px solid color-mix(in srgb, var(--brand) 45%, transparent);
+}
+
+.prose code {
+  font-family: var(--font-code);
+}
+
+.prose pre {
+  font-family: var(--font-code);
+  font-size: 14px;
+  position: relative;
+  padding: 18px 50px 18px 18px;
+  overflow: auto;
+  border-radius: var(--radius);
+  border: 1px solid #2c333d;
+}
+
+.article-zoomable-image {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='8' cy='8' r='5' fill='white' stroke='%230b7285' stroke-width='1.5'/%3E%3Cpath d='M12 12l6 6' stroke='%230b7285' stroke-width='2.25' stroke-linecap='round'/%3E%3Cpath d='M8 5.5v5M5.5 8h5' stroke='%230b7285' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 8 8, pointer;
+}
+
+.article-zoomable-image:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 3px;
+}
+
+body.article-image-lightbox-open {
+  overflow: hidden;
+}
+
+.article-image-lightbox {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: rgb(12 20 28 / 84%);
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='8' cy='8' r='5' fill='white' stroke='%230b7285' stroke-width='1.5'/%3E%3Cpath d='M12 12l6 6' stroke='%230b7285' stroke-width='2.25' stroke-linecap='round'/%3E%3Cpath d='M5.5 8h5' stroke='%230b7285' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 8 8, pointer;
+}
+
+.article-image-lightbox__image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(1200px, calc(100vw - 64px));
+  max-height: calc(100vh - 64px);
+  object-fit: contain;
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: 0 18px 56px rgb(0 0 0 / 36%);
+  cursor: default;
+}
+
+.article-image-lightbox__close {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: var(--radius);
+  background: rgb(16 24 32 / 82%);
+  color: #fff;
+  cursor: pointer;
+}
+
+.article-image-lightbox__close:hover {
+  border-color: rgb(255 255 255 / 48%);
+  background: rgb(16 24 32 / 96%);
+}
+
+.article-image-lightbox__close:focus-visible {
+  outline: 3px solid rgb(255 255 255 / 48%);
+  outline-offset: 2px;
+}
+
+.article-image-lightbox__close svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.copy-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.toc-wrap {
+  position: sticky;
+  top: calc(var(--nav) + 18px);
+}
+
+.toc {
+  overflow: hidden;
+}
+
+.toc nav {
+  padding: 10px 15px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.toc a {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.toc a:hover {
+  color: var(--brand);
+}
+
+.toc a.sub {
+  padding-left: 12px;
+}
+
+.mobile-toc-button,
+.mobile-toc-overlay {
+  display: none;
+}
+
+.mobile-toc-overlay[hidden] {
+  display: none;
+}
+
+.read-progress {
+  margin: 14px 15px 15px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.standalone-read-progress {
+  padding: 14px 15px 15px;
+}
+
+.standalone-read-progress .read-progress {
+  margin: 0;
+}
+
+.read-progress > span {
+  margin-right: 8px;
+}
+
+.read-bar {
+  height: 6px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--soft);
+  overflow: hidden;
+}
+
+.read-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--brand);
+}

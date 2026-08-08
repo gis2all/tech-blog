@@ -210,6 +210,8 @@ Node.js: 22
 
 在 Netlify 的生产环境变量中设置 `PUBLIC_UMAMI_WEBSITE_ID` 即可启用访问统计。未设置时不会加载 Umami 脚本，也不会影响构建。
 
+`netlify.toml` 同时为全站配置了安全响应头（HSTS、X-Frame-Options、Permissions-Policy 与 CSP），CSP 白名单覆盖 Umami、Giscus 与 Decap CDN，新增外部脚本时需同步更新。
+
 ## 验证命令
 
 ```text
@@ -230,7 +232,7 @@ npm run perf
 | `npm run lint` | Biome 代码风格与静态检查 |
 | `npm run test` | 运行 Vitest 测试 |
 | `npm run test:coverage` | 覆盖率门禁：全局 90/82/92/94，`src/lib` 95/84/95/98，后台脚本 88/82/90/92（语句/分支/函数/行） |
-| `npm run test:e2e` | 运行 Playwright 浏览器测试（前台 43 项 + 后台 UI 16 项，含 Axe 可访问性门禁） |
+| `npm run test:e2e` | 运行 Playwright 浏览器测试（前台 44 项 + 后台 UI 16 项，含 Axe 可访问性门禁） |
 | `npm run build` | 验证生产构建并生成 Pagefind 索引 |
 | `npm run perf` | 对生产预览运行 Lighthouse 性能预算 |
 
