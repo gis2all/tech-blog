@@ -6,7 +6,7 @@
 [![Coverage](https://gis2all.github.io/tech-blog/badge.svg)](https://gis2all.github.io/tech-blog/)
 [![License](https://img.shields.io/badge/license-Code%20MIT%20%7C%20Content%20Reserved-blue)](./LICENSE)
 
-```知行```是使用 Astro 构建的个人技术博客，用于记录编程、AI 和工程实践。本仓库保存网站源码、Markdown 文章、专题、项目数据和图片，也可以作为静态博客工程的实现参考。线上地址：[https://blog.gis2all.top](https://blog.gis2all.top)
+「 知行 」是使用 Astro 构建的个人技术博客，用于记录编程、AI 和工程实践。本仓库保存网站源码、Markdown 文章、专题、项目数据和图片，也可以作为静态博客工程的实现参考。线上地址：[https://blog.gis2all.top](https://blog.gis2all.top)
 
 ## 核心能力
 
@@ -89,6 +89,32 @@ npm run preview -- --host 127.0.0.1 --port 4321
 
 开发态使用内置文档数据直接搜索文章标题、描述、分类和标签；`astro dev` 不加载生产构建生成的 `dist/pagefind/`，正文全文索引需要在生产预览态或部署产物中验证。
 
+## 验证命令
+
+```text
+npm run check
+npm run check:admin
+npm run lint
+npm run test
+npm run test:coverage
+npm run test:e2e
+npm run build
+npm run perf
+```
+
+| 命令 | 用途 |
+| --- | --- |
+| `npm run check` | 检查 Astro 和 TypeScript |
+| `npm run check:admin` | 用 `tsc --checkJs` 检查后台脚本类型 |
+| `npm run lint` | Biome 代码风格与静态检查 |
+| `npm run test` | 运行 Vitest 测试 |
+| `npm run test:coverage` | 覆盖率门禁：全局 90/82/92/94，`src/lib` 95/84/95/98，后台脚本 88/82/90/92（语句/分支/函数/行） |
+| `npm run test:e2e` | 运行 Playwright 浏览器测试（前台 44 项 + 后台 UI 16 项，含 Axe 可访问性门禁） |
+| `npm run build` | 验证生产构建并生成 Pagefind 索引 |
+| `npm run perf` | 对生产预览运行 Lighthouse 性能预算 |
+
+GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Astro/TypeScript 检查、后台类型检查、Biome、Vitest、覆盖率、Playwright Chromium（含 Axe）、生产构建和 Lighthouse 性能预算。`main` 验证通过后，工作流会将真实覆盖率徽章和 HTML 报告发布到 GitHub Pages；博客站点由 Cloudflare Pages 通过 GitHub 集成自动构建发布（PR 附带预览部署）。
+
 ## 本地 CMS 调试
 
 `/admin/` 在 `127.0.0.1` 或 `localhost` 上会自动使用本地后端，无需 GitHub OAuth。保存文章或上传图片只会写入当前本地工作树，不会向 GitHub 提交，也不会触发生产部署；用 `git diff` 检查内容后，按正常 Git 流程提交和推送。
@@ -134,7 +160,10 @@ src/scripts/          前端交互脚本
 src/styles/           全局样式和设计变量
 public/images/        头像、文章、专题和项目图片
 public/admin/         Decap CMS 入口与配置
+public/_headers       Cloudflare Pages 安全头、CSP 与缓存规则
+public/_redirects     Cloudflare Pages 重定向规则
 scripts/              构建与覆盖率辅助脚本
+workers/decap-oauth/  Decap CMS GitHub OAuth 代理（Cloudflare Worker）
 test/                 Vitest 和 Playwright 测试
 ```
 
@@ -207,48 +236,9 @@ Giscus GitHub App 已授权访问 `gis2all/tech-blog` 仓库，本地已验证�
 - 安全响应头（HSTS、X-Frame-Options、Permissions-Policy 与 CSP）与缓存规则位于 `public/_headers`；CSP 白名单覆盖 Umami、Giscus、Decap CDN 与自建 OAuth 代理，新增外部脚本或域名时需同步更新。
 - 后台登录由 `workers/decap-oauth`（Cloudflare Worker）提供 GitHub OAuth 代理，部署与配置步骤见该目录 README。
 
-## 验证命令
-
-```text
-npm run check
-npm run check:admin
-npm run lint
-npm run test
-npm run test:coverage
-npm run test:e2e
-npm run build
-npm run perf
-```
-
-| 命令 | 用途 |
-| --- | --- |
-| `npm run check` | 检查 Astro 和 TypeScript |
-| `npm run check:admin` | 用 `tsc --checkJs` 检查后台脚本类型 |
-| `npm run lint` | Biome 代码风格与静态检查 |
-| `npm run test` | 运行 Vitest 测试 |
-| `npm run test:coverage` | 覆盖率门禁：全局 90/82/92/94，`src/lib` 95/84/95/98，后台脚本 88/82/90/92（语句/分支/函数/行） |
-| `npm run test:e2e` | 运行 Playwright 浏览器测试（前台 44 项 + 后台 UI 16 项，含 Axe 可访问性门禁） |
-| `npm run build` | 验证生产构建并生成 Pagefind 索引 |
-| `npm run perf` | 对生产预览运行 Lighthouse 性能预算 |
-
-GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Astro/TypeScript 检查、后台类型检查、Biome、Vitest、覆盖率、Playwright Chromium（含 Axe）、生产构建和 Lighthouse 性能预算。`main` 验证通过后，工作流会将真实覆盖率徽章和 HTML 报告发布到 GitHub Pages；博客站点由 Cloudflare Pages 通过 GitHub 集成自动构建发布（PR 附带预览部署）。
-
 ## 许可证
 
 - 源码采用 [MIT License](./LICENSE)
 - 文章、图片、截图和其他内容资产保留版权，未经许可不作为转载或素材授权
-
-## 开发约定
-
-- 保留工作区中与当前任务无关的修改
-- 内容规则优先集中在 `src/lib/content/`，避免页面重复实现
-- 正式图片放在 `public/images/`，文章图片建议按文章目录管理
-- 不手动修改或提交 `dist/` 和 Pagefind 索引
-- 不公开 `draft: true` 的文章
-- 评论依赖 GitHub Discussions 和 Giscus App，不在项目中保存评论数据
-- `docs/` 用于本地规划和交接，不进入 GitHub 仓库
-- 生产内容发布直接提交 `main` 触发 Cloudflare Pages 构建发布（simple 发布模式，无 PR 审核环节）；本地后台仍只写工作树
-- 改动后先跑 `npm run lint` 和 `npm run check:admin`，再按风险运行测试、构建和浏览器验证
-- 修改页面和交互后，按风险运行检查、测试、构建和浏览器验证
 
 更完整的项目上下文、架构决策和接管信息见 [`CLAUDE.md`](./CLAUDE.md)。
