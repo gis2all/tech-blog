@@ -17,7 +17,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "coverage:badge": "node scripts/generate-coverage-badge.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "skill:install": "node scripts/install-skill.mjs"
   },
   "dependencies": {
     "@astrojs/check": "0.9.10",
