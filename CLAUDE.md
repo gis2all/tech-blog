@@ -10,7 +10,7 @@
 - 目标读者：关注编程、AI Agent、Web 工程、DevOps 和开发效率的中文技术读者
 - 核心价值：记录真实问题的发现、排查、解决和复盘，而不只展示最终答案
 - 品牌语：知行合一 · 持续积累
-- 当前作者身份：gis2all，头像位于 `public/images/avatar-gis2all.png`
+- 当前作者身份：gis2all，头像位于 `public/images/avatar-gis2all.webp`
 
 一句话架构：
 
@@ -603,7 +603,7 @@ px playwright test --project=admin）和人工检查导航、编辑器工具栏�
 
 - 无数据库。
 - 单作者。
-- 作者身份已确认为 `gis2all`，头像为 `public/images/avatar-gis2all.png`，GitHub 主页为 `https://github.com/gis2all`，仓库为 `https://github.com/gis2all/tech-blog`。
+- 作者身份已确认为 `gis2all`，头像为 `public/images/avatar-gis2all.webp`，GitHub 主页为 `https://github.com/gis2all`，仓库为 `https://github.com/gis2all/tech-blog`。
 - 正式独立域名已确认为 `https://blog.gis2all.top`。
 - 访问统计使用 Umami Cloud，通过 Netlify 生产环境变量 `PUBLIC_UMAMI_WEBSITE_ID` 启用；本地 `.env` 只用于生产预览验证，不作为部署配置来源。
 - 阅读历史只保存在访问者浏览器本地，不引入账号或数据库。

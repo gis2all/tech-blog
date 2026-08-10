@@ -10,10 +10,10 @@ describe("site identity", () => {
   test("uses the public gis2all identity", async () => {
     expect(site.title).toBe("知行");
     expect(site.author).toBe("gis2all");
-    expect(site.authorAvatar).toBe("/images/avatar-gis2all.png");
+    expect(site.authorAvatar).toBe("/images/avatar-gis2all.webp");
     expect(site.githubUrl).toBe("https://github.com/gis2all");
     await expect(
-      access(`${root}public/images/avatar-gis2all.png`),
+      access(`${root}public/images/avatar-gis2all.webp`),
     ).resolves.toBeUndefined();
   });
 

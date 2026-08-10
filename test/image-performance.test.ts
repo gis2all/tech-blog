@@ -15,7 +15,7 @@ describe("Markdown image performance", () => {
   });
 
   test("adds lazy loading, async decoding, and dimensions to local images", async () => {
-    const { html } = await markdownToHtml("![avatar](/images/avatar-gis2all.png)", {
+    const { html } = await markdownToHtml("![avatar](/images/avatar-gis2all.webp)", {
       hastPlugins: [createImagePerformancePlugin({ publicDir: `${root}public` })],
     });
 

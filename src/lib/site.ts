@@ -3,7 +3,7 @@ export const site = {
   description: "记录编程、AI 与工程实践",
   url: "https://blog.gis2all.top",
   author: "gis2all",
-  authorAvatar: "/images/avatar-gis2all.png",
+  authorAvatar: "/images/avatar-gis2all.webp",
   githubUrl: "https://github.com/gis2all",
   nav: [
     { href: "/", label: "首页" },
