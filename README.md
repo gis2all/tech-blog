@@ -164,6 +164,7 @@ public/_headers       Cloudflare Pages 安全头、CSP 与缓存规则
 public/_redirects     Cloudflare Pages 重定向规则
 scripts/              构建与覆盖率辅助脚本
 workers/decap-oauth/  Decap CMS GitHub OAuth 代理（Cloudflare Worker）
+functions/            Cloudflare Pages 中间件（URL 大小写归一化 301）
 test/                 Vitest 和 Playwright 测试
 ```
 

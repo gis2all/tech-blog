@@ -71,6 +71,7 @@ public/_headers       Cloudflare Pages 安全头、CSP 与缓存规则
 public/_redirects     Cloudflare Pages 重定向规则
 scripts/              构建与覆盖率辅助脚本
 workers/decap-oauth/  Decap CMS GitHub OAuth 代理（Cloudflare Worker）
+functions/            Cloudflare Pages 中间件（URL 大小写归一化 301）
 test/                 Vitest 和 Playwright 测试
 ```
 
@@ -165,6 +166,7 @@ test/                 Vitest 和 Playwright 测试
 - 静态优先：生产构建排除 `draft: true`；Pagefind 静态索引随构建产物发布。
 - 内容列表不自定义分页；草稿与文章独立且互斥的入口；标签和媒体库在后台主区域管理，媒体选择弹窗仅为编辑器字段保留。
 - 明确不做：独立认证系统、替代 Decap 的 Markdown 编辑器、自动保存、离线编辑、定时发布、多人审批、数据库内容存储、复杂并发冲突处理；进入这些范围必须重新做架构决策。
+- 文章 URL 区分大小写（标题即 slug），但对外提供大小写归一化 301（`functions/_middleware.ts`，映射来自 sitemap、缓存 10 分钟；同名不同大小写的标签不参与重定向）。
 
 ## 3. 部署与运维（Cloudflare Pages）
 
@@ -247,6 +249,7 @@ test/                 Vitest 和 Playwright 测试
 - 本机直传 Pages 卡在 Uploading... 0/N：本地网络到 Cloudflare 上传端点的大请求体被卡；日常不要本机直传，交给 Git 集成。
 - 预览部署找不到：免费档预览保留有限；重新 push 分支会生成新预览。
 - DNS 已切但 https 未生效：等待证书签发（一般几分钟），检查橙云代理是否开启。
+- 文章 URL 大小写变体 404：部分浏览器/App 会把 URL 规范化成小写。站点已通过 `functions/_middleware.ts`（Pages Functions）按 sitemap 做大小写不敏感匹配并 301 到正确 URL，缓存 10 分钟；精确路径不受影响。同名仅大小写不同的标签（如 Python/python）不参与重定向，保持原 404 行为。
 
 ## 4. CMS 与后台
 
