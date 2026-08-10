@@ -1,0 +1,4 @@
+interface:
+  display_name: "知行博客项目技能"
+  short_description: "知行博客项目接管与运维：架构、部署、CMS 与工程约定"
+  default_prompt: "Use $tech-blog to take over the 知行 blog repository (Astro + Decap CMS + Cloudflare Pages)."

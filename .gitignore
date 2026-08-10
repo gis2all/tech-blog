@@ -39,6 +39,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Local Claude Code skill copy (installed by scripts/install-skill.mjs)
+.claude/
+
 # Local Cloudflare Worker state (workers/decap-oauth)
 .wrangler/
 

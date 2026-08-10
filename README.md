@@ -89,6 +89,19 @@ npm run preview -- --host 127.0.0.1 --port 4321
 
 开发态使用内置文档数据直接搜索文章标题、描述、分类和标签；`astro dev` 不加载生产构建生成的 `dist/pagefind/`，正文全文索引需要在生产预览态或部署产物中验证。
 
+## 项目 Skill
+
+仓库附带项目接管/运维技能（`skills/tech-blog/`，Codex 与 Claude Code 通用）。安装到本机：
+
+```text
+npm run skill:install
+```
+
+- Codex：复制到 `~/.codex/skills/tech-blog`（或 `$CODEX_HOME/skills`）
+- Claude Code：复制到仓库 `.claude/skills/tech-blog`
+
+技能以仓库根 `CLAUDE.md` 为唯一事实源，未安装时直接阅读 CLAUDE.md 亦可。
+
 ## 验证命令
 
 ```text
@@ -164,6 +177,7 @@ public/_headers       Cloudflare Pages 安全头、CSP 与缓存规则
 public/_redirects     Cloudflare Pages 重定向规则
 scripts/              构建与覆盖率辅助脚本
 workers/decap-oauth/  Decap CMS GitHub OAuth 代理（Cloudflare Worker）
+functions/            Cloudflare Pages 中间件（URL 大小写归一化 301）
 test/                 Vitest 和 Playwright 测试
 ```
 
