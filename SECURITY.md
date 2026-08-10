@@ -22,6 +22,6 @@
 
 ## 主要风险面
 
-- `/admin/` Decap CMS 后台：线上依赖 GitHub OAuth，发布流程会写入 `main` 并触发 Netlify 构建；Decap 依赖通过固定版本与 SRI 锁定，升级需单独验证；
+- `/admin/` Decap CMS 后台：线上通过自建 OAuth 代理（`oauth.gis2all.top`，Cloudflare Worker）完成 GitHub 授权，发布流程会写入 `main` 并触发 Cloudflare Pages 构建发布；Decap 依赖通过固定版本与 SRI 锁定，OAuth Worker 的 Client ID/Secret 只存于 Worker Secret，升级需单独验证；
 - 第三方脚本（Umami、Giscus、Pagefind、Decap CDN）：仅从可信来源加载；
 - 构建产物（`dist/`、`dist/pagefind/`）：为生成内容，不手动编辑或提交。

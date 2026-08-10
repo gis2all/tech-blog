@@ -1,0 +1,13 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "decap-oauth"
+main = "src/index.ts"
+compatibility_date = "2025-11-17"
+
+# Serve only on the custom domain oauth.gis2all.top.
+# With custom_domain = true, wrangler attaches the Worker Custom Domain and
+# provisions the DNS record automatically (no manual DNS edit required).
+workers_dev = false
+route = { pattern = "oauth.gis2all.top", zone_name = "gis2all.top", custom_domain = true }
+
+[vars]
+GITHUB_REPO_PRIVATE = "0"

@@ -1,5 +1,5 @@
 # Local development image for the Astro blog + Decap local backend.
-# Production deployment remains on Netlify; this image is only for `docker compose up`.
+# Production deployment runs on Cloudflare Pages; this image is only for `docker compose up`.
 FROM node:22
 
 WORKDIR /app

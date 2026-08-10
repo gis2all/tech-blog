@@ -5,24 +5,24 @@ import { describe, expect, test } from "vitest";
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 describe("security headers", () => {
-  test("sets security headers for all responses in netlify.toml", async () => {
-    const netlify = await readFile(`${root}netlify.toml`, "utf8");
+  test("sets security headers for all responses in public/_headers", async () => {
+    const headers = await readFile(`${root}public/_headers`, "utf8");
 
-    expect(netlify).toMatch(/Strict-Transport-Security = "max-age=\d+/);
-    expect(netlify).toMatch(/X-Frame-Options = "DENY"/);
-    expect(netlify).toMatch(/Permissions-Policy = "/);
-    expect(netlify).toMatch(/Content-Security-Policy = "/);
+    expect(headers).toMatch(/Strict-Transport-Security: max-age=\d+/);
+    expect(headers).toMatch(/X-Frame-Options: DENY/);
+    expect(headers).toMatch(/Permissions-Policy: /);
+    expect(headers).toMatch(/Content-Security-Policy: /);
   });
 
-  test("allows Netlify OAuth, giscus styles and the deploy control panel in the CSP", async () => {
-    const netlify = await readFile(`${root}netlify.toml`, "utf8");
-    const csp = netlify.match(/Content-Security-Policy = "([^"]+)"/)?.[1] ?? "";
+  test("allows the Decap OAuth proxy, giscus styles and the GitHub API in the CSP", async () => {
+    const headers = await readFile(`${root}public/_headers`, "utf8");
+    const csp = headers.match(/Content-Security-Policy: ([^\r\n]+)/)?.[1] ?? "";
 
-    expect(csp).toContain("https://api.netlify.com");
+    expect(csp).toContain("https://oauth.gis2all.top");
     expect(csp).toContain("https://raw.githubusercontent.com");
     expect(csp).toContain("https://giscus.app");
-    expect(csp).toContain("https://app.netlify.com");
     expect(csp).toContain("unsafe-eval");
+    expect(csp).not.toContain("netlify");
   });
 
   test("runs an npm audit in CI", async () => {

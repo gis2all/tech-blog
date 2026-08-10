@@ -39,5 +39,8 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Local Cloudflare Worker state (workers/decap-oauth)
+.wrangler/
+
 # Local OpenDesign prototype reference. Do not ship as production runtime code.
 知行录-·-现代技术博客首页/

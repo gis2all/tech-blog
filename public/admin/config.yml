@@ -2,6 +2,8 @@ backend:
   name: github
   repo: gis2all/tech-blog
   branch: main
+  base_url: https://oauth.gis2all.top
+  auth_endpoint: auth
 
 # Simple publish mode: saving a post writes directly to the working tree
 # (local backend) or to the configured branch (production GitHub backend).
