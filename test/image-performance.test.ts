@@ -128,13 +128,11 @@ describe("site image delivery", () => {
   });
 
   test("sets long-lived cache headers for generated assets and images", async () => {
-    const netlify = await readFile(`${root}netlify.toml`, "utf8");
+    const headers = await readFile(`${root}public/_headers`, "utf8");
 
-    expect(netlify).toMatch(
-      /for = "\/_astro\/\*"[\s\S]*Cache-Control = "public, max-age=31536000, immutable"/,
+    expect(headers).toMatch(
+      /\/_astro\/\*[\s\S]*Cache-Control: public, max-age=31536000, immutable/,
     );
-    expect(netlify).toMatch(
-      /for = "\/images\/\*"[\s\S]*Cache-Control = "public, max-age=604800"/,
-    );
+    expect(headers).toMatch(/\/images\/\*[\s\S]*Cache-Control: public, max-age=604800/);
   });
 });
