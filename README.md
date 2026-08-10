@@ -20,7 +20,7 @@
 - 生成 RSS、站点地图、canonical URL 和静态 404 页面
 - 支持浅色/深色主题、桌面端和移动端布局
 - 通过 Vitest、Playwright、Axe 与 Lighthouse 验证内容规则、关键交互、可访问性和性能预算，Biome 与 tsc 门禁代码风格和后台脚本类型
-- 由 Netlify 构建并发布静态站点
+- 由 Cloudflare Pages 从 GitHub 自动构建并发布
 
 ## 技术栈
 
@@ -32,7 +32,8 @@
 | Decap CMS | 网页写作和媒体上传后台 |
 | Umami Cloud | 生产环境隐私友好访问统计 |
 | Giscus | 基于 GitHub Discussions 的文章评论 |
-| Netlify | 生产构建和静态托管 |
+| GitHub Actions | CI 测试门禁与覆盖率徽章 |
+| Cloudflare Pages | 生产构建、静态托管与 CDN |
 | Vitest | 内容规则和组件约定测试 |
 | Playwright | 关键页面与交互回归测试 |
 | Axe / Lighthouse | 可访问性门禁与性能预算 |
@@ -90,7 +91,7 @@ npm run preview -- --host 127.0.0.1 --port 4321
 
 ## 本地 CMS 调试
 
-`/admin/` 在 `127.0.0.1` 或 `localhost` 上会自动使用本地后端，无需 GitHub OAuth。保存文章或上传图片只会写入当前本地工作树，不会向 GitHub 提交，也不会触发 Netlify 部署；用 `git diff` 检查内容后，按正常 Git 流程提交和推送。
+`/admin/` 在 `127.0.0.1` 或 `localhost` 上会自动使用本地后端，无需 GitHub OAuth。保存文章或上传图片只会写入当前本地工作树，不会向 GitHub 提交，也不会触发生产部署；用 `git diff` 检查内容后，按正常 Git 流程提交和推送。
 
 ```text
 http://127.0.0.1:4321/admin/
@@ -182,7 +183,7 @@ npm run build
 
 ## Decap CMS
 
-- 线上从 `/admin/` 登录，Decap CMS 通过 GitHub OAuth 将内容直接提交 `main`，Netlify 自动构建发布（simple 发布模式，无 PR 审核环节）。
+- 线上从 `/admin/` 登录，Decap CMS 通过自建 OAuth 代理（`oauth.gis2all.top`，Cloudflare Worker）完成 GitHub 授权，内容直接提交 `main`，Cloudflare Pages 自动构建并发布（simple 发布模式，无 PR 审核环节）。
 - 本地调试见“快速开始”（本机 Node 或 Docker 两种方式）；后台保存只写入当前工作树，不会提交 GitHub。
 - 文章标题决定文件名、公开地址和媒体目录：文章保存在 `src/content/posts/<标题>.md`，图片保存在 `public/images/posts/<标题>/`。已发布文章标题锁定，草稿改名会一并更新引用和媒体目录。
 - 后台保留 Decap 的认证、内容和编辑器内核，并通过与网站一致的自定义管理界面提供文章预览、保存校验、未保存离开提醒、嵌入式标签管理和文章媒体库。
@@ -196,21 +197,15 @@ npm run build
 
 Giscus GitHub App 已授权访问 `gis2all/tech-blog` 仓库，本地已验证评论区可加载；首次评论或 reaction 会自动创建对应的 GitHub Discussion。
 
-## Netlify 部署
+## Cloudflare Pages 部署
 
-Netlify 部署配置位于 `netlify.toml`：
+生产站点由 Cloudflare Pages 从 GitHub 仓库自动构建发布（项目 `tech-blog`）：
 
-```text
-build command: npm run build
-publish directory: dist
-Node.js: 22
-```
-
-`npm run build` 先生成 Astro 静态页面，随后 npm 自动执行 `package.json` 中的 `postbuild`（生成封面缩略图并创建 Pagefind 索引），最终由 Netlify 发布整个 `dist/` 目录。
-
-在 Netlify 的生产环境变量中设置 `PUBLIC_UMAMI_WEBSITE_ID` 即可启用访问统计。未设置时不会加载 Umami 脚本，也不会影响构建。
-
-`netlify.toml` 同时为全站配置了安全响应头（HSTS、X-Frame-Options、Permissions-Policy 与 CSP），CSP 白名单覆盖 Umami、Giscus 与 Decap CDN，新增外部脚本时需同步更新。
+- Cloudflare 收到 `main` 或 PR 推送后自动执行 `npm run build`（随后 npm 自动执行 `postbuild` 生成封面缩略图和 Pagefind 索引），发布 `dist/`；PR 自动生成预览部署。
+- 构建配置位于 Cloudflare Pages 控制台：构建命令 `npm run build`、输出目录 `dist`、Node.js 22、环境变量 `PUBLIC_UMAMI_WEBSITE_ID`（未设置时不加载 Umami 脚本，不影响构建）。
+- 域名：`blog.gis2all.top` 的 CNAME 指向 `tech-blog-466.pages.dev`（橙云代理）。
+- 安全响应头（HSTS、X-Frame-Options、Permissions-Policy 与 CSP）与缓存规则位于 `public/_headers`；CSP 白名单覆盖 Umami、Giscus、Decap CDN 与自建 OAuth 代理，新增外部脚本或域名时需同步更新。
+- 后台登录由 `workers/decap-oauth`（Cloudflare Worker）提供 GitHub OAuth 代理，部署与配置步骤见该目录 README。
 
 ## 验证命令
 
@@ -236,7 +231,7 @@ npm run perf
 | `npm run build` | 验证生产构建并生成 Pagefind 索引 |
 | `npm run perf` | 对生产预览运行 Lighthouse 性能预算 |
 
-GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Astro/TypeScript 检查、后台类型检查、Biome、Vitest、覆盖率、Playwright Chromium（含 Axe）、生产构建和 Lighthouse 性能预算。`main` 验证通过后，工作流会将真实覆盖率徽章和 HTML 报告发布到 GitHub Pages；博客站点仍由 Netlify 发布。
+GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Astro/TypeScript 检查、后台类型检查、Biome、Vitest、覆盖率、Playwright Chromium（含 Axe）、生产构建和 Lighthouse 性能预算。`main` 验证通过后，工作流会将真实覆盖率徽章和 HTML 报告发布到 GitHub Pages；博客站点由 Cloudflare Pages 通过 GitHub 集成自动构建发布（PR 附带预览部署）。
 
 ## 许可证
 
@@ -252,7 +247,7 @@ GitHub Actions 会在 `push` 和 `pull_request` 时执行 CI 门禁，包括 Ast
 - 不公开 `draft: true` 的文章
 - 评论依赖 GitHub Discussions 和 Giscus App，不在项目中保存评论数据
 - `docs/` 用于本地规划和交接，不进入 GitHub 仓库
-- 生产内容发布直接提交 `main` 触发 Netlify 构建（simple 发布模式，无 PR 审核环节）；本地后台仍只写工作树
+- 生产内容发布直接提交 `main` 触发 Cloudflare Pages 构建发布（simple 发布模式，无 PR 审核环节）；本地后台仍只写工作树
 - 改动后先跑 `npm run lint` 和 `npm run check:admin`，再按风险运行测试、构建和浏览器验证
 - 修改页面和交互后，按风险运行检查、测试、构建和浏览器验证
 

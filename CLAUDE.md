@@ -40,7 +40,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 
 - `origin/main` 已包含页面重构、真实专题与项目数据、标题直出文章 URL、文章阅读控件、迁移文章内链治理、CI/覆盖率门禁、README/许可证、正式域名、SEO、Giscus 评论和 Decap 第一、第二阶段增强。
 - 本地 `main` 可能落后于 `origin/main`；判断已合并状态时先检查远端跟踪分支，不根据本地 `main` 的旧提交误判。
-- 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`netlify.toml` 和 `package-lock.json`。
+- 已有 `package.json`、`astro.config.mjs`、`tsconfig.json`、`public/_headers` 和 `package-lock.json`。
 - 已建立 Astro Content Collections：`posts`、`series`、`projects`。
 - 本地共有 106 篇 Markdown 文章：105 篇公开文章和 `小团队 Git 工作流：什么时候 merge，什么时候.md` 这一篇草稿。
 - 已实现首页、文章详情、分类、标签、归档、专题、项目、关于、搜索、RSS、站点地图和 404。
@@ -52,7 +52,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - Decap CMS 后台自定义壳层、登录页、内容列表、编辑页、标签页和媒体页已基本完成；仍以浏览器实测为准，不凭原型或截图宣称全部交互完成。
 - 已实现 Pagefind 静态搜索，生产构建后输出到 `dist/pagefind`。
 - 正式站点 URL 已统一为 `https://blog.gis2all.top`，Astro `site`、站内 canonical、RSS、站点地图和 `robots.txt` 均以该域名为准。
-- Netlify 使用 `npm run build` 进行生产构建，随后由 `postbuild` 自动生成 Pagefind 索引并发布 `dist/`。
+- Cloudflare Pages 使用 `npm run build` 进行生产构建，随后由 `postbuild` 自动生成 Pagefind 索引并发布 `dist/`。
 - OpenDesign 原型目录在本机保留为参考，并通过 `.gitignore` 排除，不作为生产运行时代码。
 - `docs/` 目录只作为本地规划、草稿和 Agent 交接资料，通过 `.gitignore` 排除，不进入 GitHub 仓库。
 - 首页和文章页共用左侧发现栏，包括紧凑作者卡片、技术分类和专题列表，并支持分类或专题即时筛选。
@@ -62,7 +62,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - 文章公开 URL 直接使用编码后的文章标题，不维护独立 `slug`，也不保留旧拼音 URL 兼容路由。
 - 已将 25 个指向本人旧 CSDN 文章的链接替换为本站文章链接；8 个外部作者的 CSDN 引用继续保留。
 - 已补齐 Twitter Card、Open Graph URL、文章页 `BlogPosting` JSON-LD 和公开 `robots.txt`。
-- 已接入 Umami Cloud 访问统计，仅在 Astro 生产构建模式且配置 `PUBLIC_UMAMI_WEBSITE_ID` 时加载；`npm run dev` 和未配置环境不加载，本地生产预览或 Netlify Deploy Preview 若提供同一变量也会产生统计数据。
+- 已接入 Umami Cloud 访问统计，仅在 Astro 生产构建模式且配置 `PUBLIC_UMAMI_WEBSITE_ID` 时加载；`npm run dev` 和未配置环境不加载，本地生产预览或 Cloudflare Pages 预览部署若提供同一变量也会产生统计数据。
 - Vitest 覆盖率任务生成 HTML 报告和 `coverage/coverage-summary.json`；本地 Node.js 脚本读取真实行覆盖率并生成 `coverage/badge.svg`，GitHub Actions 在 `main` 验证通过后将徽章和报告发布到 GitHub Pages，不依赖第三方覆盖率服务。GitHub Pages 发布前需在仓库 `Settings → Pages → Source` 选择 `GitHub Actions` 一次，之后由 CI 自动发布。
 - 文章页显示 4 篇相关文章，优先级依次为同专题、共同标签、同分类和发布时间。
 - 阅读历史保存在浏览器 `localStorage`，记录最近 20 篇及阅读进度；首页桌面右栏、移动端文章列表前和正文桌面右栏均最多显示 3 篇并使用 `01` 至 `03` 编号，正文排除当前文章，最近阅读卡片不展示进度或清空操作。
@@ -73,7 +73,7 @@ C:\Users\12620\AppData\Roaming\Open Design\namespaces\release-stable-win\data\pr
 - 新增后台 UI 自动化 E2E（`test/e2e/admin/`，16 个场景）：覆盖本地登录、六入口导航、文章列表搜索/筛选、草稿视图、编辑器字段与标题校验、编辑预览同步、未保存提醒、深色模式、新建草稿落盘、重复标题拦截、草稿重命名、标签新建/合并、媒体上传与未使用删除；写工作树的场景都自带清理，admin 项目串行执行。
 - 后台可访问性已自动化为门禁：Axe 扫描后台文章列表、标签、媒体页无 serious/critical 违规；为此加深了弱化文字、成功/警告状态的对比度（`--text-faint`、`--status-success`、`--status-warning`）。
 - `scripts/start-decap-server.mjs` 改为自建 express 实例并注册 `registerLocalFs`，根路径提供健康检查（`GET /` 返回 200），供 Playwright 复用已运行的本地后端。
-- 生产内容发布使用 simple 发布模式：保存即直接提交 `main` 由 Netlify 部署，无 PR 审核环节；本地 Local Backend 仍直写工作树。`public/admin/index.html` 固定加载 `decap-cms@3.15.1`，升级需显式改版本并回归后台壳层。
+- 生产内容发布使用 simple 发布模式：保存即直接提交 `main` 由 Cloudflare Pages 自动构建发布，无 PR 审核环节；本地 Local Backend 仍直写工作树。`public/admin/index.html` 固定加载 `decap-cms@3.15.1`，升级需显式改版本并回归后台壳层。
 - Decap CMS 运行时固定精确版本 `decap-cms@3.15.1` 并带 SRI（`integrity="sha384-…"` + `crossorigin="anonymous"`），CDN 内容被篡改或版本被意外提升时后台会直接加载失败而不是静默运行；升级需同步更新 SRI 哈希并跑后台 E2E 回归。本地 `decap-server` 同样固定 `3.10.0`。
 - SVG 上传安全校验已加固：先解码 HTML 实体并压缩空白，再拒绝 `script`、`foreignObject`、事件处理器、`javascript:` 和 data: 内联载荷，并补充了绕过用例测试。
 
@@ -116,13 +116,13 @@ npm run perf          → Lighthouse 预算通过（首页 275KB，文章 314KB�
 - 本轮页面严重/致命 Axe 问题为 0，浏览器控制台错误为 0。
 - `/search/?q=Agent` 可加载 Pagefind 并返回文章结果。
 - `/admin/` GitHub OAuth 登录已验证，可进入 Decap CMS 后台。
-- Decap CMS 后台发布闭环已验证：新建测试文章会写入 GitHub commit，并触发 Netlify 自动部署到前台。
-- Decap CMS 媒体上传闭环已验证：文章图片写入 `public/images/posts/<文章标题>/`，专题/项目图片写入 `public/images/uploads/`，并可通过 Netlify 静态 URL 访问。
+- Decap CMS 后台发布闭环已验证：新建测试文章会写入 GitHub commit，并触发生产自动部署到前台（迁移后为 Cloudflare Pages）。
+- Decap CMS 媒体上传闭环已验证：文章图片写入 `public/images/posts/<文章标题>/`，专题/项目图片写入 `public/images/uploads/`，并可通过站点静态 URL 访问。
 - 2026-07-28 的测试文章和测试图片仅用于验证链路，验证后已从生产内容和线上站点中清理。
 - `/posts/git-team-workflow/` 返回 404，证明草稿未生成公开文章页。
 - 从迁移文章正文点击本站文章引用后，地址保持在 `/posts/<编码后的文章标题>/`，不会再跳转到本人旧 CSDN 页面。
 - GitHub 远程仓库：`gis2all/tech-blog`。
-- 正式站点 URL：`https://blog.gis2all.top`；Netlify 默认预览域名保留为平台入口，不作为 canonical。
+- 正式站点 URL：`https://blog.gis2all.top`；Cloudflare Pages 默认域名 `tech-blog-466.pages.dev` 保留为部署入口，不作为 canonical。
 
 ## 4. 产品原则
 
@@ -200,17 +200,17 @@ Astro 读取内容集合并输出 dist/
 静态资源通过 HTTPS 和 CDN 上线
 ```
 
-本地开发时，`cms-init.js` 根据主机名将 Decap 切换到 `127.0.0.1:4322` 的 Local Backend；保存只写入当前工作树，不经过 GitHub、Netlify 或生产登录。
+本地开发时，`cms-init.js` 根据主机名将 Decap 切换到 `127.0.0.1:4322` 的 Local Backend；保存只写入当前工作树，不经过 GitHub 或生产登录。
 
 ### 5.3 部署平台是可替换层
 
-第一版默认部署平台确认使用 Netlify。Cloudflare Pages 不是硬依赖，部署层仍保持可替换。候选方案：
+当前部署平台为 Cloudflare Pages（GitHub 集成自动构建），部署层仍保持可替换。候选方案：
 
-- Cloudflare Pages：全球 CDN 和 Cloudflare 生态方便；Decap 的 GitHub OAuth 通常需要单独处理。
-- Netlify：第一版默认选择；Astro 静态部署顺畅，Decap 相关资料最多，但不把 deprecated 的 Git Gateway 作为架构硬依赖。
+- Cloudflare Pages：当前选择；GitHub 集成自动构建发布、全球 CDN；Decap 的 GitHub OAuth 已由自建 Worker 代理（`workers/decap-oauth`）解决。
+- Netlify：曾为第一版选择；Astro 静态部署顺畅，但额度制计费会暂停生产部署，且后台登录依赖 Netlify Identity。
 - Vercel：Astro 和预览部署体验良好，但 Decap GitHub OAuth 仍需独立配置。
-- GitHub Pages：可通过 GitHub Actions 构建，平台数量少，但预览和 OAuth 能力较弱。
-- 对象存储 + CDN 或自建 Nginx：控制力高，但运维责任更大，不作为第一版优先方案。
+- GitHub Pages：可通过 GitHub Actions 构建，平台数量少，实测 TTFB 偏高，预览和 OAuth 能力较弱。
+- 对象存储 + CDN 或自建 Nginx：控制力高，但运维责任更大，不作为优先方案。
 
 在部署平台正式确定前，业务代码不得绑定某个平台专有 API。静态输出默认以 `dist/` 为交付边界。
 
@@ -220,9 +220,9 @@ Astro 读取内容集合并输出 dist/
 
 - 不引入数据库，Markdown、图片、配置和代码都以 GitHub 仓库为唯一事实来源。
 - 先按单作者博客设计，Decap CMS 使用 simple 发布模式：内容保存直接提交 `main` 触发部署，草稿由 frontmatter `draft: true` 控制；本地 Local Backend 仍直写工作树。
-- 部署平台第一版使用 Netlify，部署边界保持为 `npm run build` 和 `dist/`。
+- 部署平台当前使用 Cloudflare Pages，部署边界保持为 `npm run build` 和 `dist/`。
 - 文章草稿通过 frontmatter 的 `draft: true` 控制，生产构建默认排除草稿。
-- 部署层只接收 GitHub Commit，执行 `npm run build`，发布 Astro 输出的 `dist/`。
+- 部署层只接收 GitHub Commit，由 Cloudflare Pages 执行 `npm run build` 并发布 Astro 输出的 `dist/`。
 - 搜索优先采用 Pagefind 这类静态索引方案，随构建产物一起发布。
 - 浏览量、用户登录、邮件订阅、定时发布和离线同步不进入第一版核心架构；文章评论使用 Giscus 托管到 GitHub Discussions，不引入数据库。
 
@@ -268,7 +268,7 @@ Markdown / images / config
 
 已经合并到 `origin/main` 的第一、第二阶段能力：
 
-- `/admin/` 生产环境通过 GitHub OAuth 登录，保存直接提交 `main` 并触发 Netlify（simple 发布模式）；本地开发主机自动切换到 Decap Local Backend，不显示登录页，也不产生远端提交。
+- `/admin/` 生产环境通过自建 OAuth 代理（`oauth.gis2all.top`，Cloudflare Worker）完成 GitHub 授权，保存直接提交 `main` 并触发 Cloudflare Pages 部署（simple 发布模式）；本地开发主机自动切换到 Decap Local Backend，不显示登录页，也不产生远端提交。
 - 后台 locale 为 `zh_Hans`；文章、专题和项目集合与 Astro Content Collections 的必填字段保持一致。
 - 文章分类使用既有六个分类枚举，专题通过 relation 关联到 `series` 集合；字段按实际写作顺序排列并提供中文提示。
 - 文章标题是唯一身份来源；Markdown 文件名、公开地址和文章媒体目录使用去除首尾空白后的标题，不维护独立 slug、旧 URL 兼容路由或改名跳转。
@@ -525,7 +525,7 @@ public/images/posts/
 - CMS 标签：维护加载、统计、筛选、保存、删除复查、合并预检、冲突和重试状态；读取或统计失败时禁用危险操作。
 - CMS 媒体：维护加载、搜索、尺寸读取、选择、放大、上传压缩、删除确认和错误状态；图片尺寸读取结果需要缓存，不能在重渲染时反复回到“读取中”。
 - CMS 未保存提醒：只针对内容编辑修改，不把标签页搜索、筛选等界面状态误判为未保存内容。
-- 部署：Netlify 构建结果以平台状态和日志为准，不在站内展示未经接入的虚假进度。
+- 部署：Cloudflare Pages 部署结果以平台状态和日志为准，不在站内展示未经接入的虚假进度。
 
 自动保存、离线编辑、多人审批和复杂并发冲突仍未实现；这些能力需要独立架构设计，不属于当前自定义壳层范围。
 
@@ -546,7 +546,7 @@ public/images/posts/
 
 仍待完成：
 
-- 在 Netlify 生产环境完成正式域名、搜索、RSS、站点地图和 robots 的线上验收。
+- 在 Cloudflare Pages 生产环境完成正式域名、搜索、RSS、站点地图和 robots 的线上验收。
 
 评论已选择 Giscus + GitHub Discussions；独立登录用户系统不属于第一版基础能力。访问统计使用 Umami Cloud，仅在生产环境配置后启用；站内不展示未经接入的阅读量数字。
 
@@ -554,7 +554,7 @@ public/images/posts/
 
 1. 后台第三阶段已基本完成；剩余收口以浏览器实测为准：逐页复核导航、搜索、筛选、编辑、标签、媒体、弹窗、浅色/深色和移动端。
 2. 收口时统一验证本地免登录写入、生产登录、文章/草稿互斥、搜索筛选、标签合并、媒体上传压缩、未保存提醒、浅色/深色和桌面/移动，再分批提交并创建 PR。
-3. 在 Netlify 生产环境配置 `PUBLIC_UMAMI_WEBSITE_ID`，并完成正式域名、统计、搜索、RSS、站点地图、robots 和后台生产登录验收。
+3. 在 Cloudflare Pages 环境变量配置 `PUBLIC_UMAMI_WEBSITE_ID`，并完成正式域名、统计、搜索、RSS、站点地图、robots 和后台生产登录验收。
 4. 部署后在线上验证文章评论加载、GitHub 登录评论闭环、首次评论自动创建 Discussion 和主题同步。
 5. 收集实际写作反馈；只有出现明确需求时才评估自动保存、多人审批、离线编辑或替换 Decap 内核。
 
@@ -579,7 +579,7 @@ public/images/posts/
 - Vitest 覆盖率门禁覆盖 `src/lib` 与后台 `*-domain.js`、`editorial-workflow.js`、`tag-operations.js`：全局 90/82/92/94，`src/lib/**` 95/84/95/98，`public/admin/**` 88/82/90/92。
 - `npm run perf` 对生产预览运行 Lighthouse 性能预算（`lighthouse-budgets.json`）；脚本会复用已运行的预览服务，但若 4321 被 `astro dev` 占用会报错并退出，避免把开发态误测成生产性能。
 - CI 包含 `npm audit --audit-level=high` 依赖漏洞门禁；依赖版本在 package.json 中精确锁定，不启用 Dependabot 自动更新。
-- `netlify.toml` 为全站配置安全响应头（HSTS、X-Frame-Options、Permissions-Policy 与 CSP）。CSP 白名单覆盖 Umami、Giscus、Decap CDN 与 GitHub API；新增外部脚本或域名时须同步更新该白名单，部署后先在生产验证 Giscus、Umami、`/admin/` 三条链路。
+- `public/_headers` 为全站配置安全响应头（HSTS、X-Frame-Options、Permissions-Policy 与 CSP）与缓存规则。CSP 白名单覆盖 Umami、Giscus、Decap CDN、GitHub API 与自建 OAuth 代理；新增外部脚本或域名时须同步更新该白名单，部署后先在生产验证 Giscus、Umami、`/admin/` 三条链路。
 - 封面缩略图（`*-thumb.webp`）是派生产物：生产在 `postbuild` 阶段生成到 `dist/`，开发态由 Vite 中间件按需生成；不要提交 `dist/`，也不要删除 `cover.webp` 原图（中间件与构建脚本都依赖它）。
 - Docker 容器只覆盖本地开发与 CMS 后端（4321/4322）；Playwright E2E、Lighthouse 和 CI 仍在宿主机/GitHub Actions 运行，容器不安装浏览器。`package.json` 或 `package-lock.json` 变化后需要 `docker compose build` 重建镜像，单纯改源码无需重建。
 - 后台 E2E 用 `npx playwright test --project=admin` 单独运行（或随 `npm run test:e2e` 全量跑）；Playwright 会同时拉起 4321 开发服务与 4322 本地 CMS 后端，admin 项目单 worker 串行执行。修改 `public/admin/*` 后按此回归。
@@ -597,7 +597,7 @@ px playwright test --project=admin）和人工检查导航、编辑器工具栏�
 以下事项尚未由代码或正式配置锁定，开始相关工作前应向项目所有者确认，或在最小验证后记录决策：
 
 - 顶部后台搜索是继续保持“文章搜索”，还是扩展为文章、标签和专题的真实跨集合搜索；决定前应让占位文案与当前文章搜索能力一致。
-- simple 发布模式下生产登录/保存链路（GitHub OAuth → 直接提交 `main` → Netlify 构建）尚未在浏览器端完整实测；上线前需要本地免登录保存与生产登录/保存两条链路各验证一次。
+- simple 发布模式下生产登录/保存链路（GitHub OAuth → 直接提交 `main` → GitHub Actions 构建并部署 Cloudflare Pages）迁移后需在浏览器端完整实测；上线前需要本地免登录保存与生产登录/保存两条链路各验证一次。
 
 已确认的第一版约束：
 
@@ -605,17 +605,17 @@ px playwright test --project=admin）和人工检查导航、编辑器工具栏�
 - 单作者。
 - 作者身份已确认为 `gis2all`，头像为 `public/images/avatar-gis2all.webp`，GitHub 主页为 `https://github.com/gis2all`，仓库为 `https://github.com/gis2all/tech-blog`。
 - 正式独立域名已确认为 `https://blog.gis2all.top`。
-- 访问统计使用 Umami Cloud，通过 Netlify 生产环境变量 `PUBLIC_UMAMI_WEBSITE_ID` 启用；本地 `.env` 只用于生产预览验证，不作为部署配置来源。
+- 访问统计使用 Umami Cloud，通过 Cloudflare Pages 环境变量 `PUBLIC_UMAMI_WEBSITE_ID` 启用；本地 `.env` 只用于生产预览验证，不作为部署配置来源。
 - 阅读历史只保存在访问者浏览器本地，不引入账号或数据库。
 - 文章评论使用 Giscus + GitHub Discussions，当前仓库已开启 Discussions；评论分类为 `Announcements`，Giscus 映射策略为 `pathname`；Giscus GitHub App 已授权到 `gis2all/tech-blog`。
-- 第一版部署平台使用 Netlify。
-- 生产 CMS 使用 Decap CMS 的 `github` backend 与 `publish_mode: simple`：内容保存直接提交 `main` 并由 Netlify 构建发布，草稿由 frontmatter 控制；本地开发使用 Decap Local Backend，只写入当前工作树。
-- GitHub OAuth 登录已通过 Netlify Authentication Provider 验证；第一版不额外实现自定义 OAuth Worker。
+- 部署平台使用 Cloudflare Pages。
+- 生产 CMS 使用 Decap CMS 的 `github` backend 与 `publish_mode: simple`：内容保存直接提交 `main` 并由 Cloudflare Pages 构建发布，草稿由 frontmatter 控制；本地开发使用 Decap Local Backend，只写入当前工作树。
+- GitHub OAuth 登录由自建 Cloudflare Worker（`workers/decap-oauth`，部署于 `oauth.gis2all.top`）提供；需与 `public/admin/config.yml` 的 `base_url`/`auth_endpoint` 及 `public/_headers` 的 CSP 保持一致。
 - 后台采用与网站一致的自定义管理壳层，但保留 Decap 的认证、Git 后端、字段控件和 Markdown 编辑器，不进入完整独立 CMS 重写。
 - 标签和媒体库在后台主区域内管理；媒体选择弹窗仅为编辑器字段保留。
 - 内容列表不增加自定义分页；草稿和文章使用独立且互斥的入口。
 - 定时发布、自动保存、多人审批、离线同步和复杂并发冲突处理不纳入当前范围。
-- 静态部署，第一版使用 Netlify 负责构建并发布 `dist/`。
+- 静态部署：Cloudflare Pages 从 GitHub 集成构建 `dist/` 并发布。
 - 生产构建通过 `draft: true` 排除草稿。
 - `docs/`、OpenDesign 原型和其他本地规划资料不进入 GitHub 仓库。
 
