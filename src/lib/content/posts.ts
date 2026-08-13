@@ -122,15 +122,17 @@ export function getPublicPosts<TPost extends PostLike>(posts: TPost[]): TPost[] 
   return sortPostsByDate(posts.filter((post) => !post.data.draft));
 }
 
+/**
+ * 精选文章：只返回显式标记 `featured: true` 的文章（按发布时间降序）。
+ * 不做"最新文章自动补齐"——新文章默认 featured: false，不会自动进入精选列表。
+ */
 export function getFeaturedPosts<TPost extends PostLike>(
   posts: TPost[],
   limit = 3,
 ): TPost[] {
-  const publicPosts = getPublicPosts(posts);
-  const preferred = publicPosts.filter((post) => post.data.featured);
-  const fallback = publicPosts.filter((post) => !post.data.featured);
-
-  return [...preferred, ...fallback].slice(0, limit);
+  return getPublicPosts(posts)
+    .filter((post) => post.data.featured)
+    .slice(0, limit);
 }
 
 export function getRelatedPosts<TPost extends PostLike>(

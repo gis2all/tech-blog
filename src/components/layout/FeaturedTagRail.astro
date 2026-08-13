@@ -20,6 +20,7 @@ const hotTags = groupPostsByTag(posts)
 
 <aside class="right-rail stack" aria-label="精选与标签">
   <RecentReading variant="desktop" />
+  {featured.length > 0 && (
   <section class="panel">
     <div class="section-title">精选复盘</div>
     <ol class="featured-list">
@@ -34,6 +35,7 @@ const hotTags = groupPostsByTag(posts)
       ))}
     </ol>
   </section>
+  )}
   <section class="panel">
     <div class="section-title">热门标签</div>
     <div class="tag-cloud">
