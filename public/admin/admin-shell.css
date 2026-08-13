@@ -523,8 +523,6 @@ body > .cms-theme-toggle {
   min-width: 100%;
   width: max-content;
   max-width: min(320px, calc(100vw - 32px));
-  max-height: 280px;
-  overflow-y: auto;
   padding: 4px 0;
   border: 1px solid var(--cms-line);
   border-radius: var(--cms-radius);
@@ -534,6 +532,12 @@ body > .cms-theme-toggle {
 
 .cms-select__listbox[hidden] {
   display: none;
+}
+
+/* 文章/专题/项目列表：flex column 使排序可经 CSS order 呈现，避免移动 DOM 节点 */
+[data-admin-list-layout] {
+  display: flex;
+  flex-direction: column;
 }
 
 .cms-select__option {
