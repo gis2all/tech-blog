@@ -24,7 +24,7 @@ describe("title-driven article storage", () => {
   test("uses the exact article title as every Markdown filename", async () => {
     const posts = await readPosts();
 
-    expect(posts).toHaveLength(106);
+    // 不断言文章总数：真实文章数量随时变化，测试只约束"标题 = 文件名"关系。
     for (const post of posts) {
       expect(path.basename(post.filename, ".md")).toBe(post.data.title.trim());
     }
