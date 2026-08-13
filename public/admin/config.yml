@@ -69,6 +69,8 @@ collections:
         name: category
         widget: select
         options:
+          - label: x402
+            value: x402
           - label: DevOps
             value: DevOps
           - label: 编程开发
