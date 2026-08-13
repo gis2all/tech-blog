@@ -148,6 +148,31 @@
   font-family: var(--font-code);
 }
 
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 1.7;
+  margin: 0 0 1.1em;
+}
+
+.prose th,
+.prose td {
+  text-align: left;
+  vertical-align: top;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.prose th {
+  font-weight: 600;
+  border-bottom: 1.5px solid var(--text);
+}
+
+.prose tbody tr:last-child td {
+  border-bottom: none;
+}
+
 .prose pre {
   font-family: var(--font-code);
   font-size: 14px;
