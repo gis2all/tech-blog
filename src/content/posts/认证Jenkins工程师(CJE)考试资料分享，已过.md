@@ -9,7 +9,7 @@ tags:
   - "Jenkins认证工程师"
   - "认证Jenkins工程师"
 draft: false
-featured: false
+featured: true
 updatedAt: 2021-08-16
 cover: /images/posts/认证Jenkins工程师%28CJE%29考试资料分享，已过/cover.webp
 coverAlt: 在这里插入图片描述

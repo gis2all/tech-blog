@@ -11,7 +11,7 @@ tags:
   - "大数据"
   - "深度学习"
 draft: false
-featured: false
+featured: true
 updatedAt: 2017-08-03
 cover: /images/posts/【SpaceNet%20on%20AWS】遥感数据集下载教程/cover.webp
 coverAlt: 在这里插入图片描述
