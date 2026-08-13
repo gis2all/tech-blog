@@ -1175,6 +1175,12 @@
     var status = toolbar.querySelector('[data-admin-filter="status"]')?.value || "all";
     var category = toolbar.querySelector('[data-admin-filter="category"]')?.value || "all";
     var sort = toolbar.querySelector('[data-admin-filter="sort"]')?.value || "default";
+    // 默认排序 = 更新时间降序（系列按专题顺序），保证列表顺序稳定，不依赖 Decap 原生顺序
+    if (sort === "default") sort = page.collection === "series" ? "order" : "date";
+
+    // 排序用 CSS order 呈现（容器需为 flex column），不移动 DOM 节点——
+    // Decap 列表由 React 渲染，appendChild 重排会与 React 渲染竞争导致列表崩溃。
+    list.setAttribute("data-admin-list-layout", "");
     var rows = entries().map(function (link) {
       return { card: closest(link, "li"), link: link, summary: summaryFor(link, page) };
     }).filter(function (item) { return item.card; });
@@ -1185,7 +1191,9 @@
         if (sort === "order") return numericDetail(left.summary) - numericDetail(right.summary);
         return String(right.summary.detail).localeCompare(String(left.summary.detail), "zh-CN");
       });
-      rows.forEach(function (item) { list.appendChild(item.card); });
+      rows.forEach(function (item, index) {
+        item.card.style.order = String(index);
+      });
     }
 
     var matched = [];
