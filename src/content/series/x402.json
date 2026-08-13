@@ -1,0 +1,9 @@
+{
+  "title": "x402 协议系列",
+  "description": "从 HTTP 402 支付协议的设计动机、支付链路到生态与开发实践，讲透 x402。",
+  "slug": "x402",
+  "image": "/images/series/x402.webp",
+  "imageAlt": "x402 协议标志：盾牌加美元符号",
+  "order": 6,
+  "draft": false
+}
