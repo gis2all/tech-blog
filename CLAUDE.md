@@ -24,8 +24,8 @@
 | 后台 | /admin（Decap CMS；生产走 GitHub OAuth，本地走 Local Backend） |
 | OAuth 代理 | oauth.gis2all.top（Cloudflare Worker，workers/decap-oauth） |
 | 作者 | gis2all（头像 public/images/avatar-gis2all.webp） |
-| 内容 | 106 篇文章（105 公开 + 1 草稿）、5 个专题、3 个项目 |
-| 测试基线 | 290 单测 / 60 E2E（44 前台 + 16 后台，Axe 严重/致命违规为 0） |
+| 内容 | 文章数量以仓库 src/content/posts 为准（不在本文维护）；5 个专题、3 个项目 |
+| 测试基线 | 单测与前台/后台 E2E 全绿，Axe 严重/致命违规为 0（数量以仓库 test/ 为准） |
 | 覆盖率门禁 | 全局 90/82/92/94、src/lib 95/84/95/98、public/admin 88/82/90/92（语句/分支/函数/行） |
 | 最近一次完整验证 | check/check:admin/lint 全绿，427 页生产构建，Lighthouse 预算通过 |
 
@@ -262,7 +262,7 @@ test/                 Vitest 和 Playwright 测试
 
 ### 4.2 后台能力
 
-- locale zh_Hans；文章/专题/项目字段与 Content Collections 必填字段对齐；分类为六个既有枚举，专题通过 relation 关联。
+- locale zh_Hans；文章/专题/项目字段与 Content Collections 必填字段对齐；分类为既有枚举（新增分类时必须同步 public/admin/config.yml 的 category options），专题通过 relation 关联。
 - 文章标题是唯一身份来源：Markdown 文件名、公开地址和文章媒体目录都使用去除首尾空白后的标题；不维护独立 slug、旧 URL 兼容路由或改名跳转。
 - 已发布文章标题锁定，改名先转草稿并确认；草稿重命名会同步更新 Markdown 路径、文章引用和媒体目录。
 - 保存前校验标题唯一性、发布必填字段、日期、专题顺序、链接和图片替代文本；草稿允许暂时缺少发布内容但显示建议。
@@ -310,7 +310,7 @@ test/                 Vitest 和 Playwright 测试
 
 **全局导航**：固定顶部导航（桌面约 62-64px、移动约 56px）；品牌 Logo「知行」；主导航为首页、分类、归档、专题、项目、关于；宽搜索框支持回车进搜索页；GitHub、深色模式和后台入口；移动端收纳主导航并提供独立搜索展开按钮。
 
-**首页与文章页**：桌面三栏 280px / minmax(0, 1fr) / 220px（左栏作者卡片+分类+专题，中栏文章流，右栏最近阅读+精选+热门标签）；文章列表条目含标题、两行内摘要、标签、发布日期、阅读时长和可选 136×86 缩略图，条目间用分割线而非浮动大卡片；卡片只展示标签，不重复展示分类。移动端隐藏左右栏，文章列表前显示最近阅读。
+**首页与文章页**：桌面三栏 280px / minmax(0, 1fr) / 220px（左栏作者卡片+分类+专题，中栏文章流，右栏最近阅读+精选+热门标签）；右栏「精选复盘」只展示 frontmatter `featured: true` 的文章，最多 3 篇、按发布时间降序，无精选文章时面板隐藏；文章列表条目含标题、两行内摘要、标签、发布日期、阅读时长和可选 136×86 缩略图，条目间用分割线而非浮动大卡片；卡片只展示标签，不重复展示分类。移动端隐藏左右栏，文章列表前显示最近阅读。
 
 **文章详情**：正文头部为分类、标题、摘要、作者、日期、阅读时长和标签；右栏有 H2/H3 时显示固定目录并随滚动高亮，无目录时改为独立阅读进度；相关文章位于上一篇/下一篇之前；移动端目录为顶部导航图标入口和底部抽屉，入口不得覆盖正文；代码块 14px、横向滚动和复制按钮（aria-label + title 状态提示）。
 
@@ -343,6 +343,7 @@ seriesOrder: 1
 约束：
 
 - title、description、publishedAt、category 必填；tags 和 changelog 默认为空数组；draft、featured 默认为 false；updatedAt、cover、coverAlt、series、seriesOrder 可选，有封面必须给准确的 coverAlt。
+- `featured: true` 是进入首页右栏「精选复盘」的唯一条件（行为见 5.2）；新文章保持默认 false，不会自动进入精选列表。
 - 文章公开 URL 由去除首尾空白后的标题生成，不接受独立 slug frontmatter；Markdown 文件名和图片目录是内部存储标识，不决定公开 URL。
 - 标题不得包含 /、?、#、%，且必须唯一；修改标题会同步修改 URL。
 - 日期统一 YYYY-MM-DD；生产构建排除 draft: true；构建失败时给出具体文件和字段。
@@ -433,6 +434,7 @@ npm run coverage:badge 读取 coverage/coverage-summary.json 生成 coverage/bad
 **协作与编码**
 
 - 保留工作区中与当前任务无关的修改，不覆盖用户未提交的改动，不进行无关重构。
+- 测试与文档不依赖真实文章数量：单测用自建夹具断言行为；文档速览不写文章数，以仓库 src/content/posts 为准。
 - 编辑 Markdown、JSON、YAML、HTML、TS/TSX 时优先 apply_patch，保持 BOM-free UTF-8。
 - 内容规则优先集中在 src/lib/content/，页面实现优先复用 Astro 布局和组件，不复制多份导航、文章行、侧栏或状态样式。
 - 不手动修改或提交 dist/、dist/pagefind/、coverage/ 等生成物；不公开 draft: true 的文章；评论数据不保存在项目中。
