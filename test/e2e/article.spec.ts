@@ -1,4 +1,20 @@
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { expect, test } from "@playwright/test";
+
+/**
+ * 公开文章数动态计算：扫描 src/content/posts 的 .md 文件并过滤 draft，
+ * 避免把真实文章总数硬编码进测试（文章数量随时会变）。
+ */
+function countPublicPosts(): number {
+  const dir = path.resolve(import.meta.dirname, "../../src/content/posts");
+  return readdirSync(dir)
+    .filter((file) => file.endsWith(".md"))
+    .filter((file) => {
+      const head = readFileSync(path.join(dir, file), "utf8").slice(0, 600);
+      return !/^draft:\s*true/m.test(head);
+    }).length;
+}
 
 const codeArticlePath = `/posts/${encodeURIComponent(
   "Jenkins Pipeline项目无法在windows子节点中执行cmd命令",
@@ -160,9 +176,12 @@ test("shows all articles in place when all is clicked from an article", async ({
 
   await expect(page).toHaveURL(/\/posts\/.+\?view=all$/);
   await expect(page.locator("[data-article-view]")).toBeHidden();
-  await expect(page.locator("[data-article-filter-view] .article-row")).toHaveCount(105, {
-    timeout: 15_000,
-  });
+  await expect(page.locator("[data-article-filter-view] .article-row")).toHaveCount(
+    countPublicPosts(),
+    {
+      timeout: 15_000,
+    },
+  );
   await expect(rail.locator("[data-filter-all]")).toHaveAttribute("aria-current", "page");
   await expect(rail.locator(".taxonomy-row.active")).toHaveCount(0);
 });
