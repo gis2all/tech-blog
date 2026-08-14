@@ -245,6 +245,7 @@ describe("Decap CMS schema", () => {
     expect(getField(posts, "category")).toMatchObject({
       widget: "select",
       options: [
+        { label: "x402", value: "x402" },
         { label: "DevOps", value: "DevOps" },
         { label: "编程开发", value: "编程开发" },
         { label: "测试工程", value: "测试工程" },

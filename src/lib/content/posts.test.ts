@@ -387,7 +387,7 @@ describe("post helpers", () => {
     ]);
   });
 
-  test("getFeaturedPosts returns flagged public posts first without duplicates", () => {
+  test("getFeaturedPosts returns only explicitly flagged public posts", () => {
     const featuredPosts = posts.map((post, index) => ({
       ...post,
       data: { ...post.data, featured: index === 0 },
@@ -395,7 +395,22 @@ describe("post helpers", () => {
 
     expect(getFeaturedPosts(featuredPosts, 2).map((post) => post.data.title)).toEqual([
       "Old Post",
-      "New Post",
+    ]);
+  });
+
+  test("getFeaturedPosts never auto-fills unfeatured posts", () => {
+    const allFlagged = posts.map((post, index) => ({
+      ...post,
+      data: { ...post.data, featured: index === 0 },
+    }));
+    const unfeatured = posts.map((post) => ({
+      ...post,
+      data: { ...post.data, featured: false },
+    }));
+
+    expect(getFeaturedPosts(unfeatured, 2)).toHaveLength(0);
+    expect(getFeaturedPosts(allFlagged, 2).map((post) => post.data.title)).toEqual([
+      "Old Post",
     ]);
   });
 

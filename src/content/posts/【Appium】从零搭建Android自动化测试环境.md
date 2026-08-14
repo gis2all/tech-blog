@@ -11,7 +11,7 @@ tags:
   - "自动化测试"
   - "测试"
 draft: false
-featured: false
+featured: true
 updatedAt: 2020-03-22
 cover: /images/posts/【Appium】从零搭建Android自动化测试环境/cover.webp
 coverAlt: 在这里插入图片描述

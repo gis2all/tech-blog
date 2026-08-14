@@ -20,7 +20,8 @@
       "!test-results",
       "!playwright-report",
       "!package-lock.json",
-      "!public/images"
+      "!public/images",
+      "!.hermes"
     ]
   },
   "formatter": {

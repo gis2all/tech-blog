@@ -18,7 +18,7 @@ description: 知行（zhixing-tech-blog / gis2all/tech-blog）个人博客项目
 | 后台 | /admin（Decap CMS；生产 GitHub OAuth，本地 Local Backend） |
 | OAuth 代理 | oauth.gis2all.top（Cloudflare Worker，workers/decap-oauth） |
 | 技术栈 | Astro 7、TypeScript、Pagefind、Decap CMS 3.15.1、Umami、Giscus |
-| 内容 | 106 篇文章（105 公开 + 1 草稿）、5 专题、3 项目 |
+| 内容 | 文章数量以仓库 src/content/posts 为准；5 专题、3 项目 |
 | 测试基线 | 290+ 单测 / 60 E2E（44 前台 + 16 后台，Axe 严重/致命为 0） |
 | 覆盖率门禁 | 全局 90/82/92/94、src/lib 95/84/95/98、public/admin 88/82/90/92 |
 
