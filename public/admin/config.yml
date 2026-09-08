@@ -67,11 +67,12 @@ collections:
         hint: 用一两句话说明文章解决的问题，会显示在文章列表和搜索结果中。
       - label: 分类
         name: category
-        widget: category_selector
+        widget: relation
         collection: categories
         file: library
         value_field: categories.*
         search_fields: [categories.*]
+        display_fields: [categories.*]
         hint: 分类用于前台筛选和归档，保持使用既有分类。
       - label: 标签
         name: tags

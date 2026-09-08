@@ -244,11 +244,12 @@ describe("Decap CMS schema", () => {
       ]),
     });
     expect(getField(posts, "category")).toMatchObject({
-      widget: "category_selector",
+      widget: "relation",
       collection: "categories",
       file: "library",
       value_field: "categories.*",
       search_fields: ["categories.*"],
+      display_fields: ["categories.*"],
     });
     expect(categories).toMatchObject({
       label: "分类",
