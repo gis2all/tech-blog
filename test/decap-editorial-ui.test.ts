@@ -496,7 +496,13 @@ describe("Decap phase-two editorial UI", () => {
       readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
-    expect(shell).toContain("width: min(1280px, 100%) !important");
+    expect(shell).toContain("width: min(1480px, 100%) !important");
+    expect(shell).toMatch(
+      /#nc-root > header > div\s*\{[^}]*max-width:\s*none\s*!important/s,
+    );
+    expect(shell).toMatch(
+      /#nc-root > \[class\*=AppMainContainer\]\s*\{[^}]*max-width:\s*none\s*!important/s,
+    );
     expect(shell).toContain("padding: 0 18px !important");
     expect(shell).toContain("margin: 0 !important");
     expect(shell).toContain("padding: 0 !important");
@@ -724,7 +730,7 @@ describe("Decap phase-two editorial UI", () => {
       readFile(`${root}public/admin/media-library.css`, "utf8"),
     ]);
 
-    expect(shell).toContain("width: min(1280px, 100%) !important");
+    expect(shell).toContain("width: min(1480px, 100%) !important");
     expect(shellScript).toContain("data-admin-media-shortcut");
     expect(shellScript).toContain("data-admin-list-summary");
     expect(shellScript).not.toContain("data-admin-pagination");

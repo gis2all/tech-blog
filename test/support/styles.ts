@@ -7,6 +7,7 @@ const root = fileURLToPath(new URL("../../", import.meta.url));
 // observe the same cascade the site ships.
 const STYLE_ORDER = [
   "src/styles/base.css",
+  "public/styles/markdown-content.css",
   "src/styles/layout.css",
   "src/styles/components.css",
   "src/styles/taxonomy.css",

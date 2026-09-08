@@ -201,11 +201,20 @@ describe("Decap CMS schema", () => {
   });
 
   test("supports a Chinese editorial workflow and an article preview", async () => {
-    const [configSource, adminIndex, previewScript, previewStyle] = await Promise.all([
+    const [
+      configSource,
+      adminIndex,
+      baseLayout,
+      previewScript,
+      previewStyle,
+      markdownStyle,
+    ] = await Promise.all([
       readFile(`${root}public/admin/config.yml`, "utf8"),
       readFile(`${root}public/admin/index.html`, "utf8"),
+      readFile(`${root}src/layouts/BaseLayout.astro`, "utf8"),
       readFile(`${root}public/admin/preview.js`, "utf8").catch(() => ""),
       readFile(`${root}public/admin/preview.css`, "utf8").catch(() => ""),
+      readFile(`${root}public/styles/markdown-content.css`, "utf8").catch(() => ""),
     ]);
     const config = parse(configSource);
     const posts = getCollection(config, "posts");
@@ -296,7 +305,9 @@ describe("Decap CMS schema", () => {
     expect(adminIndex).toContain(
       'src="https://unpkg.com/decap-cms@3.15.1/dist/decap-cms.js"',
     );
-    expect(adminIndex).toContain('src="/admin/preview.js?v=3"');
+    expect(adminIndex).toContain('src="/admin/preview.js?v=4"');
+    expect(baseLayout).toContain('href="/styles/markdown-content.css?v=1"');
+    expect(previewScript).toContain('className: "cms-post-preview__body prose"');
     const previewRegistrations: {
       styles: string[];
       templates: Array<{ collection: string; template: unknown }>;
@@ -318,7 +329,11 @@ describe("Decap CMS schema", () => {
       h: () => null,
     });
 
-    expect(previewRegistrations.styles).toContain("/admin/preview.css?v=3");
+    expect(previewRegistrations.styles).toEqual([
+      "/styles/design-system.css?v=1",
+      "/styles/markdown-content.css?v=1",
+      "/admin/preview.css?v=4",
+    ]);
     expect(previewRegistrations.templates.map((item) => item.collection)).toEqual([
       "posts",
       "series",
@@ -331,6 +346,9 @@ describe("Decap CMS schema", () => {
     }
     expect(previewStyle).toContain(".cms-post-preview");
     expect(previewStyle).toContain(".cms-entity-preview");
+    expect(previewStyle).not.toContain(".cms-post-preview__body h2");
+    expect(markdownStyle).toContain(".prose :not(pre) > code");
+    expect(markdownStyle).toContain(".prose table");
   });
 
   test("supports local CMS development without GitHub authentication", async () => {
