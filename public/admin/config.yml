@@ -37,7 +37,7 @@ collections:
     media_folder: public/images/posts/{{title}}
     public_folder: /images/posts/{{title}}
     preview_path: posts/{{title}}
-    summary: "{{title}} · {{publishedAt}} · {{category}} · {{draft}}"
+    summary: "{{title}} · {{updatedAt}} · {{publishedAt}} · {{category}} · {{draft}}"
     sortable_fields: [publishedAt, updatedAt, title]
     view_filters:
       - label: 草稿
@@ -67,22 +67,12 @@ collections:
         hint: 用一两句话说明文章解决的问题，会显示在文章列表和搜索结果中。
       - label: 分类
         name: category
-        widget: select
-        options:
-          - label: x402
-            value: x402
-          - label: DevOps
-            value: DevOps
-          - label: 编程开发
-            value: 编程开发
-          - label: 测试工程
-            value: 测试工程
-          - label: 阅读与思考
-            value: 阅读与思考
-          - label: GIS
-            value: GIS
-          - label: 工程实践
-            value: 工程实践
+        widget: relation
+        collection: categories
+        file: library
+        value_field: categories.*
+        search_fields: [categories.*]
+        display_fields: [categories.*]
         hint: 分类用于前台筛选和归档，保持使用既有分类。
       - label: 标签
         name: tags
@@ -177,6 +167,23 @@ collections:
             search_fields: [tags.*]
             hint: 标签只能在此处删除；仍被文章使用的标签会自动锁定。
 
+  - name: categories
+    label: 分类
+    label_singular: 分类
+    files:
+      - name: library
+        label: 分类
+        file: src/data/category-library.json
+        fields:
+          - label: 分类
+            name: categories
+            widget: list
+            field:
+              label: 分类名称
+              name: category
+              widget: string
+            hint: 分类只能在分类主页面管理；仍被文章使用的分类会自动锁定删除。
+
   - name: series
     label: 专题
     folder: src/content/series
@@ -234,7 +241,7 @@ collections:
     extension: json
     format: json
     slug: "{{slug}}"
-    summary: "{{title}} · {{publishedAt}} · {{draft}}"
+    summary: "{{title}} · 排序 {{order}} · {{publishedAt}} · {{draft}}"
     sortable_fields: [order, publishedAt, title]
     view_filters:
       - label: 草稿

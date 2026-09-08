@@ -18,8 +18,8 @@ description: 知行（zhixing-tech-blog / gis2all/tech-blog）个人博客项目
 | 后台 | /admin（Decap CMS；生产 GitHub OAuth，本地 Local Backend） |
 | OAuth 代理 | oauth.gis2all.top（Cloudflare Worker，workers/decap-oauth） |
 | 技术栈 | Astro 7、TypeScript、Pagefind、Decap CMS 3.15.1、Umami、Giscus |
-| 内容 | 文章数量以仓库 src/content/posts 为准；5 专题、3 项目 |
-| 测试基线 | 290+ 单测 / 60 E2E（44 前台 + 16 后台，Axe 严重/致命为 0） |
+| 内容 | 文章、专题和项目数量均以对应 src/content/ 目录为准 |
+| 测试基线 | 单测与 E2E 数量以仓库和 CI 实际结果为准；Axe 严重/致命违规为 0 |
 | 覆盖率门禁 | 全局 90/82/92/94、src/lib 95/84/95/98、public/admin 88/82/90/92 |
 
 ## 目录结构与关键路径
@@ -35,6 +35,7 @@ public/_redirects     Cloudflare Pages 重定向规则
 workers/decap-oauth/  Decap GitHub OAuth 代理（独立 Worker 子项目）
 functions/            Cloudflare Pages 中间件（URL 大小写归一化 301）
 scripts/              构建与覆盖率辅助脚本
+skills/tech-blog/     仓库附带的项目接管/运维技能源文件
 test/                 Vitest 与 Playwright 测试
 ```
 
@@ -61,7 +62,8 @@ test/                 Vitest 与 Playwright 测试
 - 后台 = Decap 内核 + 自定义壳层：不重写认证、编辑器、并发引擎。
 - 文章标题是唯一身份来源：文件名、公开 URL、媒体目录都用去首尾空白的标题；URL 区分大小写（站点已提供 301 归一化）。
 - 生产 simple 发布模式直接提交 main；本地 Local Backend 直写工作树。
-- 标签库 src/data/tag-library.json；文章媒体 public/images/posts/<文章标题>/，通用媒体 public/images/uploads。
+- 标签库 src/data/tag-library.json、分类库 src/data/category-library.json；文章媒体 public/images/posts/<文章标题>/，通用媒体 public/images/uploads。
+- 后台分类与标签页支持搜索、排序、增删改名和关联文章展开；点击文章标题进入对应编辑页。
 - 编辑保存前校验标题唯一性、发布字段、日期、专题顺序、链接、图片替代文本；未保存离开提醒；草稿与文章独立互斥入口。
 - 详情见 CLAUDE.md「4. CMS 与后台」。
 

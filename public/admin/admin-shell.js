@@ -22,6 +22,8 @@
   var tagState = {
     tags: [],
     usage: Object.create(null),
+    articles: Object.create(null),
+    expandedTag: null,
     loading: false,
     loaded: false,
     loadError: false,
@@ -165,7 +167,7 @@
       var draftRoute = /[?&]view=drafts(?:&|$)/;
       return page.view === "drafts" || draftRoute.test(renderedRoute) ? 60 : 40;
     }
-    return page.collection === "tags" ? 60 : 40;
+    return page.collection === "tags" || page.collection === "categories" ? 60 : 40;
   }
 
   function finishRouteTransition() {
@@ -282,6 +284,10 @@
         category: link.dataset.adminSummaryCategory || "",
         detail: link.dataset.adminSummaryDetail || "",
         isDraft: link.dataset.adminSummaryDraft === "true",
+        order: link.dataset.adminSummaryOrder
+          ? Number(link.dataset.adminSummaryOrder)
+          : null,
+        published: link.dataset.adminSummaryPublished || "",
         title: link.dataset.adminSummaryTitle,
         updated: link.dataset.adminSummaryUpdated || "",
       };
@@ -298,6 +304,8 @@
     link.dataset.adminSummaryCategory = summary.category || "";
     link.dataset.adminSummaryDetail = summary.detail || "";
     link.dataset.adminSummaryDraft = summary.isDraft ? "true" : "false";
+    link.dataset.adminSummaryOrder = summary.order === null ? "" : String(summary.order);
+    link.dataset.adminSummaryPublished = summary.published || "";
     link.dataset.adminSummaryTitle = summary.title || "";
     link.dataset.adminSummaryUpdated = summary.updated || "";
   }
@@ -477,9 +485,15 @@
     );
     if (!loader) throw new Error("文章读取连接尚未就绪，请刷新后台后重试。");
     var entries = await loader("src/content/posts", "md", 100);
-    return global.DecapTagDomain.countUsage((entries || []).map(function (entry) {
-      return { data: { tags: operations.readTags(rawOf(entry)) } };
-    }));
+    var articleEntries = entries || [];
+    return {
+      usage: global.DecapTagDomain.countUsage(articleEntries.map(function (entry) {
+        return { data: { tags: operations.readTags(rawOf(entry)) } };
+      })),
+      articles: global.DecapTaxonomyArticles.groupArticles(articleEntries, function (entry) {
+        return operations.readTags(rawOf(entry));
+      }),
+    };
   }
 
   function tagStats() {
@@ -499,6 +513,30 @@
 
   function tagActionDisabled() {
     return tagState.loading || tagState.saving || tagState.merging || tagState.loadError;
+  }
+
+  function toggleTagArticles(tag) {
+    if (tagState.loading || tagState.loadError || !tagState.usage[tag]) return;
+    tagState.expandedTag = tagState.expandedTag === tag ? null : tag;
+    updateTagPage();
+  }
+
+  function renderTagArticles(tag) {
+    var articles = tagState.articles && Array.isArray(tagState.articles[tag])
+      ? tagState.articles[tag]
+      : [];
+    if (tagState.expandedTag !== tag || !articles.length) return null;
+    var area = element("div", "cms-taxonomy-manager__articles");
+    area.setAttribute("aria-label", tag + "关联文章");
+    articles.forEach(function (article) {
+      var link = element("a", "cms-taxonomy-manager__article");
+      link.href = article.href;
+      link.appendChild(element("span", "cms-taxonomy-manager__article-title", article.title));
+      link.appendChild(element("span", "cms-taxonomy-manager__article-status", article.draft ? "草稿" : "已发布"));
+      link.appendChild(element("span", "cms-taxonomy-manager__article-date", article.dateLabel));
+      area.appendChild(link);
+    });
+    return area;
   }
 
   function setTagMessage(message, autoDismissMs) {
@@ -531,7 +569,9 @@
       var backend = tagBackend();
       tagState.tags = await loadTagLibrary(backend);
       try {
-        tagState.usage = await loadTagUsage(backend);
+        var usageResult = await loadTagUsage(backend);
+        tagState.usage = usageResult.usage;
+        tagState.articles = usageResult.articles;
       } catch (usageError) {
         tagState.usage = Object.create(null);
         tagState.loadError = true;
@@ -605,8 +645,10 @@
     updateTagPage();
 
     try {
-      var usage = await loadTagUsage(tagBackend());
+      var usageResult = await loadTagUsage(tagBackend());
+      var usage = usageResult.usage;
       tagState.usage = usage;
+      tagState.articles = usageResult.articles;
       if (!global.DecapTagDomain.canDelete(tag, usage)) {
         tagState.confirmingTag = null;
         tagState.checkingTag = null;
@@ -956,8 +998,15 @@
       var tag = item.name;
       var row = element("li", "cms-tag-manager__row");
       row.setAttribute("data-admin-tag-row", "");
-      row.appendChild(element("span", "cms-tag-manager__name", tag));
-      row.appendChild(element("span", "cms-tag-manager__usage", tagUsageLabel(item)));
+      var toggle = element("button", "cms-taxonomy-manager__toggle");
+      toggle.type = "button";
+      toggle.disabled = !item.count || tagState.loading || tagState.loadError;
+      toggle.setAttribute("aria-expanded", tagState.expandedTag === tag ? "true" : "false");
+      toggle.setAttribute("aria-label", "查看标签 " + tag + " 的文章");
+      toggle.appendChild(element("span", "cms-tag-manager__name", tag));
+      toggle.appendChild(element("span", "cms-tag-manager__usage", tagUsageLabel(item)));
+      toggle.addEventListener("click", function () { toggleTagArticles(tag); });
+      row.appendChild(toggle);
 
       var actions = element("div", "cms-tag-manager__actions");
       var rename = element("button", "cms-tag-manager__rename", "重命名/合并");
@@ -1001,6 +1050,8 @@
         actions.appendChild(deleteButton);
       }
       row.appendChild(actions);
+      var articles = renderTagArticles(tag);
+      if (articles) row.appendChild(articles);
       list.appendChild(row);
     });
   }
@@ -1042,6 +1093,13 @@
     restoreNativeTagPageChildren();
     var page = tagPage();
     if (page) page.remove();
+  }
+
+  function removeCategoryPage() {
+    var main = adminMain();
+    if (global.DecapCategoryPage && typeof global.DecapCategoryPage.unmount === "function") {
+      global.DecapCategoryPage.unmount(main);
+    }
   }
 
   function mediaPage() {
@@ -1163,9 +1221,10 @@
     if (!tagState.loaded && !tagState.loading) loadTagData();
   }
 
-  function numericDetail(summary) {
-    var match = String(summary.detail || "").match(/\d+/);
-    return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
+  function ensureCategoryPage(page) {
+    var main = adminMain();
+    if (!main || !global.DecapCategoryPage) return;
+    global.DecapCategoryPage.mount(main, page);
   }
 
   function applyToolbar(toolbar, list, page) {
@@ -1175,8 +1234,7 @@
     var status = toolbar.querySelector('[data-admin-filter="status"]')?.value || "all";
     var category = toolbar.querySelector('[data-admin-filter="category"]')?.value || "all";
     var sort = toolbar.querySelector('[data-admin-filter="sort"]')?.value || "default";
-    // 默认排序 = 更新时间降序（系列按专题顺序），保证列表顺序稳定，不依赖 Decap 原生顺序
-    if (sort === "default") sort = page.collection === "series" ? "order" : "date";
+    sort = domain.defaultSortMode(page.collection, sort);
 
     // 排序用 CSS order 呈现（容器需为 flex column），不移动 DOM 节点——
     // Decap 列表由 React 渲染，appendChild 重排会与 React 渲染竞争导致列表崩溃。
@@ -1185,16 +1243,12 @@
       return { card: closest(link, "li"), link: link, summary: summaryFor(link, page) };
     }).filter(function (item) { return item.card; });
 
-    if (sort !== "default") {
-      rows.sort(function (left, right) {
-        if (sort === "title") return left.summary.title.localeCompare(right.summary.title, "zh-CN");
-        if (sort === "order") return numericDetail(left.summary) - numericDetail(right.summary);
-        return String(right.summary.detail).localeCompare(String(left.summary.detail), "zh-CN");
-      });
-      rows.forEach(function (item, index) {
-        item.card.style.order = String(index);
-      });
-    }
+    rows.sort(function (left, right) {
+      return domain.compareEntrySummaries(left.summary, right.summary, sort);
+    });
+    rows.forEach(function (item, index) {
+      item.card.style.order = String(index);
+    });
 
     var matched = [];
     rows.forEach(function (item) {
@@ -1307,8 +1361,10 @@
     }
 
     var sortOptions = page.collection === "series"
-      ? [["default", "默认排序"], ["order", "专题排序"], ["title", "按名称"]]
-      : [["default", "默认排序"], ["date", "更新时间"], ["title", "按名称"]];
+      ? [["order", "专题排序"], ["title", "按名称"]]
+      : page.collection === "projects"
+        ? [["order", "项目排序"], ["date", "发布日期"], ["title", "按名称"]]
+        : [["date", "更新时间"], ["title", "按名称"]];
     var sort = selectControl("排序", sortOptions);
     sort.dataset.adminFilter = "sort";
     toolbar.appendChild(sort);
@@ -1480,6 +1536,7 @@
     ensureMediaShortcut();
     if (global.location.hash === MEDIA_ROUTE) {
       removeTagPage();
+      removeCategoryPage();
       ensureMediaPage();
       settleRouteTransition();
       return;
@@ -1489,6 +1546,7 @@
     var page = profile();
     if (!page) {
       removeTagPage();
+      removeCategoryPage();
       ensureEditorToolbar();
       ensureEditorHeading();
       ensureEditorFields();
@@ -1497,12 +1555,21 @@
     }
 
     if (page.collection === "tags") {
+      removeCategoryPage();
       ensureTagPage(page);
       settleRouteTransition();
       return;
     }
 
+    if (page.collection === "categories") {
+      removeTagPage();
+      ensureCategoryPage(page);
+      settleRouteTransition();
+      return;
+    }
+
     removeTagPage();
+    removeCategoryPage();
 
     var links = entries();
     if (!routeEntriesReady(links, page)) return;

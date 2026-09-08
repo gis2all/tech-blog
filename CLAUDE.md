@@ -35,10 +35,10 @@
 | 后台 | /admin（Decap CMS；生产走 GitHub OAuth，本地走 Local Backend） |
 | OAuth 代理 | oauth.gis2all.top（Cloudflare Worker，workers/decap-oauth） |
 | 作者 | gis2all（头像 public/images/avatar-gis2all.webp） |
-| 内容 | 文章数量以仓库 src/content/posts 为准（不在本文维护）；5 个专题、3 个项目 |
-| 测试基线 | 单测与前台/后台 E2E 全绿，Axe 严重/致命违规为 0（数量以仓库 test/ 为准） |
+| 内容 | 文章、专题和项目数量均以对应 `src/content/` 目录为准，不在本文维护 |
+| 测试体系 | Vitest 单测、Playwright 前台/后台 E2E 与 Axe 门禁；数量以仓库和 CI 为准 |
 | 覆盖率门禁 | 全局 90/82/92/94、src/lib 95/84/95/98、public/admin 88/82/90/92（语句/分支/函数/行） |
-| 最近一次完整验证 | check/check:admin/lint 全绿，427 页生产构建，Lighthouse 预算通过 |
+| 完整门禁状态 | 以 CI 与本地最新可复现结果为准；测试和构建页面数量不在本文维护 |
 
 一句话架构：Astro 生成网站，Decap CMS 提供网页写作后台，GitHub 保存代码、文章和图片，Cloudflare Pages 负责构建并发布静态站点。
 
@@ -76,11 +76,13 @@ src/layouts/          页面布局
 src/components/       可复用界面组件
 src/scripts/          前端交互脚本
 src/styles/           全局样式和设计变量
+public/styles/        前后台共用的设计系统与 Markdown 正文样式
 public/images/        头像、文章、专题和项目图片
 public/admin/         Decap CMS 入口与配置
 public/_headers       Cloudflare Pages 安全头、CSP 与缓存规则
 public/_redirects     Cloudflare Pages 重定向规则
 scripts/              构建与覆盖率辅助脚本
+skills/tech-blog/     Codex 与 Claude Code 通用的项目接管/运维技能
 workers/decap-oauth/  Decap CMS GitHub OAuth 代理（Cloudflare Worker）
 functions/            Cloudflare Pages 中间件（URL 大小写归一化 301）
 test/                 Vitest 和 Playwright 测试
@@ -123,7 +125,7 @@ test/                 Vitest 和 Playwright 测试
 | --- | --- | --- |
 | Astro | 页面生成、Markdown 渲染、内容路由、SEO、RSS、站点地图和前端交互 | 登录、数据库、CMS 权限 |
 | Decap CMS | /admin 的认证、内容读取、字段表单、Markdown 编辑、媒体接口和 Git 提交内核 | 自定义后台视觉、站点托管、数据库能力 |
-| 后台扩展 | 网站一致的管理壳层、列表筛选、标题工作流、预览、标签与媒体管理 | 替代 Decap 认证、Git 后端或 Markdown 编辑器内核 |
+| 后台扩展 | 网站一致的管理壳层、列表筛选、标题工作流、预览、分类、标签与媒体管理 | 替代 Decap 认证、Git 后端或 Markdown 编辑器内核 |
 | GitHub | 保存源代码、Markdown、图片和完整版本历史 | 渲染网页、运行 CMS 界面 |
 | Cloudflare Pages | 拉取仓库、执行构建、托管 dist/、HTTPS、CDN 和预览部署 | 内容管理、Git 历史、评论和浏览量 |
 
@@ -150,10 +152,10 @@ test/                 Vitest 和 Playwright 测试
 | 领域层 | src/lib/content/* | 草稿过滤、排序、分页、标签/分类统计、相关文章、专题顺序 |
 | 展示层 | src/pages、layouts、components、styles | 路由页面、布局、组件、主题、响应式和交互 |
 | 写作配置 | public/admin/index.html、config.yml、cms-init.js | 后台入口、字段与集合配置、脚本顺序、本地/生产后端选择 |
-| 后台壳层 | public/admin/admin-shell*、admin-navigation.js、admin-shell.css | 页面结构、视觉、导航、主题、列表工具栏、标签页和媒体页 |
+| 后台壳层 | public/admin/admin-shell*、admin-navigation.js、admin-shell.css | 页面结构、视觉、导航、主题、列表工具栏、分类页、标签页和媒体页 |
 | 写作工作流 | public/admin/editorial-*、article-title.js、unsaved-changes.js | 标题身份、保存校验、草稿改名、未保存离开提醒 |
-| 标签与媒体 | public/admin/tag-*、media-* | 标签选择/同步/合并/删除、媒体查询/上传/压缩/清理 |
-| 编辑预览 | public/admin/preview.js、preview.css | 接近前台文章页的编辑态预览和主题同步 |
+| 内容组织与媒体 | public/admin/category-*、tag-*、taxonomy-articles.js、media-* | 分类/标签维护与关联文章查询、媒体查询/上传/压缩/清理 |
+| 编辑预览 | public/admin/preview.js、preview.css、public/styles/markdown-content.css | 使用前后台共用正文样式的编辑态预览和主题同步 |
 | 部署层 | Cloudflare Pages 配置、环境变量、构建命令 | 拉取仓库、安装依赖、构建、发布 dist/、生成预览地址 |
 
 依赖方向保持单向：src/pages → layouts/components → src/lib/content → Content Collections → Markdown/images/config。组件只接收整理好的展示数据，不直接扫描内容目录；内容规则集中在 src/lib/content，避免各页面各写一套。
@@ -175,7 +177,7 @@ test/                 Vitest 和 Playwright 测试
 - 阅读历史只保存在访问者浏览器本地；评论用 Giscus + GitHub Discussions（Announcements 分类、pathname 映射、App 已授权到本仓库）。
 - GitHub OAuth 登录由自建 Cloudflare Worker（workers/decap-oauth，部署于 oauth.gis2all.top）提供，与 config.yml 的 base_url/auth_endpoint 及 _headers 的 CSP 联动。
 - 静态优先：生产构建排除 `draft: true`；Pagefind 静态索引随构建产物发布。
-- 内容列表不自定义分页；草稿与文章独立且互斥的入口；标签和媒体库在后台主区域管理，媒体选择弹窗仅为编辑器字段保留。
+- 内容列表不自定义分页；草稿与文章独立且互斥的入口；分类、标签和媒体库在后台主区域管理，媒体选择弹窗仅为编辑器字段保留。
 - 明确不做：独立认证系统、替代 Decap 的 Markdown 编辑器、自动保存、离线编辑、定时发布、多人审批、数据库内容存储、复杂并发冲突处理；进入这些范围必须重新做架构决策。
 - 文章 URL 区分大小写（标题即 slug），但对外提供大小写归一化 301（`functions/_middleware.ts`，映射来自 sitemap、缓存 10 分钟；同名不同大小写的标签不参与重定向）。
 
@@ -255,7 +257,7 @@ test/                 Vitest 和 Playwright 测试
 
 ### 3.9 常见问题
 
-- 后台登录弹窗地址带 netlify：线上还是旧构建（迁移未合入）或 DNS 未切换；用预览地址验证新链路，确认后再切 DNS。
+- 后台登录弹窗地址带 netlify：检查部署产物是否仍加载旧配置，确认 `/admin/config.yml` 的 `base_url` 已指向 `oauth.gis2all.top`，并排查预览或边缘缓存。
 - _headers 不生效：确认改动在 public/_headers 且构建产物 dist/_headers 存在（Astro 会原样复制 public/）。
 - 本机直传 Pages 卡在 Uploading... 0/N：本地网络到 Cloudflare 上传端点的大请求体被卡；日常不要本机直传，交给 Git 集成。
 - 预览部署找不到：免费档预览保留有限；重新 push 分支会生成新预览。
@@ -266,22 +268,23 @@ test/                 Vitest 和 Playwright 测试
 
 ### 4.1 定位与认证发布模式
 
-- 后台 = Decap 内核 + 自定义管理壳层：Decap 负责认证、Git 后端、集合数据、字段控件和 Markdown 编辑器；壳层负责页面结构、统一视觉、标题工作流、列表、预览、标签和媒体管理。不是独立 CMS，不复制 Decap 核心能力。
+- 后台 = Decap 内核 + 自定义管理壳层：Decap 负责认证、Git 后端、集合数据、字段控件和 Markdown 编辑器；壳层负责页面结构、统一视觉、标题工作流、列表、预览、分类、标签和媒体管理。不是独立 CMS，不复制 Decap 核心能力。
 - 生产：/admin 通过自建 OAuth 代理（oauth.gis2all.top）完成 GitHub 授权，simple 发布模式直接提交 main 触发 Cloudflare Pages 部署。
 - 本地：127.0.0.1 / localhost / ::1 自动切换 Local Backend（127.0.0.1:4322），跳过登录、直写工作树。
 - Decap 运行时固定精确版本 decap-cms@3.15.1 + SRI（integrity sha384 + crossorigin=anonymous），CDN 内容被篡改或版本被意外提升时后台直接加载失败；升级需同步 SRI 并跑后台 E2E 回归。本地 decap-server 固定 3.10.0。
 
 ### 4.2 后台能力
 
-- locale zh_Hans；文章/专题/项目字段与 Content Collections 必填字段对齐；分类为既有枚举（新增分类时必须同步 public/admin/config.yml 的 category options），专题通过 relation 关联。
+- locale zh_Hans；文章/专题/项目字段与 Content Collections 必填字段对齐；分类由 `src/data/category-library.json` 统一维护，编辑器与专题字段一样通过 Decap `relation` 下拉框关联对应集合。
 - 文章标题是唯一身份来源：Markdown 文件名、公开地址和文章媒体目录都使用去除首尾空白后的标题；不维护独立 slug、旧 URL 兼容路由或改名跳转。
 - 已发布文章标题锁定，改名先转草稿并确认；草稿重命名会同步更新 Markdown 路径、文章引用和媒体目录。
 - 保存前校验标题唯一性、发布必填字段、日期、专题顺序、链接和图片替代文本；草稿允许暂时缺少发布内容但显示建议。
-- 编辑态预览显示封面、分类、发布时间/更新时间、标签、专题、摘要、正文、更新记录以及最终路径；不复制前台评论、阅读历史或完整导航交互。
-- 标签库 src/data/tag-library.json 为全局来源：文章内搜索/新建标签随保存同一次持久化；标签只在全局页删除（使用中禁删，重命名按合并处理并原子更新文章与标签库）。
+- 编辑态预览显示封面、分类、发布时间/更新时间、标签、专题、摘要、正文、更新记录以及最终路径；正文容器与前台统一使用 `.prose`，并共同加载 `public/styles/markdown-content.css`，正文排版不得在 `preview.css` 中重复维护；Decap 负责即时 Markdown 解析，Astro 生产构建仍负责 Shiki 代码高亮和图片/视频性能属性；预览不复制前台评论、阅读历史或完整导航交互。
+- 标签库 src/data/tag-library.json 与分类库 src/data/category-library.json 是全局来源：文章内搜索/新建标签随保存同一次持久化；分类与标签均在各自管理页搜索、筛选、排序、新增、重命名/合并和删除，使用中禁删，合并时原子更新文章引用与对应库文件；分类和标签行可展开按更新时间倒序排列的关联文章，并从标题进入编辑页。
 - 媒体：文章图片 public/images/posts/<文章标题>/，专题/项目用 public/images/uploads 回退；媒体库支持搜索/筛选/未使用检查/尺寸与引用状态/上传压缩/批量删除，并保留编辑器图片控件所需的选择弹窗。
 - 路由切换用快照遮罩避免白屏闪动；媒体按上下文只加载所需目录并做会话缓存；草稿/文章独立互斥入口；未保存离开提醒；深色模式与网站同步。
-- 后台视觉与主站同一套墨蓝/蓝绿色/灰阶、6px 圆角、细边框、系统中文字体；登录页独立居中；顶部搜索只过滤文章列表，未实现跨集合检索不得写入提示或规格。
+- 后台列表排序：文章与草稿按 `updatedAt` 降序（缺失时回退 `publishedAt`），专题与项目按 `order` 升序，标签与分类默认按名称升序并可切换为使用量降序；相同排序值按名称稳定排序。
+- 后台视觉与主站同一套墨蓝/蓝绿色/灰阶、6px 圆角、细边框、系统中文字体；桌面后台顶栏和内容容器最大宽度为 `1480px`，左侧导航固定约 `232px`，主区域随容器扩展；登录页独立居中；顶部搜索只过滤文章列表，未实现跨集合检索不得写入提示或规格。
 
 ### 4.3 后台页面地图
 
@@ -292,7 +295,8 @@ test/                 Vitest 和 Playwright 测试
 | 草稿 | /admin/#/collections/posts?view=drafts | 仅草稿，与文章入口互斥选中 |
 | 专题 | /admin/#/collections/series | 专题资料、草稿状态和前台排序 |
 | 项目 | /admin/#/collections/projects | 项目资料、展示状态和前台排序 |
-| 标签 | /admin/#/collections/tags | 搜索、筛选、重命名/合并和删除全局标签 |
+| 分类 | /admin/#/collections/categories | 分类库搜索、筛选、排序、新增、重命名/合并、删除和关联文章展开 |
+| 标签 | /admin/#/collections/tags | 标签库搜索、筛选、排序、新增、重命名/合并、删除和关联文章展开 |
 | 媒体库 | /admin/#/collections/posts?view=media | 查询、预览、上传、压缩和清理媒体 |
 | 内容编辑 | /admin/#/collections/<集合>/new、entries/<条目> | Decap 字段控件和 Markdown 编辑器 |
 
@@ -321,13 +325,13 @@ test/                 Vitest 和 Playwright 测试
 
 **全局导航**：固定顶部导航（桌面约 62-64px、移动约 56px）；品牌 Logo「知行」；主导航为首页、分类、归档、专题、项目、关于；宽搜索框支持回车进搜索页；GitHub、深色模式和后台入口；移动端收纳主导航并提供独立搜索展开按钮。
 
-**首页与文章页**：桌面三栏 280px / minmax(0, 1fr) / 220px（左栏作者卡片+分类+专题，中栏文章流，右栏最近阅读+精选+热门标签）；右栏「精选复盘」只展示 frontmatter `featured: true` 的文章，最多 3 篇、按发布时间降序，无精选文章时面板隐藏；文章列表条目含标题、两行内摘要、标签、发布日期、阅读时长和可选 136×86 缩略图，条目间用分割线而非浮动大卡片；卡片只展示标签，不重复展示分类。移动端隐藏左右栏，文章列表前显示最近阅读。
+**首页与文章页**：桌面最大容器宽度 `1480px`，三栏为 `280px / minmax(0, 1fr) / 220px`（在 1480px 容器中中栏约 912px；左栏作者卡片+分类+专题，中栏文章流，右栏最近阅读+精选+热门标签）；右栏「精选复盘」只展示 frontmatter `featured: true` 的文章，最多 3 篇、按发布时间降序，无精选文章时面板隐藏；文章列表条目含标题、两行内摘要、标签、发布日期、阅读时长和可选 136×86 缩略图，条目间用分割线而非浮动大卡片；卡片只展示标签，不重复展示分类。移动端隐藏左右栏，文章列表前显示最近阅读。
 
-**文章详情**：正文头部为分类、标题、摘要、作者、日期、阅读时长和标签；右栏有 H2/H3 时显示固定目录并随滚动高亮，无目录时改为独立阅读进度；相关文章位于上一篇/下一篇之前；移动端目录为顶部导航图标入口和底部抽屉，入口不得覆盖正文；代码块 14px、横向滚动和复制按钮（aria-label + title 状态提示）。
+**文章详情**：正文卡片跟随中栏加宽，段落、列表、引用和标题保持约 `900px` 的可读行长，图片、视频、表格和代码块可利用内容区宽度；头部为分类、标题、摘要、作者、日期、阅读时长和标签；右栏有 H2/H3 时显示固定目录并随滚动高亮，无目录时改为独立阅读进度；相关文章位于上一篇/下一篇之前；移动端目录为顶部导航图标入口和底部抽屉，入口不得覆盖正文；代码块 14px、横向滚动和复制按钮（aria-label + title 状态提示）。
 
 **内容目录页**：分类页可扫描目录+数量；标签页热门标签、A-Z 导航和按首字母分组；归档页年/月时间线紧凑对齐；专题页图片卡片按 seriesOrder 排序；项目页截图+名称+说明+技术栈+链接；关于页单栏紧凑。
 
-**CMS 后台**：左侧导航按「内容 / 内容组织 / 资源」分组，文章、草稿、专题、项目、标签、媒体库只有一个当前选中项；列表页默认完整展示当前集合，不增加自定义分页；顶部搜索与列表搜索输入独立；标签与媒体在右侧主区域管理；内容编辑仍由 Decap 字段控件负责，壳层不得复制或替换编辑器状态管理；浅色/深色与网站主题同步，编辑预览 iframe、媒体弹窗和标签管理均覆盖两种主题。
+**CMS 后台**：左侧导航按「内容 / 内容组织 / 资源」分组，文章、草稿、专题、项目、分类、标签、媒体库只有一个当前选中项；列表页默认完整展示当前集合，不增加自定义分页；顶部搜索与列表搜索输入独立；分类、标签与媒体在右侧主区域管理；内容编辑仍由 Decap 字段控件负责，壳层不得复制或替换编辑器状态管理；浅色/深色与网站主题同步，编辑预览 iframe、媒体弹窗、分类页和标签管理均覆盖两种主题。
 
 ### 5.3 内容模型
 
@@ -389,23 +393,23 @@ seriesOrder: 1
 | Warning | #BD6718 | 警告状态 |
 | Error | #C63D48 | 错误和危险操作 |
 
-设计约束：中文无衬线系统字体栈；文章桌面大标题 36px、正文 16px、H2/H3 22px/18px；边框细、阴影轻、圆角默认约 6px；不使用大圆角、玻璃拟态、紫蓝渐变、装饰性光球或巨大 Hero；不嵌套无意义卡片；封面可用墨蓝到蓝绿色基底和克制网格纹理但必须承载真实主题信息；暗色模式覆盖正文、代码、提示块、表格、后台和弹窗；所有交互元素有清晰的 :focus-visible 状态。
+设计约束：中文无衬线系统字体栈；文章桌面大标题 36px、正文 16px、H2/H3 22px/18px；前台文章与后台编辑预览的 Markdown 正文样式以 `public/styles/markdown-content.css` 为唯一来源；行内 Markdown 代码使用主题品牌柔和背景与强调前景色，并保留内边距、细边框和小圆角，代码块内的 `code` 恢复透明背景和继承色；边框细、阴影轻、圆角默认约 6px；不使用大圆角、玻璃拟态、紫蓝渐变、装饰性光球或巨大 Hero；不嵌套无意义卡片；封面可用墨蓝到蓝绿色基底和克制网格纹理但必须承载真实主题信息；暗色模式覆盖正文、代码、提示块、表格、后台和弹窗；所有交互元素有清晰的 :focus-visible 状态。
 
 ### 5.6 响应式与可访问性
 
-- 主要断点 1100px、900px、520px，修改布局沿用现有断点，不新增接近但不一致的阈值。
+- 主要断点 1100px、900px、520px，修改布局沿用现有断点，不新增接近但不一致的阈值；桌面前台和后台容器最大宽度统一为 `1480px`，页面根元素使用稳定滚动条槽位，避免长短页面切换时顶部导航横向闪动。
 - 移动端收纳导航、隐藏次要栏并保留核心流程，不能只缩小桌面布局。
 - 搜索、弹窗、抽屉和移动目录支持键盘与 Esc；模态框 role="dialog" + aria-modal，打开移动焦点并限制焦点循环，关闭归还焦点；视觉顺序与 DOM/键盘焦点顺序一致。
 - 全局布局提供 .skip-link（跳到主要内容），目标为各页 <main id="main-content">。
 - 主题默认跟随 prefers-color-scheme，手动切换后写入 localStorage 并停止跟随系统。
 - 尊重语义化 HTML：列表 <article>、导航 <nav>、时间 <time>；上传区域可聚焦并有按钮语义。
-- 可访问性门禁：Axe 扫描前台关键页面与后台文章列表/标签/媒体页，serious/critical 违规为 0。
+- 可访问性门禁：Axe 扫描前台关键页面与后台文章列表、分类、标签和媒体页，serious/critical 违规为 0。
 
 ### 5.7 SEO、订阅与构建要求
 
 已实现：每页唯一 title 和 description；canonical 以 https://blog.gis2all.top 为准；Open Graph、Twitter Card、文章页 BlogPosting JSON-LD；RSS、站点地图、公开 robots.txt 和自定义 404；草稿排除、内容 Schema 构建校验和静态 Pagefind 搜索；Umami 仅在配置 PUBLIC_UMAMI_WEBSITE_ID 时加载；Giscus 评论数据存 GitHub Discussions。
 
-线上验收状态：正式域名、搜索、RSS、站点地图和 robots 已在 Cloudflare Pages 生产环境验收；生产登录/保存链路在 DNS 切换后需再完整实测一次（见 7.2）。
+线上验收状态：正式域名、生产登录/保存链路、搜索、RSS、站点地图、robots、评论和统计均以 Cloudflare Pages 生产环境的最新验收结果为准。
 
 ## 6. 工程约定
 
@@ -428,7 +432,7 @@ npm run check:admin  后台脚本 tsc --checkJs 类型检查
 npm run lint         Biome 代码风格与静态检查
 npm test             Vitest 单元测试
 npm run test:coverage 覆盖率门禁（阈值见事实速览）
-npm run test:e2e     Playwright（44 前台 + 16 后台，含 Axe）
+npm run test:e2e     Playwright 前台与后台关键流程（含 Axe；数量以仓库与 CI 为准）
 npm run build        生产构建 + postbuild（缩略图、Pagefind）
 npm run perf         对生产预览运行 Lighthouse 性能预算
 npm run coverage:badge 读取 coverage/coverage-summary.json 生成 coverage/badge.svg
@@ -461,13 +465,13 @@ npm run coverage:badge 读取 coverage/coverage-summary.json 生成 coverage/bad
 - CMS 认证：本地 proxy backend 跳过登录；生产 GitHub OAuth；认证失败、权限不足和网络错误由 Decap 反馈。
 - CMS 编辑：Decap 负责字段状态与基础保存反馈；标题工作流补充重复标题、已发布标题锁定、草稿重命名和发布字段校验。
 - CMS 列表：搜索/筛选/排序只操作已加载的真实条目，空结果显示 0 条，不生成模拟数据。
-- CMS 标签/媒体：维护加载、统计、筛选、保存、删除复查、合并预检、冲突、重试等状态；读取或统计失败时禁用危险操作；图片尺寸读取结果缓存，避免重渲染反复回到读取中。
+- CMS 分类/标签/媒体：维护加载、统计、筛选、保存、删除复查、合并预检、冲突、重试等状态；读取或统计失败时禁用危险操作；图片尺寸读取结果缓存，避免重渲染反复回到读取中。
 - CMS 未保存提醒：只针对内容编辑修改，不把标签页搜索、筛选等界面状态误判为未保存内容。
 - 部署：以 Cloudflare Pages 平台状态和日志为准，不在站内展示未经接入的虚假进度。
 
 ### 6.3 维护与升级风险点
 
-- Decap 升级回归清单：public/admin/decap-dom-adapter.js 集中所有 Decap 内部 DOM 选择器（EditorContainer、AppMainContainer、ToolbarSectionMeta 等）；升级后先检查每个选择器是否仍命中，再跑后台 E2E 并人工检查导航、编辑器工具栏、预览、发布菜单、媒体库五个区域。public/admin/admin-shell.css 里的 Decap 类名样式是第二风险点。
+- Decap 升级回归清单：public/admin/decap-dom-adapter.js 集中所有 Decap 内部 DOM 选择器（EditorContainer、AppMainContainer、ToolbarSectionMeta 等）；升级后先检查每个选择器是否仍命中，再跑后台 E2E 并人工检查导航、编辑器工具栏、预览、发布菜单、分类/标签页和媒体库。public/admin/admin-shell.css 里的 Decap 类名样式是第二风险点。
 - SVG 上传校验已加固：解码 HTML 实体、压缩空白后拒绝 script、foreignObject、事件处理器、javascript: 和 data: 内联载荷，并有绕过用例测试。
 - 封面缩略图（*-thumb.webp）是派生产物：生产在 postbuild 生成到 dist/，开发态由 Vite 中间件生成；不要提交 dist/，也不要删除 cover.webp 原图（中间件与构建脚本都依赖它）。
 - 新增或替换 CMS、部署平台、评论、统计或搜索服务时，更新本文架构、环境变量和迁移说明。
@@ -485,11 +489,11 @@ npm run coverage:badge 读取 coverage/coverage-summary.json 生成 coverage/bad
 
 不要仅凭本文声称实现存在；本文解释项目全貌，仓库和验证结果证明完成程度。
 
-### 7.2 当前进行中（迁移上线前一次性清单）
+### 7.2 当前状态
 
-- DNS 切换：blog.gis2all.top 的 CNAME 从 Netlify 指向 tech-blog-466.pages.dev（等生产构建成功后执行）。
-- 线上验收：生产登录/保存链路（GitHub OAuth → 提交 main → Cloudflare Pages 构建发布）、搜索/RSS/站点地图/robots、评论与统计。
-- Release：迁移合入后按仓库惯例发布新版本。
+- 生产部署：Cloudflare Pages 已作为生产平台，`blog.gis2all.top` 已指向 `tech-blog-466.pages.dev` 并由 Cloudflare 代理提供 HTTPS。
+- 生产链路：GitHub OAuth → 提交 `main` → Cloudflare Pages 构建发布；发布后按 3.8 做构建和关键页面验收。
+- Release：当前版本与发布记录以 Git tag 和 GitHub Releases 为准，不在本文维护迁移批次。
 
 ### 7.3 未决产品决策
 

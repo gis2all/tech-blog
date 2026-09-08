@@ -13,6 +13,22 @@ async function loadDomain() {
     filename: `${root}public/admin/admin-shell-domain.js`,
   });
   return context.DecapAdminShellDomain as {
+    compareEntrySummaries(
+      left: {
+        order: number | null;
+        published: string;
+        title: string;
+        updated: string;
+      },
+      right: {
+        order: number | null;
+        published: string;
+        title: string;
+        updated: string;
+      },
+      sort: string,
+    ): number;
+    defaultSortMode(collection: string, selected: string): string;
     entryMatches(entry: { category: string; title: string }, query: string): boolean;
     entryStatus(hash: string): string;
     editorProfile(hash: string): {
@@ -35,6 +51,8 @@ async function loadDomain() {
       category: string;
       detail: string;
       isDraft: boolean;
+      order: number | null;
+      published: string;
       title: string;
       updated: string;
     };
@@ -53,6 +71,65 @@ describe("Decap admin shell domain", () => {
       updated: "2021-07-29",
       category: "DevOps",
     });
+  });
+
+  test("uses updatedAt for post display and falls back to publishedAt", async () => {
+    const domain = await loadDomain();
+
+    expect(
+      domain.parseEntrySummary(
+        "Updated post · 2026-09-08 · 2026-08-01 · DevOps · false",
+        "posts",
+      ),
+    ).toMatchObject({
+      category: "DevOps",
+      detail: "更新于 2026-09-08",
+      published: "2026-08-01",
+      updated: "2026-09-08",
+    });
+    expect(
+      domain.parseEntrySummary("Published post ·  · 2026-08-02 · GIS · false", "posts"),
+    ).toMatchObject({
+      category: "GIS",
+      detail: "发布于 2026-08-02",
+      published: "2026-08-02",
+      updated: "2026-08-02",
+    });
+  });
+
+  test("sorts dates newest first with deterministic title ties", async () => {
+    const domain = await loadDomain();
+    const entries = [
+      { order: null, published: "2026-08-03", title: "B", updated: "2026-09-08" },
+      { order: null, published: "2026-08-04", title: "C", updated: "2026-09-07" },
+      { order: null, published: "2026-08-02", title: "A", updated: "2026-09-08" },
+    ];
+
+    expect(
+      entries
+        .slice()
+        .sort((left, right) => domain.compareEntrySummaries(left, right, "date"))
+        .map((entry) => entry.title),
+    ).toEqual(["A", "B", "C"]);
+  });
+
+  test("uses explicit order for series and projects", async () => {
+    const domain = await loadDomain();
+    const first = domain.parseEntrySummary(
+      "First project · 排序 1 · 2026-08-01 · false",
+      "projects",
+    );
+    const second = domain.parseEntrySummary(
+      "Second project · 排序 2 · 2026-09-01 · false",
+      "projects",
+    );
+
+    expect(first).toMatchObject({ detail: "2026-08-01", order: 1 });
+    expect(second).toMatchObject({ detail: "2026-09-01", order: 2 });
+    expect(domain.compareEntrySummaries(second, first, "order")).toBeGreaterThan(0);
+    expect(domain.defaultSortMode("posts", "default")).toBe("date");
+    expect(domain.defaultSortMode("series", "default")).toBe("order");
+    expect(domain.defaultSortMode("projects", "default")).toBe("order");
   });
 
   test("keeps an incomplete summary legible and searchable", async () => {
@@ -99,6 +176,12 @@ describe("Decap admin shell domain", () => {
       description: "集中维护全局标签库",
       columns: ["标签", "使用情况", "操作"],
       searchPlaceholder: "搜索标签",
+    });
+    expect(domain.pageProfile("#/collections/categories")).toMatchObject({
+      collection: "categories",
+      description: "集中维护文章分类库",
+      columns: ["分类", "使用情况", "操作"],
+      searchPlaceholder: "搜索分类",
     });
     expect(domain.pageProfile("#/collections/projects/entries/tech-blog")).toBeNull();
   });
@@ -167,6 +250,8 @@ describe("Decap admin shell domain", () => {
       category: "",
       detail: "2026-08-01 · 5",
       isDraft: true,
+      order: null,
+      published: "",
       title: "专题A",
       updated: "",
     });

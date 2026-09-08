@@ -43,6 +43,16 @@
         ["按名称", "排序"],
       ],
     },
+    categories: {
+      collection: "categories",
+      description: "集中维护文章分类库",
+      columns: ["分类", "使用情况", "操作"],
+      searchPlaceholder: "搜索分类",
+      controls: [
+        ["全部", "筛选"],
+        ["按名称", "排序"],
+      ],
+    },
   };
 
   function summaryParts(summary) {
@@ -50,8 +60,7 @@
       .split(" · ")
       .map(function (part) {
         return part.trim();
-      })
-      .filter(Boolean);
+      });
   }
 
   function summaryData(summary) {
@@ -64,42 +73,106 @@
     };
   }
 
-  function parseSummary(summary) {
+  function postSummaryData(summary) {
     var parts = summaryData(summary).parts;
+    var hasUpdatedAt = parts.length >= 4;
+    var published = hasUpdatedAt ? parts[2] : parts[1];
+    var updated = hasUpdatedAt && parts[1] ? parts[1] : published;
 
     return {
-      category: parts.length >= 3 ? parts[parts.length - 1] : "未分类",
+      category: parts.length >= 3 ? parts[parts.length - 1] || "未分类" : "未分类",
+      hasUpdatedAt: Boolean(hasUpdatedAt && parts[1]),
+      published: published || "未填写日期",
       title: parts[0] || "未命名内容",
-      updated: parts.length >= 2 ? parts[parts.length - 2] : "未填写日期",
+      updated: updated || "未填写日期",
     };
+  }
+
+  function parseSummary(summary) {
+    var post = postSummaryData(summary);
+    return {
+      category: post.category,
+      title: post.title,
+      updated: post.updated,
+    };
+  }
+
+  function summaryOrder(value) {
+    var match = String(value || "").match(/^排序\s*(\d+)$/);
+    return match ? Number(match[1]) : null;
   }
 
   function parseEntrySummary(summary, collection) {
     var data = summaryData(summary);
     if (collection === "posts") {
-      var post = parseSummary(summary);
+      var post = postSummaryData(summary);
       return {
         category: post.category,
-        detail: "更新于 " + post.updated,
+        detail: (post.hasUpdatedAt ? "更新于 " : "发布于 ") + post.updated,
         isDraft: data.isDraft,
+        order: null,
+        published: post.published,
         title: post.title,
         updated: post.updated,
       };
     }
 
     var parts = data.parts;
+    var order = summaryOrder(parts[1]);
+    if (collection === "projects") {
+      var published = order === null ? parts[1] : parts[2];
+      return {
+        category: "",
+        detail: published || "未填写日期",
+        isDraft: data.isDraft,
+        order: order,
+        published: published || "",
+        title: parts[0] || "未命名内容",
+        updated: "",
+      };
+    }
+
     return {
       category: "",
       detail: parts.slice(1).join(" · ") || "未填写",
       isDraft: data.isDraft,
+      order: order,
+      published: "",
       title: parts[0] || "未命名内容",
       updated: "",
     };
   }
 
+  function compareTitles(left, right) {
+    return String(left.title || "").localeCompare(String(right.title || ""), "zh-CN");
+  }
+
+  function dateValue(value) {
+    var timestamp = Date.parse(String(value || ""));
+    return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
+  }
+
+  function compareEntrySummaries(left, right, sort) {
+    if (sort === "title") return compareTitles(left, right);
+    if (sort === "order") {
+      var leftOrder = Number.isFinite(left.order) ? left.order : Number.MAX_SAFE_INTEGER;
+      var rightOrder = Number.isFinite(right.order) ? right.order : Number.MAX_SAFE_INTEGER;
+      return leftOrder - rightOrder || compareTitles(left, right);
+    }
+
+    var dateDifference = dateValue(right.updated || right.published) -
+      dateValue(left.updated || left.published);
+    return dateDifference || compareTitles(left, right);
+  }
+
+  function defaultSortMode(collection, selected) {
+    if (selected && selected !== "default") return selected;
+    return collection === "series" || collection === "projects" ? "order" : "date";
+  }
+
   function pageProfile(hash) {
     var route = String(hash || "");
-    var match = route.match(/^#\/collections\/(posts|series|projects|tags)(?:\?([^#]*))?$/);
+    var match = route.match(/^#\/collections\/(posts|series|projects|tags|categories)(?:\?([^#]*))?$/);
     if (!match) return null;
 
     var collection = match[1];
@@ -147,6 +220,8 @@
   }
 
   global.DecapAdminShellDomain = {
+    compareEntrySummaries: compareEntrySummaries,
+    defaultSortMode: defaultSortMode,
     entryMatches: entryMatches,
     entryStatus: entryStatus,
     editorProfile: editorProfile,

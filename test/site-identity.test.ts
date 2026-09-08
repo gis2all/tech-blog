@@ -24,6 +24,12 @@ describe("site identity", () => {
       '--font-code: "Cascadia Code", "JetBrains Mono", "Fira Code", Consolas, monospace;',
     );
     expect(css).toMatch(/\.prose code\s*\{[^}]*font-family:\s*var\(--font-code\)/s);
+    expect(css).toMatch(
+      /\.prose :not\(pre\) > code\s*\{[^}]*padding:[^}]*background:\s*var\(--brand-soft\)[^}]*color:\s*var\(--brand-strong\)/s,
+    );
+    expect(css).toMatch(
+      /\.prose pre code\s*\{[^}]*background:\s*transparent[^}]*color:\s*inherit/s,
+    );
     expect(css).toMatch(/\.prose pre\s*\{[^}]*font-family:\s*var\(--font-code\)/s);
     expect(css).toMatch(
       /\.author-avatar-frame\.author-avatar-profile\s*\{[^}]*box-shadow:\s*0 0 0 4px var\(--brand-soft\)/s,

@@ -15,7 +15,7 @@ describe("Decap phase-two editorial UI", () => {
       readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=58"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=60"');
     expect(html).toContain("data-cms-theme-toggle");
     expect(html).toContain("data-cms-global-search");
     expect(html.indexOf("/admin/admin-shell.css")).toBeLessThan(
@@ -155,8 +155,8 @@ describe("Decap phase-two editorial UI", () => {
       readFile(`${root}public/admin/admin-shell.js`, "utf8"),
     ]);
 
-    expect(html).toContain('src="/admin/admin-shell-domain.js"');
-    expect(html).toContain('src="/admin/admin-shell.js?v=37"');
+    expect(html).toContain('src="/admin/admin-shell-domain.js?v=1"');
+    expect(html).toContain('src="/admin/admin-shell.js?v=38"');
     expect(html.indexOf("/admin/cms-init.js")).toBeLessThan(
       html.indexOf("/admin/admin-shell.js"),
     );
@@ -322,6 +322,14 @@ describe("Decap phase-two editorial UI", () => {
     );
   });
 
+  test("keeps list rows in a flex column so CSS order is effective", async () => {
+    const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
+
+    expect(shell).toMatch(
+      /\[data-admin-list-layout\]\s*\{[^}]*display:\s*flex\s*!important;[^}]*flex-direction:\s*column\s*!important;/s,
+    );
+  });
+
   test("keeps reference and changelog list items inside one complete frame", async () => {
     const shell = await readFile(`${root}public/admin/admin-shell.css`, "utf8");
 
@@ -430,8 +438,8 @@ describe("Decap phase-two editorial UI", () => {
       readFile(`${root}public/admin/admin-shell.js`, "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=58"');
-    expect(html).toContain('src="/admin/admin-navigation.js?v=27"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=60"');
+    expect(html).toContain('src="/admin/admin-navigation.js?v=28"');
     expect(navigation).toContain("function bindEditorPreviewRefresh");
     expect(navigation).toContain("function ensureEditorRefreshButton");
     expect(navigation).toContain("data-admin-preview-toggle");
@@ -488,7 +496,13 @@ describe("Decap phase-two editorial UI", () => {
       readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
-    expect(shell).toContain("width: min(1280px, 100%) !important");
+    expect(shell).toContain("width: min(1480px, 100%) !important");
+    expect(shell).toMatch(
+      /#nc-root > header > div\s*\{[^}]*max-width:\s*none\s*!important/s,
+    );
+    expect(shell).toMatch(
+      /#nc-root > \[class\*=AppMainContainer\]\s*\{[^}]*max-width:\s*none\s*!important/s,
+    );
     expect(shell).toContain("padding: 0 18px !important");
     expect(shell).toContain("margin: 0 !important");
     expect(shell).toContain("padding: 0 !important");
@@ -501,6 +515,8 @@ describe("Decap phase-two editorial UI", () => {
     expect(navigation).toContain("moveHeaderControls");
     expect(navigation).toContain("window.DecapDomAdapter.iconWrappers(element)");
     expect(navigation).toContain('button.textContent = "新建"');
+    expect(navigation).toContain('"#/collections/categories": "folder-tree"');
+    expect(navigation).toContain('"#/collections/series": "list-tree"');
     expect(shell).toContain("min-width: 104px !important");
     expect(shell).toContain("display: none !important");
     for (const icon of [
@@ -508,6 +524,7 @@ describe("Decap phase-two editorial UI", () => {
       "image",
       "file-pen-line",
       "tags",
+      "folder-tree",
       "list-tree",
       "folder-kanban",
       "images",
@@ -713,7 +730,7 @@ describe("Decap phase-two editorial UI", () => {
       readFile(`${root}public/admin/media-library.css`, "utf8"),
     ]);
 
-    expect(shell).toContain("width: min(1280px, 100%) !important");
+    expect(shell).toContain("width: min(1480px, 100%) !important");
     expect(shellScript).toContain("data-admin-media-shortcut");
     expect(shellScript).toContain("data-admin-list-summary");
     expect(shellScript).not.toContain("data-admin-pagination");

@@ -9,7 +9,7 @@
 }
 
 .nav {
-  max-width: 1280px;
+  max-width: 1480px;
   height: 100%;
   margin: auto;
   padding: 0 18px;
@@ -167,7 +167,7 @@
 
 .wrap,
 .site-footer {
-  max-width: 1280px;
+  max-width: 1480px;
   margin: 18px auto;
   padding: 0 18px;
 }

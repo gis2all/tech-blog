@@ -6,6 +6,25 @@ import { readAllStyles } from "./support/styles";
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 describe("desktop side rail layout", () => {
+  test("reserves the page scrollbar gutter across route changes", async () => {
+    const css = await readAllStyles();
+
+    expect(css).toMatch(/html\s*\{[^}]*scrollbar-gutter:\s*stable/s);
+  });
+
+  test("expands the desktop canvas while keeping readable article text", async () => {
+    const css = await readAllStyles();
+
+    expect(css).toMatch(/\.nav\s*\{[^}]*max-width:\s*1480px/s);
+    expect(css).toMatch(/\.wrap,\s*\.site-footer\s*\{[^}]*max-width:\s*1480px/s);
+    expect(css).toMatch(
+      /\.article-page \.prose > :where\(p, ul, ol, blockquote, h2, h3, h4, h5, h6\)\s*\{[^}]*max-width:\s*900px;[^}]*margin-inline:\s*auto;/s,
+    );
+    expect(css).toMatch(
+      /\.article-page \.prose > p:has\(img\),\s*\.article-page \.prose > p:has\(video\)\s*\{[^}]*max-width:\s*none;/s,
+    );
+  });
+
   test("uses the same ghost tag style in the right rail as article tags", async () => {
     const rail = await readFile(
       `${root}src/components/layout/FeaturedTagRail.astro`,
