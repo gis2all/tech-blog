@@ -1,4 +1,12 @@
 :root {
+  --text: var(--text-primary, #20242b);
+  --muted: var(--text-muted, #5d6670);
+  --line: var(--border-default, #e3e7eb);
+  --brand: var(--color-brand, #0b7285);
+  --brand-strong: var(--color-brand-strong, #075e6e);
+  --brand-soft: var(--color-brand-soft, #e7f5f7);
+  --radius: var(--control-radius, 6px);
+  --font-code: "Cascadia Code", "JetBrains Mono", "Fira Code", Consolas, monospace;
   color: #1f2933;
   background: #f7fafc;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -17,15 +25,10 @@
 }
 
 [data-theme="dark"] .cms-post-preview__title,
-[data-theme="dark"] .cms-post-preview__body h1,
-[data-theme="dark"] .cms-post-preview__body h2,
-[data-theme="dark"] .cms-post-preview__body h3,
-[data-theme="dark"] .cms-post-preview__body h4,
 [data-theme="dark"] .cms-entity-preview h1 {
   color: #e7edf2;
 }
 
-[data-theme="dark"] .cms-post-preview__body,
 [data-theme="dark"] .cms-entity-preview__details dd {
   color: #c7d1db;
 }
@@ -167,61 +170,6 @@ body {
   border-radius: 4px;
   background: #e7f5f7;
   font-size: 13px;
-}
-
-.cms-post-preview__body {
-  color: #243b53;
-  font-size: 16px;
-}
-
-.cms-post-preview__body h1,
-.cms-post-preview__body h2,
-.cms-post-preview__body h3,
-.cms-post-preview__body h4 {
-  margin: 1.8em 0 0.7em;
-  color: #102a43;
-  line-height: 1.35;
-}
-
-.cms-post-preview__body p,
-.cms-post-preview__body ul,
-.cms-post-preview__body ol,
-.cms-post-preview__body blockquote,
-.cms-post-preview__body pre {
-  margin: 0 0 1.25em;
-}
-
-.cms-post-preview__body a {
-  color: #007c91;
-}
-
-.cms-post-preview__body blockquote {
-  padding: 8px 18px;
-  color: #486581;
-  border-left: 3px solid #f0b429;
-  background: #fff8e1;
-}
-
-.cms-post-preview__body pre {
-  overflow-x: auto;
-  padding: 16px;
-  color: #e4eef7;
-  background: #102a43;
-}
-
-.cms-post-preview__body code {
-  font-family: "SFMono-Regular", Consolas, monospace;
-}
-
-.cms-post-preview__body :not(pre) > code {
-  padding: 2px 5px;
-  color: #b44d12;
-  background: #fff3c4;
-}
-
-.cms-post-preview__body img {
-  max-width: 100%;
-  height: auto;
 }
 
 @media (max-width: 640px) {

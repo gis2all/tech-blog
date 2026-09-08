@@ -90,7 +90,7 @@ var PostPreview = createClass({
       ),
       h(
         "div",
-        { className: "cms-post-preview__body" },
+        { className: "cms-post-preview__body prose" },
         this.props.widgetFor("body"),
       ),
     );
@@ -178,7 +178,9 @@ var ProjectPreview = createClass({
   },
 });
 
-CMS.registerPreviewStyle("/admin/preview.css?v=3");
+CMS.registerPreviewStyle("/styles/design-system.css?v=1");
+CMS.registerPreviewStyle("/styles/markdown-content.css?v=1");
+CMS.registerPreviewStyle("/admin/preview.css?v=4");
 CMS.registerPreviewTemplate("posts", PostPreview);
 CMS.registerPreviewTemplate("series", SeriesPreview);
 CMS.registerPreviewTemplate("projects", ProjectPreview);

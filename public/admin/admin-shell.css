@@ -221,7 +221,8 @@ body:has(#nc-root [class*=LoginButton]) > .cms-global-search {
 
 #nc-root > header > div {
   box-sizing: border-box;
-  width: min(1280px, 100%) !important;
+  width: min(1480px, 100%) !important;
+  max-width: none !important;
   min-height: 62px !important;
   margin: 0 auto !important;
   padding: 0 18px !important;
@@ -652,7 +653,8 @@ body:has(#nc-root [class*=LoginButton]) .cms-global-search {
 
 #nc-root > [class*=AppMainContainer] {
   box-sizing: border-box;
-  width: min(1280px, 100%) !important;
+  width: min(1480px, 100%) !important;
+  max-width: none !important;
   min-height: calc(100vh - 62px) !important;
   margin: 0 auto !important;
   padding: 0 !important;
