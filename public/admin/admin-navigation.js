@@ -2,6 +2,7 @@
   var DRAFT_ROUTE = "#/collections/posts?view=drafts";
   var POSTS_ROUTE = "#/collections/posts";
   var TAG_LIBRARY_ROUTE = "#/collections/tags/entries/library";
+  var CATEGORY_LIBRARY_ROUTE = "#/collections/categories/entries/library";
   var observer = null;
   var syncing = false;
   var navigationSyncScheduled = false;
@@ -44,6 +45,12 @@
       ["path", { d: "M13.172 2a2 2 0 0 1 1.414.586l6.71 6.71a2.4 2.4 0 0 1 0 3.408l-4.592 4.592a2.4 2.4 0 0 1-3.408 0l-6.71-6.71A2 2 0 0 1 6 9.172V3a1 1 0 0 1 1-1z" }],
       ["path", { d: "M2 7v6.172a2 2 0 0 0 .586 1.414l6.71 6.71a2.4 2.4 0 0 0 3.191.193" }],
       ["circle", { cx: "10.5", cy: "6.5", r: ".5", fill: "currentColor" }],
+    ],
+    "folder-tree": [
+      ["path", { d: "M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z" }],
+      ["path", { d: "M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z" }],
+      ["path", { d: "M3 5a2 2 0 0 0 2 2h3" }],
+      ["path", { d: "M3 3v13a2 2 0 0 0 2 2h3" }],
     ],
     "list-tree": [
       ["path", { d: "M8 5h13" }],
@@ -154,6 +161,12 @@
   function redirectTagLibrary(currentHash) {
     if (currentHash !== TAG_LIBRARY_ROUTE) return false;
     window.location.hash = "#/collections/tags";
+    return true;
+  }
+
+  function redirectCategoryLibrary(currentHash) {
+    if (currentHash !== CATEGORY_LIBRARY_ROUTE) return false;
+    window.location.hash = "#/collections/categories";
     return true;
   }
 
@@ -427,6 +440,7 @@
     var sidebarIcons = {
       "#/collections/posts": "file-text",
       "#/collections/tags": "tags",
+      "#/collections/categories": "folder-tree",
       "#/collections/series": "list-tree",
       "#/collections/projects": "folder-kanban",
     };
@@ -603,6 +617,7 @@
 
     try {
       if (redirectTagLibrary(currentHash)) return;
+      if (redirectCategoryLibrary(currentHash)) return;
       decorateLoginButton();
       moveHeaderControls();
       decorateQuickNew();

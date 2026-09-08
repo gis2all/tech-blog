@@ -165,7 +165,7 @@
       var draftRoute = /[?&]view=drafts(?:&|$)/;
       return page.view === "drafts" || draftRoute.test(renderedRoute) ? 60 : 40;
     }
-    return page.collection === "tags" ? 60 : 40;
+    return page.collection === "tags" || page.collection === "categories" ? 60 : 40;
   }
 
   function finishRouteTransition() {
@@ -282,6 +282,10 @@
         category: link.dataset.adminSummaryCategory || "",
         detail: link.dataset.adminSummaryDetail || "",
         isDraft: link.dataset.adminSummaryDraft === "true",
+        order: link.dataset.adminSummaryOrder
+          ? Number(link.dataset.adminSummaryOrder)
+          : null,
+        published: link.dataset.adminSummaryPublished || "",
         title: link.dataset.adminSummaryTitle,
         updated: link.dataset.adminSummaryUpdated || "",
       };
@@ -298,6 +302,8 @@
     link.dataset.adminSummaryCategory = summary.category || "";
     link.dataset.adminSummaryDetail = summary.detail || "";
     link.dataset.adminSummaryDraft = summary.isDraft ? "true" : "false";
+    link.dataset.adminSummaryOrder = summary.order === null ? "" : String(summary.order);
+    link.dataset.adminSummaryPublished = summary.published || "";
     link.dataset.adminSummaryTitle = summary.title || "";
     link.dataset.adminSummaryUpdated = summary.updated || "";
   }
@@ -1044,6 +1050,13 @@
     if (page) page.remove();
   }
 
+  function removeCategoryPage() {
+    var main = adminMain();
+    if (global.DecapCategoryPage && typeof global.DecapCategoryPage.unmount === "function") {
+      global.DecapCategoryPage.unmount(main);
+    }
+  }
+
   function mediaPage() {
     var main = adminMain();
     return main && main.querySelector("[data-admin-media-page]");
@@ -1163,9 +1176,10 @@
     if (!tagState.loaded && !tagState.loading) loadTagData();
   }
 
-  function numericDetail(summary) {
-    var match = String(summary.detail || "").match(/\d+/);
-    return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
+  function ensureCategoryPage(page) {
+    var main = adminMain();
+    if (!main || !global.DecapCategoryPage) return;
+    global.DecapCategoryPage.mount(main, page);
   }
 
   function applyToolbar(toolbar, list, page) {
@@ -1175,8 +1189,7 @@
     var status = toolbar.querySelector('[data-admin-filter="status"]')?.value || "all";
     var category = toolbar.querySelector('[data-admin-filter="category"]')?.value || "all";
     var sort = toolbar.querySelector('[data-admin-filter="sort"]')?.value || "default";
-    // 默认排序 = 更新时间降序（系列按专题顺序），保证列表顺序稳定，不依赖 Decap 原生顺序
-    if (sort === "default") sort = page.collection === "series" ? "order" : "date";
+    sort = domain.defaultSortMode(page.collection, sort);
 
     // 排序用 CSS order 呈现（容器需为 flex column），不移动 DOM 节点——
     // Decap 列表由 React 渲染，appendChild 重排会与 React 渲染竞争导致列表崩溃。
@@ -1185,16 +1198,12 @@
       return { card: closest(link, "li"), link: link, summary: summaryFor(link, page) };
     }).filter(function (item) { return item.card; });
 
-    if (sort !== "default") {
-      rows.sort(function (left, right) {
-        if (sort === "title") return left.summary.title.localeCompare(right.summary.title, "zh-CN");
-        if (sort === "order") return numericDetail(left.summary) - numericDetail(right.summary);
-        return String(right.summary.detail).localeCompare(String(left.summary.detail), "zh-CN");
-      });
-      rows.forEach(function (item, index) {
-        item.card.style.order = String(index);
-      });
-    }
+    rows.sort(function (left, right) {
+      return domain.compareEntrySummaries(left.summary, right.summary, sort);
+    });
+    rows.forEach(function (item, index) {
+      item.card.style.order = String(index);
+    });
 
     var matched = [];
     rows.forEach(function (item) {
@@ -1307,8 +1316,10 @@
     }
 
     var sortOptions = page.collection === "series"
-      ? [["default", "默认排序"], ["order", "专题排序"], ["title", "按名称"]]
-      : [["default", "默认排序"], ["date", "更新时间"], ["title", "按名称"]];
+      ? [["order", "专题排序"], ["title", "按名称"]]
+      : page.collection === "projects"
+        ? [["order", "项目排序"], ["date", "发布日期"], ["title", "按名称"]]
+        : [["date", "更新时间"], ["title", "按名称"]];
     var sort = selectControl("排序", sortOptions);
     sort.dataset.adminFilter = "sort";
     toolbar.appendChild(sort);
@@ -1480,6 +1491,7 @@
     ensureMediaShortcut();
     if (global.location.hash === MEDIA_ROUTE) {
       removeTagPage();
+      removeCategoryPage();
       ensureMediaPage();
       settleRouteTransition();
       return;
@@ -1489,6 +1501,7 @@
     var page = profile();
     if (!page) {
       removeTagPage();
+      removeCategoryPage();
       ensureEditorToolbar();
       ensureEditorHeading();
       ensureEditorFields();
@@ -1497,12 +1510,21 @@
     }
 
     if (page.collection === "tags") {
+      removeCategoryPage();
       ensureTagPage(page);
       settleRouteTransition();
       return;
     }
 
+    if (page.collection === "categories") {
+      removeTagPage();
+      ensureCategoryPage(page);
+      settleRouteTransition();
+      return;
+    }
+
     removeTagPage();
+    removeCategoryPage();
 
     var links = entries();
     if (!routeEntriesReady(links, page)) return;
