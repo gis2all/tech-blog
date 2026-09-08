@@ -1,0 +1,11 @@
+{
+  "draft": false,
+  "publishedAt": "2026-09-08",
+  "imageAlt": "earth-viewer封面",
+  "order": 4,
+  "tech": ["Cesium", "GIS", "ArcGIS"],
+  "title": "earth-viewer",
+  "image": "/images/uploads/image-01.webp",
+  "description": "Cesium 渲染地球，接入 ArcGIS Online 公开图层的 3D 地球应用。",
+  "repoUrl": "https://github.com/gis2all/earth-viewer"
+}
