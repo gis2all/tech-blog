@@ -28,6 +28,7 @@ test("routes between all collection entries", async ({ page }) => {
     ['a[href="#/collections/posts"]', /文章/],
     ['a[href="#/collections/posts?view=drafts"]', /草稿/],
     ['a[href="#/collections/tags"]', /标签/],
+    ['a[href="#/collections/categories"]', /分类/],
     ['a[href="#/collections/series"]', /专题/],
     ['a[href="#/collections/projects"]', /项目/],
   ];
@@ -36,7 +37,51 @@ test("routes between all collection entries", async ({ page }) => {
     await expect(page.getByRole("heading", { name: heading })).toBeVisible({
       timeout: 30000,
     });
+    if (selector.includes("/tags") || selector.includes("/categories")) {
+      await expect(page.getByRole("button", { name: "List view option" })).toBeHidden();
+      await expect(page.getByRole("button", { name: "Grid view option" })).toBeHidden();
+    }
   }
+});
+
+test("keeps category manager spacing aligned with the tag manager", async ({ page }) => {
+  await loginAsLocal(page);
+
+  const readManagerStyles = async (hash: string, managerSelector: string) => {
+    await page.goto(`/admin/index.html${hash}`);
+    const manager = page.locator(managerSelector);
+    await expect(manager).toBeVisible({ timeout: 30000 });
+    return manager.evaluate((root) => {
+      const read = (selector: string) => {
+        const element = root.querySelector(selector);
+        if (!element) throw new Error(`Missing ${selector}`);
+        const styles = getComputedStyle(element);
+        return {
+          display: styles.display,
+          gap: styles.gap,
+          gridTemplateColumns: styles.gridTemplateColumns,
+          minHeight: styles.minHeight,
+          padding: styles.padding,
+        };
+      };
+      return {
+        top: root.getBoundingClientRect().top,
+        toolbar: read(".cms-tag-manager__toolbar"),
+        row: read(".cms-tag-manager__row"),
+        actions: read(".cms-tag-manager__actions"),
+      };
+    });
+  };
+
+  const tagStyles = await readManagerStyles(
+    "#/collections/tags",
+    "[data-admin-tag-page]",
+  );
+  const categoryStyles = await readManagerStyles(
+    "#/collections/categories",
+    "[data-admin-category-page]",
+  );
+  expect(categoryStyles).toEqual(tagStyles);
 });
 
 test("searches a self-seeded draft and filters to drafts", async ({ page }) => {
@@ -68,6 +113,54 @@ test("searches a self-seeded draft and filters to drafts", async ({ page }) => {
   }
 });
 
+test("sorts articles by updatedAt with publishedAt fallback", async ({ page }) => {
+  const prefix = uniqueTitle("e2e-sort");
+  const latestTitle = `${prefix}-z-latest-update`;
+  const olderTitle = `${prefix}-a-older-update`;
+  await createDraftFile(latestTitle, [], "工程实践", {
+    publishedAt: "2020-01-01",
+    updatedAt: "2030-01-02",
+  });
+  await createDraftFile(olderTitle, [], "工程实践", {
+    publishedAt: "2029-01-01",
+    updatedAt: "2029-01-02",
+  });
+  const rows = page.locator('main li[data-admin-entry-row="posts"]:visible');
+  try {
+    await loginAsLocal(page);
+    await waitForStableCount(page, rows);
+    await page.getByRole("searchbox", { name: "搜索标题、标签或专题" }).fill(prefix);
+    await expect(rows).toHaveCount(2);
+
+    await page.getByRole("button", { name: "排序" }).click();
+    await page.getByRole("option", { name: "更新时间" }).click();
+
+    await expect
+      .poll(async () =>
+        rows.evaluateAll((items) =>
+          items
+            .map((item) => ({
+              title:
+                item.querySelector<HTMLElement>("[data-admin-entry-source]")?.dataset
+                  .adminSummaryTitle ?? "",
+              top: item.getBoundingClientRect().top,
+            }))
+            .sort((left, right) => left.top - right.top)
+            .map((item) => item.title),
+        ),
+      )
+      .toEqual([latestTitle, olderTitle]);
+    await expect(rows.filter({ hasText: latestTitle })).toContainText(
+      "更新于 2030-01-02",
+    );
+  } finally {
+    await cleanupPaths([
+      `src/content/posts/${latestTitle}.md`,
+      `src/content/posts/${olderTitle}.md`,
+    ]);
+  }
+});
+
 test("drafts view shows only drafts including a self-seeded one", async ({ page }) => {
   const seededTitle = uniqueTitle("e2e-draft-view");
   await createDraftFile(seededTitle);
@@ -95,6 +188,7 @@ test("has no serious or critical axe violations on admin pages", async ({ page }
   const pages: string[] = [
     "#/collections/posts",
     "#/collections/tags",
+    "#/collections/categories",
     "#/collections/posts?view=media",
   ];
   for (const hash of pages) {

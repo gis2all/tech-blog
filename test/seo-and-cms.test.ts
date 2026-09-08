@@ -209,6 +209,7 @@ describe("Decap CMS schema", () => {
     ]);
     const config = parse(configSource);
     const posts = getCollection(config, "posts");
+    const categories = getCollection(config, "categories");
     const series = getCollection(config, "series");
     const projects = getCollection(config, "projects");
 
@@ -217,7 +218,7 @@ describe("Decap CMS schema", () => {
       editor: { preview: true },
     });
     expect(posts).toMatchObject({
-      summary: "{{title}} · {{publishedAt}} · {{category}} · {{draft}}",
+      summary: "{{title}} · {{updatedAt}} · {{publishedAt}} · {{category}} · {{draft}}",
       sortable_fields: ["publishedAt", "updatedAt", "title"],
       view_filters: expect.arrayContaining([
         expect.objectContaining({ field: "draft", pattern: true }),
@@ -236,22 +237,26 @@ describe("Decap CMS schema", () => {
       ]),
     });
     expect(projects).toMatchObject({
-      summary: "{{title}} · {{publishedAt}} · {{draft}}",
+      summary: "{{title}} · 排序 {{order}} · {{publishedAt}} · {{draft}}",
       sortable_fields: ["order", "publishedAt", "title"],
       view_filters: expect.arrayContaining([
         expect.objectContaining({ field: "draft", pattern: true }),
       ]),
     });
     expect(getField(posts, "category")).toMatchObject({
-      widget: "select",
-      options: [
-        { label: "x402", value: "x402" },
-        { label: "DevOps", value: "DevOps" },
-        { label: "编程开发", value: "编程开发" },
-        { label: "测试工程", value: "测试工程" },
-        { label: "阅读与思考", value: "阅读与思考" },
-        { label: "GIS", value: "GIS" },
-        { label: "工程实践", value: "工程实践" },
+      widget: "category_selector",
+      collection: "categories",
+      file: "library",
+      value_field: "categories.*",
+      search_fields: ["categories.*"],
+    });
+    expect(categories).toMatchObject({
+      label: "分类",
+      files: [
+        expect.objectContaining({
+          name: "library",
+          file: "src/data/category-library.json",
+        }),
       ],
     });
     expect(getField(posts, "body")).toMatchObject({
@@ -426,7 +431,7 @@ describe("Decap CMS schema", () => {
     runInNewContext(navigationSource, context);
 
     expect(postsCollections).toHaveLength(1);
-    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=27"');
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=28"');
     expect(
       (context.DecapAdminNavigation as { isDraftRoute: () => boolean }).isDraftRoute(),
     ).toBe(true);

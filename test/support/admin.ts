@@ -6,6 +6,7 @@ import sharp from "sharp";
 export const repoRoot = path.resolve(process.cwd());
 export const postsRoot = path.join(repoRoot, "src/content/posts");
 export const tagLibraryPath = path.join(repoRoot, "src/data/tag-library.json");
+export const categoryLibraryPath = path.join(repoRoot, "src/data/category-library.json");
 
 export async function pathExists(filePath: string): Promise<boolean> {
   try {
@@ -58,15 +59,18 @@ export async function cleanupPaths(relativePaths: string[]): Promise<void> {
 export async function createDraftFile(
   title: string,
   tags: string[] = [],
+  category = "工程实践",
+  dates: { publishedAt?: string; updatedAt?: string } = {},
 ): Promise<string> {
   const filePath = path.join(postsRoot, `${title}.md`);
   const frontmatter = [
     "---",
     `title: ${title}`,
     "description: e2e admin test draft",
-    "category: 工程实践",
+    `category: ${category}`,
     `tags: [${tags.map((tag) => `"${tag}"`).join(", ")}]`,
-    `publishedAt: ${new Date().toISOString().slice(0, 10)}`,
+    `publishedAt: ${dates.publishedAt ?? new Date().toISOString().slice(0, 10)}`,
+    ...(dates.updatedAt ? [`updatedAt: ${dates.updatedAt}`] : []),
     "draft: true",
     "featured: false",
     "---",
