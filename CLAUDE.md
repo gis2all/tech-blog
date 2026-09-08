@@ -274,7 +274,7 @@ test/                 Vitest 和 Playwright 测试
 
 ### 4.2 后台能力
 
-- locale zh_Hans；文章/专题/项目字段与 Content Collections 必填字段对齐；分类由 `src/data/category-library.json` 统一维护，编辑器通过自定义 `category_selector` 读取分类库，专题通过 relation 关联。
+- locale zh_Hans；文章/专题/项目字段与 Content Collections 必填字段对齐；分类由 `src/data/category-library.json` 统一维护，编辑器与专题字段一样通过 Decap `relation` 下拉框关联对应集合。
 - 文章标题是唯一身份来源：Markdown 文件名、公开地址和文章媒体目录都使用去除首尾空白后的标题；不维护独立 slug、旧 URL 兼容路由或改名跳转。
 - 已发布文章标题锁定，改名先转草稿并确认；草稿重命名会同步更新 Markdown 路径、文章引用和媒体目录。
 - 保存前校验标题唯一性、发布必填字段、日期、专题顺序、链接和图片替代文本；草稿允许暂时缺少发布内容但显示建议。
