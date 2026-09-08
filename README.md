@@ -122,7 +122,7 @@ npm run perf
 | `npm run lint` | Biome 代码风格与静态检查 |
 | `npm run test` | 运行 Vitest 测试 |
 | `npm run test:coverage` | 覆盖率门禁：全局 90/82/92/94，`src/lib` 95/84/95/98，后台脚本 88/82/90/92（语句/分支/函数/行） |
-| `npm run test:e2e` | 运行 Playwright 浏览器测试（前台 44 项 + 后台 UI 16 项，含 Axe 可访问性门禁） |
+| `npm run test:e2e` | 运行 Playwright 浏览器测试（前台与后台关键流程，含 Axe 可访问性门禁；数量以仓库与 CI 为准） |
 | `npm run build` | 验证生产构建并生成 Pagefind 索引 |
 | `npm run perf` | 对生产预览运行 Lighthouse 性能预算 |
 
@@ -176,6 +176,7 @@ public/admin/         Decap CMS 入口与配置
 public/_headers       Cloudflare Pages 安全头、CSP 与缓存规则
 public/_redirects     Cloudflare Pages 重定向规则
 scripts/              构建与覆盖率辅助脚本
+skills/tech-blog/     Codex 与 Claude Code 通用的项目接管/运维技能
 workers/decap-oauth/  Decap CMS GitHub OAuth 代理（Cloudflare Worker）
 functions/            Cloudflare Pages 中间件（URL 大小写归一化 301）
 test/                 Vitest 和 Playwright 测试
@@ -229,7 +230,7 @@ npm run build
 - 线上从 `/admin/` 登录，Decap CMS 通过自建 OAuth 代理（`oauth.gis2all.top`，Cloudflare Worker）完成 GitHub 授权，内容直接提交 `main`，Cloudflare Pages 自动构建并发布（simple 发布模式，无 PR 审核环节）。
 - 本地调试见“快速开始”（本机 Node 或 Docker 两种方式）；后台保存只写入当前工作树，不会提交 GitHub。
 - 文章标题决定文件名、公开地址和媒体目录：文章保存在 `src/content/posts/<标题>.md`，图片保存在 `public/images/posts/<标题>/`。已发布文章标题锁定，草稿改名会一并更新引用和媒体目录。
-- 后台保留 Decap 的认证、内容和编辑器内核，并通过与网站一致的自定义管理界面提供文章预览、保存校验、未保存离开提醒、嵌入式标签管理和文章媒体库。
+- 后台保留 Decap 的认证、内容和编辑器内核，并通过与网站一致的自定义管理界面提供文章预览、保存校验、未保存离开提醒、嵌入式标签与分类管理和文章媒体库；分类与标签行可展开查看关联文章，并从标题进入编辑页。
 - JPEG、PNG 和 WebP 图片上传时会转为 WebP，最长边限制为 1600px，并保持原始宽高比；GIF、SVG 和 MP4 按各自限制保留原格式。
 
 ## 评论
