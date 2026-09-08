@@ -8,6 +8,7 @@
   var state = {
     categories: [],
     usage: Object.create(null),
+    articles: Object.create(null),
     loading: false,
     loaded: false,
     loadError: false,
@@ -16,6 +17,7 @@
     query: "",
     filter: "all",
     sort: "name",
+    expandedCategory: null,
     confirmingCategory: null,
     checkingCategory: null,
     renamingSource: null,
@@ -115,9 +117,15 @@
     );
     if (!loader || !operations) throw new Error("文章读取连接尚未就绪，请刷新后台后重试。");
     var entries = await loader("src/content/posts", "md", 100);
-    return global.DecapCategoryDomain.countUsage((entries || []).map(function (entry) {
-      return { data: { category: operations.readCategory(entry && entry.data) } };
-    }));
+    var articleEntries = entries || [];
+    return {
+      usage: global.DecapCategoryDomain.countUsage(articleEntries.map(function (entry) {
+        return { data: { category: operations.readCategory(entry && entry.data) } };
+      })),
+      articles: global.DecapTaxonomyArticles.groupArticles(articleEntries, function (entry) {
+        return operations.readCategory(entry && entry.data);
+      }),
+    };
   }
 
   async function loadData(successMessage) {
@@ -129,7 +137,9 @@
       var connection = backend();
       state.categories = await loadLibrary(connection);
       try {
-        state.usage = await loadUsage(connection);
+        var usageResult = await loadUsage(connection);
+        state.usage = usageResult.usage;
+        state.articles = usageResult.articles;
       } catch (usageError) {
         state.usage = Object.create(null);
         state.loadError = true;
@@ -200,8 +210,10 @@
     state.message = "正在确认分类使用情况...";
     update();
     try {
-      var usage = await loadUsage(backend());
+      var usageResult = await loadUsage(backend());
+      var usage = usageResult.usage;
       state.usage = usage;
+      state.articles = usageResult.articles;
       if (!global.DecapCategoryDomain.canDelete(category, usage)) {
         state.confirmingCategory = null;
         state.checkingCategory = null;
@@ -529,6 +541,30 @@
     return item.count > 0 ? item.count + " 篇文章" : "未使用";
   }
 
+  function articleList(category) {
+    var articles = state.articles && Array.isArray(state.articles[category])
+      ? state.articles[category]
+      : [];
+    if (state.expandedCategory !== category || !articles.length) return null;
+    var area = element("div", "cms-taxonomy-manager__articles");
+    area.setAttribute("aria-label", category + "关联文章");
+    articles.forEach(function (article) {
+      var link = element("a", "cms-taxonomy-manager__article");
+      link.href = article.href;
+      link.appendChild(element("span", "cms-taxonomy-manager__article-title", article.title));
+      link.appendChild(element("span", "cms-taxonomy-manager__article-status", article.draft ? "草稿" : "已发布"));
+      link.appendChild(element("span", "cms-taxonomy-manager__article-date", article.dateLabel));
+      area.appendChild(link);
+    });
+    return area;
+  }
+
+  function toggleArticles(category) {
+    if (state.loading || state.loadError || !state.usage[category]) return;
+    state.expandedCategory = state.expandedCategory === category ? null : category;
+    update();
+  }
+
   function renderRows(container) {
     var list = container.querySelector("[data-admin-category-list]");
     if (!list) return;
@@ -547,8 +583,15 @@
       var category = item.name;
       var row = element("li", "cms-tag-manager__row cms-category-manager__row");
       row.setAttribute("data-admin-category-row", "");
-      row.appendChild(element("span", "cms-tag-manager__name", category));
-      row.appendChild(element("span", "cms-tag-manager__usage", usageLabel(item)));
+      var toggle = element("button", "cms-taxonomy-manager__toggle");
+      toggle.type = "button";
+      toggle.disabled = !item.count || state.loading || state.loadError;
+      toggle.setAttribute("aria-expanded", state.expandedCategory === category ? "true" : "false");
+      toggle.setAttribute("aria-label", "查看分类 " + category + " 的文章");
+      toggle.appendChild(element("span", "cms-tag-manager__name", category));
+      toggle.appendChild(element("span", "cms-tag-manager__usage", usageLabel(item)));
+      toggle.addEventListener("click", function () { toggleArticles(category); });
+      row.appendChild(toggle);
       var actions = element("div", "cms-tag-manager__actions");
       var rename = element("button", "cms-tag-manager__rename", "重命名/合并");
       rename.type = "button";
@@ -580,6 +623,8 @@
         actions.appendChild(deleteButton);
       }
       row.appendChild(actions);
+      var articles = articleList(category);
+      if (articles) row.appendChild(articles);
       list.appendChild(row);
     });
   }

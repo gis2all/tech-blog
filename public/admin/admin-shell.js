@@ -22,6 +22,8 @@
   var tagState = {
     tags: [],
     usage: Object.create(null),
+    articles: Object.create(null),
+    expandedTag: null,
     loading: false,
     loaded: false,
     loadError: false,
@@ -483,9 +485,15 @@
     );
     if (!loader) throw new Error("文章读取连接尚未就绪，请刷新后台后重试。");
     var entries = await loader("src/content/posts", "md", 100);
-    return global.DecapTagDomain.countUsage((entries || []).map(function (entry) {
-      return { data: { tags: operations.readTags(rawOf(entry)) } };
-    }));
+    var articleEntries = entries || [];
+    return {
+      usage: global.DecapTagDomain.countUsage(articleEntries.map(function (entry) {
+        return { data: { tags: operations.readTags(rawOf(entry)) } };
+      })),
+      articles: global.DecapTaxonomyArticles.groupArticles(articleEntries, function (entry) {
+        return operations.readTags(rawOf(entry));
+      }),
+    };
   }
 
   function tagStats() {
@@ -505,6 +513,30 @@
 
   function tagActionDisabled() {
     return tagState.loading || tagState.saving || tagState.merging || tagState.loadError;
+  }
+
+  function toggleTagArticles(tag) {
+    if (tagState.loading || tagState.loadError || !tagState.usage[tag]) return;
+    tagState.expandedTag = tagState.expandedTag === tag ? null : tag;
+    updateTagPage();
+  }
+
+  function renderTagArticles(tag) {
+    var articles = tagState.articles && Array.isArray(tagState.articles[tag])
+      ? tagState.articles[tag]
+      : [];
+    if (tagState.expandedTag !== tag || !articles.length) return null;
+    var area = element("div", "cms-taxonomy-manager__articles");
+    area.setAttribute("aria-label", tag + "关联文章");
+    articles.forEach(function (article) {
+      var link = element("a", "cms-taxonomy-manager__article");
+      link.href = article.href;
+      link.appendChild(element("span", "cms-taxonomy-manager__article-title", article.title));
+      link.appendChild(element("span", "cms-taxonomy-manager__article-status", article.draft ? "草稿" : "已发布"));
+      link.appendChild(element("span", "cms-taxonomy-manager__article-date", article.dateLabel));
+      area.appendChild(link);
+    });
+    return area;
   }
 
   function setTagMessage(message, autoDismissMs) {
@@ -537,7 +569,9 @@
       var backend = tagBackend();
       tagState.tags = await loadTagLibrary(backend);
       try {
-        tagState.usage = await loadTagUsage(backend);
+        var usageResult = await loadTagUsage(backend);
+        tagState.usage = usageResult.usage;
+        tagState.articles = usageResult.articles;
       } catch (usageError) {
         tagState.usage = Object.create(null);
         tagState.loadError = true;
@@ -611,8 +645,10 @@
     updateTagPage();
 
     try {
-      var usage = await loadTagUsage(tagBackend());
+      var usageResult = await loadTagUsage(tagBackend());
+      var usage = usageResult.usage;
       tagState.usage = usage;
+      tagState.articles = usageResult.articles;
       if (!global.DecapTagDomain.canDelete(tag, usage)) {
         tagState.confirmingTag = null;
         tagState.checkingTag = null;
@@ -962,8 +998,15 @@
       var tag = item.name;
       var row = element("li", "cms-tag-manager__row");
       row.setAttribute("data-admin-tag-row", "");
-      row.appendChild(element("span", "cms-tag-manager__name", tag));
-      row.appendChild(element("span", "cms-tag-manager__usage", tagUsageLabel(item)));
+      var toggle = element("button", "cms-taxonomy-manager__toggle");
+      toggle.type = "button";
+      toggle.disabled = !item.count || tagState.loading || tagState.loadError;
+      toggle.setAttribute("aria-expanded", tagState.expandedTag === tag ? "true" : "false");
+      toggle.setAttribute("aria-label", "查看标签 " + tag + " 的文章");
+      toggle.appendChild(element("span", "cms-tag-manager__name", tag));
+      toggle.appendChild(element("span", "cms-tag-manager__usage", tagUsageLabel(item)));
+      toggle.addEventListener("click", function () { toggleTagArticles(tag); });
+      row.appendChild(toggle);
 
       var actions = element("div", "cms-tag-manager__actions");
       var rename = element("button", "cms-tag-manager__rename", "重命名/合并");
@@ -1007,6 +1050,8 @@
         actions.appendChild(deleteButton);
       }
       row.appendChild(actions);
+      var articles = renderTagArticles(tag);
+      if (articles) row.appendChild(articles);
       list.appendChild(row);
     });
   }

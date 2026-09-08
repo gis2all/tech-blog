@@ -20,6 +20,7 @@ declare const createClass: (...args: any[]) => any;
 declare var CMS: DecapRuntimeObject;
 declare var DecapTagDomain: DecapRuntimeObject;
 declare var DecapCategoryDomain: DecapRuntimeObject;
+declare var DecapTaxonomyArticles: DecapRuntimeObject;
 declare var DecapMediaDomain: DecapRuntimeObject;
 declare var DecapEditorialDomain: DecapRuntimeObject;
 declare var DecapMediaProcessor: DecapRuntimeObject;
@@ -28,6 +29,7 @@ interface Window {
   CMS?: DecapRuntimeObject;
   DecapTagDomain?: DecapRuntimeObject;
   DecapCategoryDomain?: DecapRuntimeObject;
+  DecapTaxonomyArticles?: DecapRuntimeObject;
   DecapMediaDomain?: DecapRuntimeObject;
   DecapEditorialDomain?: DecapRuntimeObject;
   DecapMediaProcessor?: DecapRuntimeObject;

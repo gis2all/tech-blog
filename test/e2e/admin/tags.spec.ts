@@ -63,6 +63,33 @@ test("adds a new tag while saving an article", async ({ page }) => {
   }
 });
 
+test("expands a tag to show linked articles", async ({ page }) => {
+  const title = uniqueTitle("e2e-tag-articles");
+  try {
+    await createDraftFile(title, [".net"]);
+    await loginAsLocal(page);
+    await page.locator('aside a[href="#/collections/tags"]').click();
+    await expect(page.getByRole("heading", { name: "标签" })).toBeVisible({
+      timeout: 30000,
+    });
+
+    const toggle = page.getByRole("button", { name: "查看标签 .net 的文章" });
+    await expect(toggle).toHaveCount(1);
+    const row = toggle.locator("..");
+    await toggle.click();
+    const article = row.locator(
+      'a.cms-taxonomy-manager__article[href="#/collections/posts/entries/' +
+        encodeURIComponent(title) +
+        '"]',
+    );
+    await expect(article).toContainText(title);
+    await article.click();
+    await expect(page.getByRole("heading", { name: "编辑文章" })).toBeVisible();
+  } finally {
+    await cleanupPaths([`src/content/posts/${title}.md`]);
+  }
+});
+
 test("merges a tag and updates article references", async ({ page }) => {
   const source = uniqueTitle("e2e-merge-source");
   const target = uniqueTitle("e2e-merge-target");
@@ -85,7 +112,7 @@ test("merges a tag and updates article references", async ({ page }) => {
     await expect(row).toHaveCount(1);
 
     // Open the merge/rename flow for the source tag and confirm the plan
-    await row.getByRole("button").first().click();
+    await row.getByRole("button", { name: `重命名或合并标签 ${source}` }).click();
     await expect(page.locator(".cms-tag-manager__merge")).toBeVisible();
     await page.locator('.cms-tag-manager__merge input[type="text"]').fill(target);
     await page.getByRole("button", { name: "检查影响" }).click();

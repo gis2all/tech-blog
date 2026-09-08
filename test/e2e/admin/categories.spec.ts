@@ -75,6 +75,28 @@ test("adds and deletes an unused category from the main category page", async ({
   }
 });
 
+test("expands a category to show linked articles", async ({ page }) => {
+  const title = uniqueTitle("e2e-category-articles");
+  try {
+    await createDraftFile(title, [], "工程实践");
+    await openCategories(page);
+    const toggle = page.getByRole("button", { name: "查看分类 工程实践 的文章" });
+    await expect(toggle).toHaveCount(1);
+    const row = toggle.locator("..");
+    await toggle.click();
+    const article = row.locator(
+      'a.cms-taxonomy-manager__article[href="#/collections/posts/entries/' +
+        encodeURIComponent(title) +
+        '"]',
+    );
+    await expect(article).toContainText(title);
+    await article.click();
+    await expect(page.getByRole("heading", { name: "编辑文章" })).toBeVisible();
+  } finally {
+    await cleanupPaths([`src/content/posts/${title}.md`]);
+  }
+});
+
 test("renames a category and updates article frontmatter", async ({ page }) => {
   const source = uniqueTitle("e2e-category-source");
   const target = uniqueTitle("e2e-category-target");
