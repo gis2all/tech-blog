@@ -439,7 +439,7 @@ describe("Decap phase-two editorial UI", () => {
     ]);
 
     expect(html).toContain('href="/admin/admin-shell.css?v=61"');
-    expect(html).toContain('src="/admin/admin-navigation.js?v=28"');
+    expect(html).toContain('src="/admin/admin-navigation.js?v=29"');
     expect(navigation).toContain("function bindEditorPreviewRefresh");
     expect(navigation).toContain("function ensureEditorRefreshButton");
     expect(navigation).toContain("data-admin-preview-toggle");

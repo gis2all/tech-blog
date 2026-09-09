@@ -19,6 +19,7 @@
   var globalSearchTimer = null;
   var backToSiteControl = null;
   var editorPreviewRefreshBound = false;
+  var loginErrorHideTimer = null;
   var SVG_NS = "http://www.w3.org/2000/svg";
 
   // Lucide icon nodes mirrored from the @lucide/astro package used by the site.
@@ -484,6 +485,45 @@
     button.dataset.adminIcon = "github";
   }
 
+  function showLoginError(message) {
+    var alert = document.querySelector("[data-admin-login-error]");
+    if (!alert) {
+      alert = document.createElement("div");
+      alert.setAttribute("data-admin-login-error", "true");
+      alert.setAttribute("role", "alert");
+      alert.style.cssText = [
+        "position:fixed;z-index:60;left:50%;bottom:5vh;transform:translateX(-50%);",
+        "max-width:min(560px,calc(100vw - 32px));padding:12px 20px;",
+        "border:1px solid var(--cms-danger,#d33);border-radius:var(--cms-radius,8px);",
+        "background:var(--cms-panel,#fff);color:var(--cms-text,#111);",
+        "font-size:14px;font-weight:600;line-height:1.5;text-align:center;",
+        "box-shadow:0 10px 34px rgba(0,0,0,.18);",
+      ].join("");
+      document.body.appendChild(alert);
+    }
+    alert.textContent = message || "登录失败，请重试。";
+    window.clearTimeout(loginErrorHideTimer);
+    loginErrorHideTimer = window.setTimeout(function () {
+      alert.textContent = "";
+      if (document.body.contains(alert)) document.body.removeChild(alert);
+    }, 6000);
+  }
+
+  function bindLoginError() {
+    window.addEventListener("message", function (event) {
+      var data = typeof event.data === "string" ? event.data : "";
+      if (data.indexOf("authorization:github:error:") !== 0) return;
+      if (event.origin !== "https://oauth.gis2all.top") return;
+      var message = "登录失败，请重试。";
+      try {
+        message = JSON.parse(data.slice("authorization:github:error:".length)).error || message;
+      } catch (_) {
+        // keep the default message when the payload is not valid JSON
+      }
+      showLoginError(message);
+    });
+  }
+
   function restoreTheme() {
     if (!document.documentElement || document.documentElement.getAttribute("data-theme")) return;
     try {
@@ -658,6 +698,7 @@
       subtree: true,
     });
     window.addEventListener("hashchange", syncNavigation);
+    bindLoginError();
     syncNavigation();
   }
 
