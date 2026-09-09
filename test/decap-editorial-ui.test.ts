@@ -691,7 +691,7 @@ describe("Decap phase-two editorial UI", () => {
 
     expect(posts).toMatchObject({
       slug: "{{title}}",
-      media_folder: "public/images/posts/{{title}}",
+      media_folder: "/public/images/posts/{{title}}",
       public_folder: "/images/posts/{{title}}",
       preview_path: "posts/{{title}}",
     });

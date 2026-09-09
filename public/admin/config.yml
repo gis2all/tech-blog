@@ -34,7 +34,7 @@ collections:
     extension: md
     format: frontmatter
     slug: "{{title}}"
-    media_folder: public/images/posts/{{title}}
+    media_folder: /public/images/posts/{{title}}
     public_folder: /images/posts/{{title}}
     preview_path: posts/{{title}}
     summary: "{{title}} · {{updatedAt}} · {{publishedAt}} · {{category}} · {{draft}}"
