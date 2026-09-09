@@ -122,7 +122,7 @@ describe("Decap editorial domain", () => {
     );
   });
 
-  test("allows a published post without a description and warns instead", async () => {
+  test("allows a published post without a description without warning about it", async () => {
     const domain = await loadDomain();
     const result = domain.validatePost({
       title: "无摘要文章",
@@ -133,9 +133,7 @@ describe("Decap editorial domain", () => {
     });
 
     expect(result.errors).toEqual([]);
-    expect(result.warnings).toEqual(
-      expect.arrayContaining([expect.stringContaining("摘要")]),
-    );
+    expect(result.warnings.some((warning) => warning.includes("摘要"))).toBe(false);
   });
 
   test("extracts local article media references without duplicates", async () => {

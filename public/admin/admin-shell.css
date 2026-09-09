@@ -3002,7 +3002,6 @@ body[data-admin-route-pending="true"] #nc-root main:not([data-admin-route-snapsh
   display: flex !important;
   align-items: center !important;
   min-height: 0 !important;
-  width: 100% !important;
   min-width: 0 !important;
   gap: 4px !important;
   padding: 0 !important;

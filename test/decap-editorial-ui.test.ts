@@ -15,7 +15,7 @@ describe("Decap phase-two editorial UI", () => {
       readFile(`${root}public/admin/admin-shell.css`, "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=60"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=61"');
     expect(html).toContain("data-cms-theme-toggle");
     expect(html).toContain("data-cms-global-search");
     expect(html.indexOf("/admin/admin-shell.css")).toBeLessThan(
@@ -438,7 +438,7 @@ describe("Decap phase-two editorial UI", () => {
       readFile(`${root}public/admin/admin-shell.js`, "utf8"),
     ]);
 
-    expect(html).toContain('href="/admin/admin-shell.css?v=60"');
+    expect(html).toContain('href="/admin/admin-shell.css?v=61"');
     expect(html).toContain('src="/admin/admin-navigation.js?v=28"');
     expect(navigation).toContain("function bindEditorPreviewRefresh");
     expect(navigation).toContain("function ensureEditorRefreshButton");
