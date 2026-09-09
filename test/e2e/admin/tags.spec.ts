@@ -40,6 +40,9 @@ test("adds a new tag while saving an article", async ({ page }) => {
     await page.getByRole("combobox", { name: "分类" }).click();
     await page.getByRole("option", { name: "工程实践" }).click();
     await page.getByRole("button", { name: /publishedAt to now/ }).click();
+    const draftSwitch = page.getByRole("switch", { name: "草稿" });
+    if (!(await draftSwitch.isChecked())) await draftSwitch.click();
+    await expect(draftSwitch).toBeChecked();
     await page.locator('[contenteditable="true"]').fill("测试正文");
     const tagInput = page.getByRole("combobox", { name: "标签 (可选)" });
     await tagInput.fill(tag);

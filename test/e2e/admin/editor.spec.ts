@@ -18,7 +18,7 @@ test("renders all post editor fields", async ({ page }) => {
   await expect(page.getByRole("combobox", { name: "分类" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "标签 (可选)" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "专题 (可选)" })).toBeVisible();
-  await expect(page.getByRole("switch", { name: "草稿" })).toBeChecked();
+  await expect(page.getByRole("switch", { name: "草稿" })).not.toBeChecked();
   await expect(page.getByRole("button", { name: "发布" })).toBeVisible();
 });
 

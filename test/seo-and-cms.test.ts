@@ -273,6 +273,10 @@ describe("Decap CMS schema", () => {
       widget: "markdown",
       modes: ["raw", "rich_text"],
     });
+    expect(getField(posts, "draft")).toMatchObject({
+      widget: "boolean",
+      default: false,
+    });
     expect(getField(posts, "series")).toMatchObject({
       widget: "relation",
       collection: "series",
