@@ -454,7 +454,7 @@ describe("Decap CMS schema", () => {
     runInNewContext(navigationSource, context);
 
     expect(postsCollections).toHaveLength(1);
-    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=28"');
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=29"');
     expect(
       (context.DecapAdminNavigation as { isDraftRoute: () => boolean }).isDraftRoute(),
     ).toBe(true);
