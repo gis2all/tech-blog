@@ -57,7 +57,7 @@ const allowedOrigins = (env: Env): string[] => {
 
 const postTarget = (env: Env): string => {
   const origins = allowedOrigins(env);
-  return origins.includes("*") ? "*" : origins[0] ?? "*";
+  return origins.includes("*") ? "*" : (origins[0] ?? "*");
 };
 
 const handleAuth = async (url: URL, env: Env) => {
