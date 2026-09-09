@@ -86,6 +86,7 @@ const callbackScriptResponse = (status: string, payload: unknown, env: Env) => {
     `
 <html>
 <head>
+  <meta charset="utf-8" />
   <script>
     const target = ${JSON.stringify(target)};
     const receiveMessage = (message) => {
@@ -104,7 +105,7 @@ const callbackScriptResponse = (status: string, payload: unknown, env: Env) => {
 </head>
 </html>
 `,
-    { headers: { "Content-Type": "text/html" } },
+    { headers: { "Content-Type": "text/html; charset=utf-8" } },
   );
 };
 
