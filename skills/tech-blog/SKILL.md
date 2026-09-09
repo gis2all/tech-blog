@@ -69,7 +69,7 @@ test/                 Vitest 与 Playwright 测试
 
 ## 内容与设计速览
 
-- 内容模型：title/description/publishedAt/category 必填；标题不得含 / ? # %；日期 YYYY-MM-DD；draft 排除出构建。
+- 内容模型：title/publishedAt/category 必填；description 可选，留空自动从正文开头截取；标题不得含 / ? # %；日期 YYYY-MM-DD；draft 排除出构建。
 - 图片：封面 cover.webp、正文 image-01.*；上传转 WebP 最长边 1600px、目标 500KB；SVG/GIF/MP4 各有格式与大小限制；缩略图 cover-thumb.webp 为构建派生。
 - 视觉 token、字体字号、圆角、深浅色、断点（1100/900/520）、键盘可达性与 Axe 门禁：见 CLAUDE.md「5. 内容与设计」。
 

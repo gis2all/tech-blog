@@ -271,7 +271,8 @@ test/                 Vitest 和 Playwright 测试
 - 后台 = Decap 内核 + 自定义管理壳层：Decap 负责认证、Git 后端、集合数据、字段控件和 Markdown 编辑器；壳层负责页面结构、统一视觉、标题工作流、列表、预览、分类、标签和媒体管理。不是独立 CMS，不复制 Decap 核心能力。
 - 生产：/admin 通过自建 OAuth 代理（oauth.gis2all.top）完成 GitHub 授权，simple 发布模式直接提交 main 触发 Cloudflare Pages 部署。
 - 本地：127.0.0.1 / localhost / ::1 自动切换 Local Backend（127.0.0.1:4322），跳过登录、直写工作树。
-- Decap 运行时固定精确版本 decap-cms@3.15.1 + SRI（integrity sha384 + crossorigin=anonymous），CDN 内容被篡改或版本被意外提升时后台直接加载失败；升级需同步 SRI 并跑后台 E2E 回归。本地 decap-server 固定 3.10.0。
+- Decap 运行时固定精确版本 decap-cms@3.15.1 + SRI（integrity sha384 + crossorigin=anonymous），CDN 内容被篡改或版本被意外提升时后台直接加载失败；升级需同步 SRI 并跑后台 E2E 回归。本地 decap-server 固定 3.11.0。
+- 文章集合 `media_folder` 使用仓库根相对路径 `/public/images/posts/<文章标题>/`（与 `public_folder` 一致）；本地 Local Backend 对「集合媒体目录/文件尚不存在」做容错（`getMedia` 返回空列表、`getMediaFile` 返回 404，见 scripts/start-decap-server.mjs 的前置路由），否则打开尚未上传图片的文章会因 decap-server 对缺失目录报 500 而崩溃。
 
 ### 4.2 后台能力
 
@@ -357,7 +358,7 @@ seriesOrder: 1
 
 约束：
 
-- title、description、publishedAt、category 必填；tags 和 changelog 默认为空数组；draft、featured 默认为 false；updatedAt、cover、coverAlt、series、seriesOrder 可选，有封面必须给准确的 coverAlt。
+- title、publishedAt、category 必填；description 可选，留空自动从正文开头截取；tags 和 changelog 默认为空数组；draft、featured 默认为 false；updatedAt、cover、coverAlt、series、seriesOrder 可选，有封面必须给准确的 coverAlt。
 - `featured: true` 是进入首页右栏「精选复盘」的唯一条件（行为见 5.2）；新文章保持默认 false，不会自动进入精选列表。
 - 文章公开 URL 由去除首尾空白后的标题生成，不接受独立 slug frontmatter；Markdown 文件名和图片目录是内部存储标识，不决定公开 URL。
 - 标题不得包含 /、?、#、%，且必须唯一；修改标题会同步修改 URL。

@@ -86,7 +86,6 @@
 
     [
       ["title", "标题"],
-      ["description", "摘要"],
       ["body", "正文"],
       ["category", "分类"],
       ["publishedAt", "发布日期"],
@@ -117,6 +116,9 @@
     }
     if (!trimmedText(post.cover)) {
       warnings.push("文章尚未设置封面");
+    }
+    if (!trimmedText(post.description)) {
+      warnings.push("摘要留空将自动从正文开头截取，建议手动填写以获得更好展示");
     }
 
     return { errors: errors, warnings: warnings };

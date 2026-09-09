@@ -21,6 +21,9 @@ async function openNewArticle(page: Page) {
   await page.getByRole("combobox", { name: "分类" }).click();
   await page.getByRole("option", { name: "工程实践" }).click();
   await page.getByRole("button", { name: /publishedAt to now/ }).click();
+  const draftSwitch = page.getByRole("switch", { name: "草稿" });
+  if (!(await draftSwitch.isChecked())) await draftSwitch.click();
+  await expect(draftSwitch).toBeChecked();
 }
 
 test("creates a draft through the editor and writes it to the worktree", async ({

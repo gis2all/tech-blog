@@ -190,6 +190,44 @@ export function calculateReadingTime(body = ""): number {
   return Math.max(1, Math.ceil(words / 200));
 }
 
+const MAX_POST_DESCRIPTION_LENGTH = 150;
+
+function stripMarkdownForDescription(markdown: string): string {
+  return markdown
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/~~~[\s\S]*?~~~/g, " ")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, " ")
+    .replace(/^\s{0,3}>\s?/gm, " ")
+    .replace(/^[-*_]{3,}\s*$/gm, " ")
+    .replace(/~~([^~]+)~~/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/[#>*_|`]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function derivePostDescription(body = ""): string {
+  const text = stripMarkdownForDescription(body);
+  if (!text) return "";
+
+  const chars = Array.from(text);
+  if (chars.length <= MAX_POST_DESCRIPTION_LENGTH) return text;
+
+  return `${chars.slice(0, MAX_POST_DESCRIPTION_LENGTH).join("").trimEnd()}…`;
+}
+
+export function getPostDescription<TPost extends PostLike>(post: TPost): string {
+  const manual = post.data.description?.trim();
+  return manual || derivePostDescription(post.body ?? "");
+}
+
 export function groupPostsByCategory<TPost extends PostLike>(
   posts: TPost[],
 ): TaxonomyGroup<TPost>[] {

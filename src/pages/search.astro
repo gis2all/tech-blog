@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { getPostSlug } from "../lib/content/posts";
+import { getPostDescription, getPostSlug } from "../lib/content/posts";
 import { getAllPosts } from "../lib/content/queries";
 
 const posts = await getAllPosts();
@@ -8,7 +8,7 @@ const searchDocumentsJson = JSON.stringify(
   posts.map((post) => ({
     title: post.data.title,
     url: `/posts/${getPostSlug(post)}/`,
-    description: post.data.description,
+    description: getPostDescription(post),
     category: post.data.category,
     tags: post.data.tags,
   })),

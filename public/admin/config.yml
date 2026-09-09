@@ -34,7 +34,7 @@ collections:
     extension: md
     format: frontmatter
     slug: "{{title}}"
-    media_folder: public/images/posts/{{title}}
+    media_folder: /public/images/posts/{{title}}
     public_folder: /images/posts/{{title}}
     preview_path: posts/{{title}}
     summary: "{{title}} · {{updatedAt}} · {{publishedAt}} · {{category}} · {{draft}}"
@@ -64,7 +64,7 @@ collections:
       - label: 摘要
         name: description
         widget: text
-        hint: 用一两句话说明文章解决的问题，会显示在文章列表和搜索结果中。
+        hint: 用一两句话说明文章解决的问题，会显示在文章列表和搜索结果中；留空将自动从正文开头截取。
       - label: 分类
         name: category
         widget: relation
@@ -116,7 +116,7 @@ collections:
       - label: 草稿
         name: draft
         widget: boolean
-        default: true
+        default: false
         hint: 草稿不会进入前台、RSS 或搜索索引。
       - label: 精选
         name: featured
