@@ -26,6 +26,10 @@ Decap CMS (/admin) -> oauth.gis2all.top/auth -> github.com 授权
    npx wrangler secret put GITHUB_OAUTH_SECRET
    ```
 
+   可选配置：
+   - `GITHUB_ALLOWED_USER`：仅允许该 GitHub 账号登录后台，默认 `gis2all`（/callback 会用 `GET /user` 核对 `login`）。
+   - `DECAP_ALLOWED_ORIGINS`：逗号分隔的后台源，用于收紧回调页 `postMessage` 的 targetOrigin；默认 `*`，收紧时需包含正式后台源与所有预览域名。
+
 3. 部署（自动创建 oauth.gis2all.top 自定义域与 DNS 记录）：
 
    ```text
@@ -52,5 +56,6 @@ Decap CMS (/admin) -> oauth.gis2all.top/auth -> github.com 授权
 ## 安全说明
 
 - `GITHUB_OAUTH_ID` / `GITHUB_OAUTH_SECRET` 只作为 Worker Secret 存在，不进入代码或构建产物。
-- 回调页将 token 通过 `window.opener.postMessage` 回传，targetOrigin 沿用上游的 `*`，以兼容本地与预览域名登录；若后台将来限制单一来源，应同步收紧该值。
+- 仅 `GITHUB_ALLOWED_USER`（默认 `gis2all`）可登录：/callback 换取 token 后会调 `GET /user` 核对 `login`，不匹配则不回传 token。
+- 回调页将 token 通过 `window.opener.postMessage` 回传；默认 targetOrigin 为 `*` 以兼容本地与预览登录。设置 `DECAP_ALLOWED_ORIGINS`（逗号分隔）后会改用该列表，需包含正式后台源与所有预览域名。
 - 仓库为公开仓库，`GITHUB_REPO_PRIVATE=0`；若改私有仓库，需改为 1 并同步调整 scope。

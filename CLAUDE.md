@@ -243,10 +243,10 @@ test/                 Vitest 和 Playwright 测试
 
 - 角色：替代 Netlify Identity 的 GitHub OAuth 代理，部署于 oauth.gis2all.top（Cloudflare Worker，workers_dev = false）。
 - 端点：/auth（301 跳转 GitHub 授权）、/callback（换 token 后经 window.opener.postMessage 回传）、其他路径返回 Hello 👋（健康检查）。
-- 密钥（Worker Secret，不进代码）：GITHUB_OAUTH_ID、GITHUB_OAUTH_SECRET；设置命令：cd workers/decap-oauth && wrangler secret put GITHUB_OAUTH_ID。
+- 密钥（Worker Secret，不进代码）：GITHUB_OAUTH_ID、GITHUB_OAUTH_SECRET；设置命令：cd workers/decap-oauth && wrangler secret put GITHUB_OAUTH_ID。可选：GITHUB_ALLOWED_USER（默认 gis2all，仅允许该账号登录）、DECAP_ALLOWED_ORIGINS（逗号分隔的后台源，默认 *，收紧时需包含所有预览域名）。
 - 联动配置：public/admin/config.yml 的 backend 含 base_url: https://oauth.gis2all.top、auth_endpoint: auth；CSP connect-src/form-action 放行 oauth.gis2all.top。
 - GitHub OAuth App：Homepage URL 与 Authorization callback URL 分别为 https://oauth.gis2all.top 与 https://oauth.gis2all.top/callback。
-- 安全说明：回调页 postMessage 的 targetOrigin 沿用上游 *（兼容本地/预览域名登录）；若后台将来限制单一来源需同步收紧。
+- 安全说明：仅 `GITHUB_ALLOWED_USER`（默认 gis2all）可登录——/callback 换 token 后调 GET /user 核对 login，不匹配则拒绝回传。回调页 postMessage 的 targetOrigin 默认 `*`（兼容本地/预览登录）；设置 DECAP_ALLOWED_ORIGINS 后可收紧，需包含正式后台源与所有预览域名。
 - 重新部署/升级：cd workers/decap-oauth && npm install && npm run typecheck && npm run deploy；代码改动先 wrangler deploy --dry-run 验证。
 
 ### 3.8 日常发布操作
