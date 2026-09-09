@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 const articlePath = `/posts/${encodeURIComponent(
   "Jenkins Pipeline项目无法在windows子节点中执行cmd命令",
@@ -16,12 +16,31 @@ const pages = [
   "/search/?q=Agent",
 ];
 
+async function analyzeWithoutNavigation(page: Page) {
+  try {
+    return await new AxeBuilder({ page }).analyze();
+  } catch (error) {
+    // The site and admin E2E projects share one Astro dev server; admin tests
+    // create/remove content files which can trigger a dev reload at the exact
+    // moment the axe scan runs, destroying the execution context. Retry once
+    // against a freshly loaded page so the scan is not disrupted by the churn.
+    if (
+      String(error).includes("Execution context was destroyed") ||
+      String(error).includes("most likely because of a navigation")
+    ) {
+      await page.reload({ waitUntil: "domcontentloaded" });
+      return await new AxeBuilder({ page }).analyze();
+    }
+    throw error;
+  }
+}
+
 for (const path of pages) {
   test(`has no serious or critical axe violations on ${path}`, async ({ page }) => {
     await page.goto(path);
     await page.waitForLoadState("domcontentloaded");
 
-    const results = await new AxeBuilder({ page }).analyze();
+    const results = await analyzeWithoutNavigation(page);
     const violations = results.violations.filter(
       (violation) => violation.impact === "serious" || violation.impact === "critical",
     );
@@ -40,7 +59,7 @@ test("has no serious or critical axe violations on an article page", async ({ pa
   await page.goto(articlePath);
   await page.waitForLoadState("domcontentloaded");
 
-  const results = await new AxeBuilder({ page }).analyze();
+  const results = await analyzeWithoutNavigation(page);
   const violations = results.violations.filter(
     (violation) => violation.impact === "serious" || violation.impact === "critical",
   );
