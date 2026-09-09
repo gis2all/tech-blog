@@ -2,9 +2,11 @@ import { describe, expect, test } from "vitest";
 import {
   calculateReadingTime,
   compareTagNames,
+  derivePostDescription,
   getAdjacentPosts,
   getCoverThumb,
   getFeaturedPosts,
+  getPostDescription,
   getPostSlug,
   getPublicPosts,
   getRelatedPosts,
@@ -529,5 +531,56 @@ describe("post helpers", () => {
 
   test("getAdjacentPosts returns nothing when the slug is missing", () => {
     expect(getAdjacentPosts(posts, "missing-slug")).toEqual({});
+  });
+});
+
+describe("getPostDescription", () => {
+  const basePost = (overrides: Record<string, unknown> = {}) => {
+    const { body, ...dataOverrides } = overrides as {
+      body?: string;
+    } & Record<string, unknown>;
+
+    return {
+      id: "post.md",
+      body: body ?? "这是正文开头的一句话。",
+      data: {
+        title: "测试文章",
+        category: "DevOps",
+        publishedAt: new Date("2026-08-01"),
+        ...dataOverrides,
+      },
+    };
+  };
+
+  test("prefers a manually filled description", () => {
+    expect(getPostDescription(basePost({ description: "  手动摘要  " }))).toBe(
+      "手动摘要",
+    );
+  });
+
+  test("falls back to the body's opening when description is empty", () => {
+    expect(getPostDescription(basePost({ description: "" }))).toBe(
+      "这是正文开头的一句话。",
+    );
+    expect(getPostDescription(basePost({ description: "", body: "" }))).toBe("");
+  });
+
+  test("strips markdown images, links, code fences and headings", () => {
+    expect(
+      derivePostDescription(
+        "![示意图](https://example.com/a.png)\n\n[链接文字](https://example.com)\n\n```js\nconst a = 1;\n```\n\n## 小标题\n\n正文内容",
+      ),
+    ).toBe("示意图 链接文字 小标题 正文内容");
+  });
+
+  test("truncates long bodies to a bounded length with an ellipsis", () => {
+    const derived = derivePostDescription("字".repeat(200));
+    expect(derived.length).toBe(151);
+    expect(derived.endsWith("…")).toBe(true);
+  });
+
+  test("returns an empty string for an empty or code-only body", () => {
+    expect(derivePostDescription("")).toBe("");
+    expect(derivePostDescription("```js\nx\n```")).toBe("");
   });
 });

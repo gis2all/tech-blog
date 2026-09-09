@@ -1,6 +1,6 @@
 ---
 import ArticleMeta from "./ArticleMeta.astro";
-import { getCoverThumb, getPostSlug, type PostLike } from "../../lib/content/posts";
+import { getCoverThumb, getPostDescription, getPostSlug, type PostLike } from "../../lib/content/posts";
 
 type Props = {
   posts: PostLike[];
@@ -24,7 +24,7 @@ const {
     >
       <div class="article-row-body">
         <h2><a href={`/posts/${getPostSlug(post)}/`}>{post.data.title}</a></h2>
-        <p>{post.data.description}</p>
+        <p>{getPostDescription(post)}</p>
         <ArticleMeta post={post} showCategory={false} tagLimit={tagLimit} />
       </div>
       {post.data.cover && !compact && (

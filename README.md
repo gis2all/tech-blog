@@ -206,7 +206,7 @@ seriesOrder: 1
 
 主要规则：
 
-- `title`、`description`、`publishedAt` 和 `category` 必填
+- `title`、`publishedAt` 和 `category` 必填，`description` 可选（留空自动从正文开头截取）
 - `tags` 和 `changelog` 默认为空数组，`draft` 和 `featured` 默认为 `false`
 - `updatedAt`、`cover`、`coverAlt`、`series`、`seriesOrder` 可选；有封面时应提供准确的 `coverAlt`
 - `draft: true` 的文章不会进入生产页面、RSS 和搜索索引

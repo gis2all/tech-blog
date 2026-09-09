@@ -1,5 +1,5 @@
 import rss from "@astrojs/rss";
-import { getPostSlug } from "../lib/content/posts";
+import { getPostDescription, getPostSlug } from "../lib/content/posts";
 import { getAllPosts } from "../lib/content/queries";
 import { site } from "../lib/site";
 
@@ -12,7 +12,7 @@ export async function GET(context: { site?: URL }) {
     site: context.site?.toString() ?? site.url,
     items: posts.map((post) => ({
       title: post.data.title,
-      description: post.data.description,
+      description: getPostDescription(post),
       pubDate: post.data.publishedAt,
       link: `/posts/${getPostSlug(post)}/`,
     })),

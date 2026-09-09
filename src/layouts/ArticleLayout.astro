@@ -14,6 +14,7 @@ import type { SeriesEntry } from "../lib/content/queries";
 import {
   calculateReadingTime,
   getAdjacentPosts,
+  getPostDescription,
   getPostSlug,
   getRelatedPosts,
   type PostLike
@@ -42,7 +43,7 @@ const articleJsonLd = {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   headline: post.data.title,
-  description: post.data.description,
+  description: getPostDescription(post),
   datePublished: post.data.publishedAt.toISOString(),
   dateModified: (post.data.updatedAt ?? post.data.publishedAt).toISOString(),
   url: articleUrl,
@@ -70,7 +71,7 @@ const articleJsonLd = {
 
 <BaseLayout
   title={post.data.title}
-  description={post.data.description}
+  description={getPostDescription(post)}
   ogType="article"
   image={post.data.cover}
   jsonLd={articleJsonLd}
@@ -97,7 +98,7 @@ const articleJsonLd = {
       <header class="article-head">
         <span class="kicker">{post.data.category}</span>
         <h1>{post.data.title}</h1>
-        <p class="dek">{post.data.description}</p>
+        {post.data.description ? <p class="dek">{post.data.description}</p> : null}
         <div class="byline">
           <AuthorAvatar size="mini" decorative />
           <div>

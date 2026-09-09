@@ -122,6 +122,22 @@ describe("Decap editorial domain", () => {
     );
   });
 
+  test("allows a published post without a description and warns instead", async () => {
+    const domain = await loadDomain();
+    const result = domain.validatePost({
+      title: "无摘要文章",
+      body: "正文",
+      category: "DevOps",
+      publishedAt: "2026-08-03",
+      draft: false,
+    });
+
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual(
+      expect.arrayContaining([expect.stringContaining("摘要")]),
+    );
+  });
+
   test("extracts local article media references without duplicates", async () => {
     const domain = await loadDomain();
     const source = [

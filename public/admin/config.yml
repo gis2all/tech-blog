@@ -64,7 +64,7 @@ collections:
       - label: 摘要
         name: description
         widget: text
-        hint: 用一两句话说明文章解决的问题，会显示在文章列表和搜索结果中。
+        hint: 用一两句话说明文章解决的问题，会显示在文章列表和搜索结果中；留空将自动从正文开头截取。
       - label: 分类
         name: category
         widget: relation

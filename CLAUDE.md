@@ -357,7 +357,7 @@ seriesOrder: 1
 
 约束：
 
-- title、description、publishedAt、category 必填；tags 和 changelog 默认为空数组；draft、featured 默认为 false；updatedAt、cover、coverAlt、series、seriesOrder 可选，有封面必须给准确的 coverAlt。
+- title、publishedAt、category 必填；description 可选，留空自动从正文开头截取；tags 和 changelog 默认为空数组；draft、featured 默认为 false；updatedAt、cover、coverAlt、series、seriesOrder 可选，有封面必须给准确的 coverAlt。
 - `featured: true` 是进入首页右栏「精选复盘」的唯一条件（行为见 5.2）；新文章保持默认 false，不会自动进入精选列表。
 - 文章公开 URL 由去除首尾空白后的标题生成，不接受独立 slug frontmatter；Markdown 文件名和图片目录是内部存储标识，不决定公开 URL。
 - 标题不得包含 /、?、#、%，且必须唯一；修改标题会同步修改 URL。
