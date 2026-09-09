@@ -22,13 +22,13 @@
   },
   "dependencies": {
     "@astrojs/check": "0.9.10",
-    "@astrojs/markdown-satteri": "0.3.4",
+    "@astrojs/markdown-satteri": "0.4.1",
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "3.7.3",
     "@lucide/astro": "1.27.0",
-    "astro": "7.1.4",
+    "astro": "7.3.2",
     "pagefind": "1.5.2",
-    "sharp": "0.35.3",
+    "sharp": "0.35.4",
     "typescript": "6.0.3"
   },
   "devDependencies": {
@@ -36,11 +36,21 @@
     "@biomejs/biome": "2.5.7",
     "@playwright/test": "1.62.0",
     "@types/node": "26.1.2",
-    "@vitest/coverage-v8": "4.1.10",
-    "decap-server": "3.10.0",
+    "@vitest/coverage-v8": "4.1.11",
+    "decap-server": "3.11.0",
     "lighthouse": "13.4.1",
     "pinyin-pro": "3.28.2",
-    "vitest": "4.1.10",
+    "vitest": "4.1.11",
     "yaml": "2.9.0"
+  },
+  "overrides": {
+    "qs": "6.16.0",
+    "body-parser": "1.20.8",
+    "morgan": "1.12.0",
+    "svgo": "4.1.0",
+    "js-yaml": "4.3.2",
+    "decap-server": {
+      "@hapi/joi": "npm:joi@18.2.8"
+    }
   }
 }

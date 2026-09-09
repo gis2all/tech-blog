@@ -370,7 +370,7 @@ describe("Decap CMS schema", () => {
         allowed_hosts: ["127.0.0.1", "localhost"],
       },
     });
-    expect(packageJson.devDependencies?.["decap-server"]).toBe("3.10.0");
+    expect(packageJson.devDependencies?.["decap-server"]).toBe("3.11.0");
     expect(packageJson.scripts?.["cms:local"]).toBe(
       "node scripts/start-decap-server.mjs",
     );
