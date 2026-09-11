@@ -109,7 +109,7 @@ describe("site image delivery", () => {
       'import createImagePerformancePlugin from "./src/lib/markdown/satteri-image-performance.mjs";',
     );
     expect(config).toMatch(
-      /processor:\s*satteri\(\{\s*hastPlugins:\s*\[createImagePerformancePlugin\(\)\]/s,
+      /processor:\s*satteri\(\{\s*hastPlugins:\s*\[\s*createImagePerformancePlugin\(\)/s,
     );
   });
 

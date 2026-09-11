@@ -310,7 +310,7 @@ describe("Decap CMS schema", () => {
       'src="https://unpkg.com/decap-cms@3.15.1/dist/decap-cms.js"',
     );
     expect(adminIndex).toContain('src="/admin/preview.js?v=4"');
-    expect(baseLayout).toContain('href="/styles/markdown-content.css?v=1"');
+    expect(baseLayout).toContain('href="/styles/markdown-content.css?v=2"');
     expect(previewScript).toContain('className: "cms-post-preview__body prose"');
     const previewRegistrations: {
       styles: string[];
@@ -335,7 +335,7 @@ describe("Decap CMS schema", () => {
 
     expect(previewRegistrations.styles).toEqual([
       "/styles/design-system.css?v=1",
-      "/styles/markdown-content.css?v=1",
+      "/styles/markdown-content.css?v=2",
       "/admin/preview.css?v=4",
     ]);
     expect(previewRegistrations.templates.map((item) => item.collection)).toEqual([
@@ -454,7 +454,7 @@ describe("Decap CMS schema", () => {
     runInNewContext(navigationSource, context);
 
     expect(postsCollections).toHaveLength(1);
-    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=29"');
+    expect(adminIndex).toContain('src="/admin/admin-navigation.js?v=30"');
     expect(
       (context.DecapAdminNavigation as { isDraftRoute: () => boolean }).isDraftRoute(),
     ).toBe(true);

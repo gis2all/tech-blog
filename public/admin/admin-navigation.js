@@ -227,6 +227,41 @@
     });
   }
 
+  function enhancePreviewMediaFrame(frame) {
+    var doc = frame.contentDocument;
+    if (!doc || typeof doc.querySelectorAll !== "function") return;
+    Array.prototype.slice.call(doc.querySelectorAll("img")).forEach(function (img) {
+      var src = img.getAttribute("src") || "";
+      if (!/\.mp4($|[?#])/i.test(src)) return;
+      var video = doc.createElement("video");
+      video.setAttribute("src", src);
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      var alt = img.getAttribute("alt");
+      if (alt) video.setAttribute("aria-label", alt);
+      var width = img.getAttribute("width");
+      var height = img.getAttribute("height");
+      if (width) video.setAttribute("width", width);
+      if (height) video.setAttribute("height", height);
+      img.replaceWith(video);
+    });
+  }
+
+  function enhancePreviewMedia() {
+    window.DecapDomAdapter.previewFrames().forEach(function (frame) {
+      enhancePreviewMediaFrame(frame);
+      var doc = frame.contentDocument;
+      if (!doc || !doc.body || frame.dataset.adminPreviewMediaBound) return;
+      frame.dataset.adminPreviewMediaBound = "true";
+      var observer = new MutationObserver(function () {
+        enhancePreviewMediaFrame(frame);
+      });
+      observer.observe(doc.body, { childList: true, subtree: true });
+    });
+  }
+
   function refreshInlinePreview() {
     var editor = window.DecapDomAdapter.editorContainer();
     var toggle = editor && editor.querySelector("[data-admin-preview-toggle]");
@@ -662,6 +697,7 @@
       moveHeaderControls();
       decorateQuickNew();
       syncPreviewTheme();
+      enhancePreviewMedia();
       ensureDraftShortcut();
       decorateShellIcons();
       decorateEditorToolbarControls();
