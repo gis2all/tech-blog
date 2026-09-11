@@ -16,7 +16,7 @@ const pages = [
   "/search/?q=Agent",
 ];
 
-async function analyzeWithoutNavigation(page: Page) {
+async function analyzeWithoutNavigation(page: Page, path: string) {
   try {
     return await new AxeBuilder({ page }).analyze();
   } catch (error) {
@@ -26,9 +26,10 @@ async function analyzeWithoutNavigation(page: Page) {
     // against a freshly loaded page so the scan is not disrupted by the churn.
     if (
       String(error).includes("Execution context was destroyed") ||
-      String(error).includes("most likely because of a navigation")
+      String(error).includes("most likely because of a navigation") ||
+      String(error).includes("Not attached to an active page")
     ) {
-      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       return await new AxeBuilder({ page }).analyze();
     }
     throw error;
@@ -40,7 +41,7 @@ for (const path of pages) {
     await page.goto(path);
     await page.waitForLoadState("domcontentloaded");
 
-    const results = await analyzeWithoutNavigation(page);
+    const results = await analyzeWithoutNavigation(page, path);
     const violations = results.violations.filter(
       (violation) => violation.impact === "serious" || violation.impact === "critical",
     );
@@ -59,7 +60,7 @@ test("has no serious or critical axe violations on an article page", async ({ pa
   await page.goto(articlePath);
   await page.waitForLoadState("domcontentloaded");
 
-  const results = await analyzeWithoutNavigation(page);
+  const results = await analyzeWithoutNavigation(page, articlePath);
   const violations = results.violations.filter(
     (violation) => violation.impact === "serious" || violation.impact === "critical",
   );

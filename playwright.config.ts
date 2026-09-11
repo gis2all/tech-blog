@@ -20,6 +20,10 @@ export default defineConfig({
       testMatch: "**/admin/**",
       fullyParallel: false,
       workers: 1,
+      // Run after the site project: the admin tests create/remove content
+      // files, which makes the shared Astro dev server reload. Running the
+      // two projects concurrently could reload a page mid axe-scan.
+      dependencies: ["site"],
     },
   ],
   webServer: [

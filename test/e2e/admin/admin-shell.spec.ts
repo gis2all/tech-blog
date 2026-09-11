@@ -104,7 +104,9 @@ test("searches a self-seeded draft and filters to drafts", async ({ page }) => {
     await search.press("Delete");
     await page.getByRole("button", { name: "状态" }).click();
     await page.getByRole("option", { name: "草稿" }).click();
-    await expect(rows.first()).toContainText(seededTitle, { timeout: 10000 });
+    await expect(rows.filter({ hasText: seededTitle })).toHaveCount(1, {
+      timeout: 10000,
+    });
     await expect(
       page.locator('main [data-admin-entry-status="published"]:visible'),
     ).toHaveCount(0);
@@ -168,7 +170,9 @@ test("drafts view shows only drafts including a self-seeded one", async ({ page 
   try {
     await loginAsLocal(page);
     await page.locator('aside a[href="#/collections/posts?view=drafts"]').click();
-    await expect(rows.first()).toContainText(seededTitle, { timeout: 30000 });
+    await expect(rows.filter({ hasText: seededTitle })).toHaveCount(1, {
+      timeout: 30000,
+    });
     await expect(
       page.locator('main [data-admin-entry-status="published"]:visible'),
     ).toHaveCount(0);
