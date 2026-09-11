@@ -16,24 +16,31 @@ const pages = [
   "/search/?q=Agent",
 ];
 
-async function analyzeWithoutNavigation(page: Page, path: string) {
-  try {
-    return await new AxeBuilder({ page }).analyze();
-  } catch (error) {
-    // The site and admin E2E projects share one Astro dev server; admin tests
-    // create/remove content files which can trigger a dev reload at the exact
-    // moment the axe scan runs, destroying the execution context. Retry once
-    // against a freshly loaded page so the scan is not disrupted by the churn.
-    if (
-      String(error).includes("Execution context was destroyed") ||
-      String(error).includes("most likely because of a navigation") ||
-      String(error).includes("Not attached to an active page")
-    ) {
-      await page.goto(path, { waitUntil: "domcontentloaded" });
+function isContextDestroyed(error: unknown) {
+  const message = String(error);
+  return (
+    message.includes("Execution context was destroyed") ||
+    message.includes("most likely because of a navigation") ||
+    message.includes("Not attached to an active page")
+  );
+}
+
+async function analyzeWithoutNavigation(page: Page) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
       return await new AxeBuilder({ page }).analyze();
+    } catch (error) {
+      lastError = error;
+      if (!isContextDestroyed(error)) throw error;
+      // The shared Astro dev server can reload the page mid-scan (content
+      // sync / HMR); reloading or navigating here would race that navigation.
+      // Instead wait for the page to settle and scan the same URL again.
+      await page.waitForLoadState("domcontentloaded").catch(() => {});
+      await page.waitForTimeout(300);
     }
-    throw error;
   }
+  throw lastError;
 }
 
 for (const path of pages) {
@@ -41,7 +48,7 @@ for (const path of pages) {
     await page.goto(path);
     await page.waitForLoadState("domcontentloaded");
 
-    const results = await analyzeWithoutNavigation(page, path);
+    const results = await analyzeWithoutNavigation(page);
     const violations = results.violations.filter(
       (violation) => violation.impact === "serious" || violation.impact === "critical",
     );
@@ -60,7 +67,7 @@ test("has no serious or critical axe violations on an article page", async ({ pa
   await page.goto(articlePath);
   await page.waitForLoadState("domcontentloaded");
 
-  const results = await analyzeWithoutNavigation(page, articlePath);
+  const results = await analyzeWithoutNavigation(page);
   const violations = results.violations.filter(
     (violation) => violation.impact === "serious" || violation.impact === "critical",
   );
