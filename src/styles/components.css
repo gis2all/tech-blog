@@ -85,7 +85,7 @@
 .author-avatar-frame {
   display: block;
   flex: none;
-  border-radius: 50%;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -97,10 +97,10 @@
 }
 
 .author-avatar-frame.author-avatar-profile {
-  width: 66px;
-  height: 66px;
+  width: 84px;
+  height: 84px;
   margin: 0 auto 10px;
-  box-shadow: 0 0 0 4px var(--brand-soft);
+  box-shadow: 0 0 0 5px var(--brand-soft);
 }
 
 .profile h2 {
@@ -147,12 +147,10 @@
 }
 
 .discovery-profile {
-  padding: 38px 16px 17px;
+  padding: 30px 16px 17px;
 }
 
 .discovery-profile .author-avatar-frame.author-avatar-profile {
-  width: 54px;
-  height: 54px;
   margin-bottom: 10px;
 }
 
@@ -382,11 +380,6 @@
   grid-template-columns: 24px minmax(0, 1fr);
   gap: 8px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.recent-reading-item:last-child {
-  border-bottom: 0;
 }
 
 .recent-reading-content {

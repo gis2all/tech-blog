@@ -54,7 +54,7 @@ describe("desktop side rail layout", () => {
   test("spaces the discovery profile and vertically centers rail counts", async () => {
     const css = await readAllStyles();
 
-    expect(css).toMatch(/\.discovery-profile\s*\{[^}]*padding:\s*38px 16px 17px/s);
+    expect(css).toMatch(/\.discovery-profile\s*\{[^}]*padding:\s*30px 16px 17px/s);
     expect(css).toMatch(
       /\.discovery-profile \.author-avatar-frame\.author-avatar-profile\s*\{[^}]*margin-bottom:\s*10px/s,
     );

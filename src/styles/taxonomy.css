@@ -15,10 +15,16 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   padding: 11px 15px;
+}
+
+/* Standalone directories keep their item dividers; the side rails read as a
+   plain list, where the hover background is the only separator. */
+.archive-row,
+.series-list a,
+.project-row {
   border-bottom: 1px solid var(--line);
 }
 
-.taxonomy-row:last-child,
 .archive-row:last-child,
 .series-list a:last-child,
 .project-row:last-child {

@@ -7,7 +7,7 @@ type Props = {
 };
 
 const { size = "profile", decorative = false } = Astro.props;
-const dimension = size === "profile" ? 66 : 38;
+const dimension = size === "profile" ? 84 : 38;
 ---
 
 <span class:list={["author-avatar-frame", `author-avatar-${size}`]}>

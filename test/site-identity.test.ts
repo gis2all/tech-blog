@@ -32,7 +32,7 @@ describe("site identity", () => {
     );
     expect(css).toMatch(/\.prose pre\s*\{[^}]*font-family:\s*var\(--font-code\)/s);
     expect(css).toMatch(
-      /\.author-avatar-frame\.author-avatar-profile\s*\{[^}]*box-shadow:\s*0 0 0 4px var\(--brand-soft\)/s,
+      /\.author-avatar-frame\.author-avatar-profile\s*\{[^}]*box-shadow:\s*0 0 0 5px var\(--brand-soft\)/s,
     );
     expect(css).toMatch(/\.author-avatar-image\s*\{[^}]*object-fit:\s*cover/s);
     expect(css).toMatch(/\.author-avatar-frame\s*\{[^}]*display:\s*block/s);
