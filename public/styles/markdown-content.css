@@ -109,10 +109,11 @@
 }
 
 .prose table {
+  --table-line: color-mix(in srgb, var(--line) 78%, transparent);
   width: 100%;
   margin: 0 0 1.1em;
   border-collapse: collapse;
-  font-size: 15px;
+  font-size: 0.875em;
   line-height: 1.7;
 }
 
@@ -123,18 +124,14 @@
 .prose th,
 .prose td {
   padding: 9px 14px;
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--table-line);
   text-align: left;
   vertical-align: top;
 }
 
 .prose th {
-  border-bottom: 1.5px solid var(--text);
+  background: color-mix(in srgb, var(--line) 45%, var(--panel));
   font-weight: 600;
-}
-
-.prose tbody tr:last-child td {
-  border-bottom: none;
 }
 
 .prose pre {
