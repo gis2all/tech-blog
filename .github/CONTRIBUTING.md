@@ -1,6 +1,6 @@
 # 贡献指南
 
-欢迎为「知行」贡献代码、内容和想法。无论是修 bug、补测试、写文章还是提建议，请先阅读本指南与 [README](./README.md)。
+欢迎为「知行」贡献代码、内容和想法。无论是修 bug、补测试、写文章还是提建议，请先阅读本指南与 [README](../README.md)。
 
 ## 开发环境
 
@@ -50,7 +50,7 @@ npm run build
 
 1. 从最新 `main` 切出分支，命名如 `codex/fix-xxx`、`content/xxx`。
 2. 完成修改并通过本地检查清单。
-3. 推送分支并创建 PR，按 [PR 模板](./.github/PULL_REQUEST_TEMPLATE.md) 填写。
+3. 推送分支并创建 PR，按 [PR 模板](./PULL_REQUEST_TEMPLATE.md) 填写。
 4. 等待 CI 通过和审核；合入 `main` 后 Cloudflare Pages 会自动从 GitHub 构建发布。
 
 ## 问题与安全
