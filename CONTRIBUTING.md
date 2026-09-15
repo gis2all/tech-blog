@@ -57,3 +57,4 @@ npm run build
 
 - Bug 和功能建议请用仓库的 Issue 模板提交。
 - 安全漏洞不要公开发布，请按 [SECURITY.md](./SECURITY.md) 私下报告。
+- 参与 Issue、Pull Request、讨论和文章评论时请遵守[行为准则](./CODE_OF_CONDUCT.md)。
