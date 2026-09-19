@@ -193,6 +193,15 @@
   grid-template-columns: minmax(0, 1fr) 280px;
 }
 
+/* 搜索页：有搜索词时收起右侧说明栏，结果自然占满整行。 */
+.listing-grid[data-search-active] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.listing-grid[data-search-active] > .right-rail {
+  display: none;
+}
+
 .stack {
   display: flex;
   flex-direction: column;

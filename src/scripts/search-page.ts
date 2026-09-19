@@ -43,6 +43,7 @@ const input = document.querySelector<HTMLInputElement>("#page-search-input");
 const results = document.querySelector<HTMLElement>("#search-results");
 const summary = document.querySelector<HTMLElement>("#search-summary");
 const documentData = document.querySelector<HTMLScriptElement>("#search-documents");
+const shell = document.querySelector<HTMLElement>("[data-search-shell]");
 
 if (form && input && results && summary && documentData) {
   const searchForm = form;
@@ -206,8 +207,12 @@ if (form && input && results && summary && documentData) {
   async function runSearch(rawQuery: string): Promise<void> {
     const query = rawQuery.trim();
     const searchId = ++activeSearchId;
+    const hasQuery = Boolean(normalizeSearchText(query));
 
-    if (!normalizeSearchText(query)) {
+    // 有搜索词时收起右侧说明栏，让结果占满整行。
+    shell?.toggleAttribute("data-search-active", hasQuery);
+
+    if (!hasQuery) {
       searchResults.replaceChildren();
       searchSummary.textContent = "输入关键词后搜索文章、标签和正文";
       searchForm.removeAttribute("aria-busy");

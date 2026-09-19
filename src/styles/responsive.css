@@ -245,11 +245,6 @@
     grid-template-columns: 1fr;
   }
 
-  .recent-reading-mobile:not([hidden]) {
-    display: block;
-    border-bottom: 1px solid var(--line);
-  }
-
   .related-post-list {
     grid-template-columns: 1fr;
   }

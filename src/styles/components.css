@@ -361,10 +361,6 @@
   font-size: 10px;
 }
 
-.recent-reading-mobile {
-  display: none;
-}
-
 .recent-reading-head > span {
   font-weight: 600;
 }

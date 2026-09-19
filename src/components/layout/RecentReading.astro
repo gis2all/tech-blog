@@ -1,6 +1,6 @@
 ---
 type Props = {
-  variant: "desktop" | "mobile" | "article";
+  variant: "desktop" | "article";
   excludeSlug?: string;
 };
 
@@ -12,7 +12,7 @@ const headingId = `recent-reading-${variant}-title`;
   class:list={[
     "recent-reading",
     `recent-reading-${variant}`,
-    { panel: variant !== "mobile" }
+    "panel"
   ]}
   data-recent-reading={variant}
   data-history-limit="3"

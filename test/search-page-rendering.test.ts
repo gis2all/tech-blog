@@ -14,4 +14,18 @@ describe("search result rendering", () => {
     expect(source).toContain('tagLink.className = "tag ghost"');
     expect(source).toContain("appendHighlightedText(tagLink, tag, query)");
   });
+
+  test("collapses the notes rail once a query is active", async () => {
+    const [page, script, styles] = await Promise.all([
+      readFile(`${root}src/pages/search.astro`, "utf8"),
+      readFile(`${root}src/scripts/search-page.ts`, "utf8"),
+      readFile(`${root}src/styles/layout.css`, "utf8"),
+    ]);
+
+    expect(page).toContain("data-search-shell");
+    expect(script).toContain('querySelector<HTMLElement>("[data-search-shell]")');
+    expect(script).toContain('toggleAttribute("data-search-active", hasQuery)');
+    expect(styles).toContain(".listing-grid[data-search-active]");
+    expect(styles).toContain(".listing-grid[data-search-active] > .right-rail");
+  });
 });

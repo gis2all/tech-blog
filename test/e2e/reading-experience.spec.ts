@@ -179,9 +179,7 @@ test("shows recent reading below the table of contents and excludes the current 
   ).toBe(true);
 });
 
-test("shows three reading history entries before the mobile article feed", async ({
-  page,
-}) => {
+test("omits reading history from the mobile home feed", async ({ page }) => {
   await page.addInitScript(
     ({ key }) => {
       localStorage.setItem(
@@ -203,20 +201,9 @@ test("shows three reading history entries before the mobile article feed", async
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
-  const recent = page.locator('[data-recent-reading="mobile"]');
-  await expect(recent).toBeVisible();
-  await expect(recent.getByRole("link")).toHaveCount(3);
-  await expect(recent.locator(".recent-reading-progress")).toHaveCount(0);
-  await expect(recent.getByRole("button")).toHaveCount(0);
-  expect(
-    await recent.evaluate((node) => {
-      const feedHeading = document.querySelector(".home-feed-head");
-      return Boolean(
-        feedHeading &&
-          node.compareDocumentPosition(feedHeading) & Node.DOCUMENT_POSITION_FOLLOWING,
-      );
-    }),
-  ).toBe(true);
+  await expect(page.locator(".recent-reading-mobile")).toHaveCount(0);
+  await expect(page.locator("[data-recent-reading]:visible")).toHaveCount(0);
+  await expect(page.locator(".home-feed-head")).toBeVisible();
 });
 
 test("shows at most three desktop entries without progress or clear controls", async ({

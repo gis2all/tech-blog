@@ -123,3 +123,23 @@ test.describe("desktop navigation", () => {
     expect(metrics.distanceFromHeaderBottom).toBeLessThanOrEqual(2);
   });
 });
+
+test("collapses the search notes once a query is active", async ({ page }) => {
+  await page.setViewportSize({ width: 1200, height: 800 });
+  await page.goto("/search/?q=Agent");
+
+  const notes = page.locator("aside.right-rail");
+  await expect(notes).toBeHidden();
+  await expect
+    .poll(() =>
+      page
+        .locator("main.listing-grid")
+        .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(" ").length),
+    )
+    .toBe(1);
+
+  await page.locator("#page-search-input").fill("");
+  await page.locator("#page-search-form button[type=submit]").click();
+
+  await expect(notes).toBeVisible();
+});
